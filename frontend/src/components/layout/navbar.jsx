@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import foodMgtLogoPng from '../../assets/foodMgtLogo.png';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const navItems = [
     { name: 'About', href: '/about' },
@@ -54,6 +55,7 @@ const Navbar = () => {
               </motion.button>
               <motion.button 
                 whileHover={{ scale: 1.05, boxShadow: "0 0 15px rgba(167, 214, 59, 0.4)" }}
+                onClick={() => navigate('/signup')}
                 className="px-5 py-2 bg-[#A7D63B] text-[#1F5E2A] rounded-full font-bold transition-colors hover:bg-[#C8E66A]"
               >
                 Sign Up
@@ -103,7 +105,13 @@ const Navbar = () => {
                 <button className="w-full px-5 py-2 text-[#1F5E2A] border-2 border-[#1F5E2A] rounded-full font-bold hover:bg-[#1F5E2A] hover:text-white">
                   Sign In
                 </button>
-                <button className="w-full px-5 py-2 bg-[#A7D63B] text-[#1F5E2A] rounded-full font-bold hover:bg-[#C8E66A]">
+                <button 
+                  onClick={() => {
+                    setIsOpen(false);
+                    navigate('/signup');
+                  }}
+                  className="w-full px-5 py-2 bg-[#A7D63B] text-[#1F5E2A] rounded-full font-bold hover:bg-[#C8E66A]"
+                >
                   Sign Up
                 </button>
               </div>
