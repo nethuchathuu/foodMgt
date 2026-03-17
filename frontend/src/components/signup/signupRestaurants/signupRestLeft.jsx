@@ -1,10 +1,21 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Leaf } from 'lucide-react';
+import { Store } from "lucide-react";
+import bgImage from '../../../assets/backgroundRestSignup.jpg';
 
 const SignupRestLeft = () => {
   return (
-    <div className="relative h-full flex flex-col justify-center items-center p-12 bg-[#1F5E2A] overflow-hidden text-center z-0">
+    <div 
+      className="relative h-full flex flex-col justify-center items-center p-12 overflow-hidden text-center z-0"
+      style={{
+        backgroundImage: `url(${bgImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}
+    >
+      {/* Semi-transparent overlay to ensure text readability */}
+      <div className="absolute inset-0 bg-[#1F5E2A]/60 z-[-2]"></div>
+
       {/* Animated gradient blobs in background using Theme Colors */}
       <motion.div 
         animate={{ 
@@ -47,11 +58,11 @@ const SignupRestLeft = () => {
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
           className="mb-8 p-5 bg-white/10 rounded-3xl backdrop-blur-md shadow-[0_8px_32px_0_rgba(167,214,59,0.2)] border border-white/20"
         >
-          <Leaf size={48} className="text-[#A7D63B]" />
+          <Store size={48} className="text-[#E9A38E]" />
         </motion.div>
         
         <h1 className="text-4xl lg:text-5xl font-bold mb-6 leading-tight tracking-tight">
-          Grow Your Restaurant with FoodShare <span className="text-[#A7D63B]">🌿</span>
+          Grow Your Restaurant with FoodShare 
         </h1>
         
         <p className="text-xl mb-10 text-[#D8C3A5] leading-relaxed font-light">

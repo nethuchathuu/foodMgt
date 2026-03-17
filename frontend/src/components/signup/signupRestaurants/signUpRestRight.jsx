@@ -22,7 +22,7 @@ const SignupRestRight = () => {
         <h2 className="text-3xl font-extrabold text-[#1F5E2A] mb-2 flex items-center">
           Restaurant Registration
         </h2>
-        <p className="text-[#9BC7D8] mb-8 font-semibold">
+        <p className="text-[#A7D63B] mb-8 font-semibold">
           Fill in your details to start sharing food
         </p>
 
