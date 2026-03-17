@@ -15,8 +15,8 @@ const SignupRestRight = () => {
         transition={{ duration: 0.6 }}
         className="w-full max-w-lg mx-auto"
       >
-        <div className="flex items-center mb-6 text-sm font-bold text-[#D67A5C]">
-          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#E9A38E] text-[#1F5E2A] mr-3 shadow-sm border border-[#D67A5C]/20">
+        <div className="flex items-center mb-6 text-sm font-bold text-[#1a84ae]">
+          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#9BC7D8] text-[#1F5E2A] mr-3 shadow-sm border border-[#D67A5C]/20">
             1
           </span>
           Step 1 of 3: Basic Info

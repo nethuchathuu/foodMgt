@@ -8,6 +8,7 @@ import FoodOffers from './components/offers/foodOffers';
 import DonateFood from './components/donate/donateFood';
 import Faq from './components/faq/faq';
 import SignupBefore from './components/signup/signupBefore';
+import SignupAfter from './components/signup/signupAfter';
 import SignupRestaurants from './components/signup/signupRestaurants/signupRestaurents';
 import SignupRestOwner from './components/signup/signupRestaurants/signupRestOwner';
 import './index.css';
@@ -27,6 +28,7 @@ const AppLayout = () => {
           <Route path="/donate" element={<DonateFood />} />
           <Route path="/faq" element={<Faq />} />
           <Route path="/signup" element={<SignupBefore />} />
+          <Route path="/signup/signupAfter" element={<SignupAfter />} />
           <Route path="/signup/restaurant" element={<SignupRestaurants />} />
           <Route path="/signup/restaurant/owner" element={<SignupRestOwner />} />
         </Routes>
