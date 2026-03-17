@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import SignupForm from './signupForm';
 import { ArrowRight, UtensilsCrossed } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const SignupRestRight = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="flex flex-col bg-white overflow-y-auto w-full h-full relative z-10 p-8 md:p-12 shadow-inner">
       <motion.div 
@@ -32,6 +35,7 @@ const SignupRestRight = () => {
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
+            onClick={() => navigate('/signup/restaurant/owner')}
             className="flex items-center bg-[#A7D63B] hover:bg-[#D67A5C] text-[#1F5E2A] hover:text-white px-8 py-4 rounded-xl font-bold shadow-md hover:shadow-lg transition-all duration-300"
           >
             Next Step <ArrowRight className="ml-2" size={20} />
