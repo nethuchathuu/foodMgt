@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Utensils, Heart, User, Building, CheckCircle, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const SignupBefore = () => {
   const [selectedRole, setSelectedRole] = useState(null);
   const [requesterType, setRequesterType] = useState(null);
+  const navigate = useNavigate();
 
   const fadeIn = {
     hidden: { opacity: 0, y: 20 },
@@ -76,10 +78,11 @@ const SignupBefore = () => {
               </ul>
 
               <div className="mt-auto pt-2">
-                <motion.button 
+                <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   className="w-full py-3 rounded-xl font-bold text-white shadow-md text-sm bg-[#C87D65] hover:bg-[#B36850] shadow-[#C87D65]/40 flex items-center justify-center gap-2 transition-colors"
+                  onClick={() => navigate('/signup/restaurant')}
                 >
                   Register as Provider <ArrowRight size={18} />
                 </motion.button>
@@ -183,7 +186,7 @@ const SignupBefore = () => {
                     <Building size={24} />
                   </div>
                   <h4 className="text-lg font-bold mb-1 text-[#1A4D23]">Community Organization</h4>
-                  <p className="text-[#3A5D42] text-xs font-medium">Request food donations to redistribute to charities or community groups.</p>
+                  <p className="text-[#3A5D42] text-xs font-medium">Request food donations and order discounted meals to support charities or community groups.</p>
                 </motion.div>
 
               </div>

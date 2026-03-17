@@ -8,6 +8,7 @@ import FoodOffers from './components/offers/foodOffers';
 import DonateFood from './components/donate/donateFood';
 import Faq from './components/faq/faq';
 import SignupBefore from './components/signup/signupBefore';
+import SignupRestaurants from './components/signup/signupRestaurants/signupRestaurents';
 import './index.css';
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
             <Route path="/donate" element={<DonateFood />} />
             <Route path="/faq" element={<Faq />} />
             <Route path="/signup" element={<SignupBefore />} />
+            <Route path="/signup/restaurant" element={<SignupRestaurants />} />
           </Routes>
         </main>
         <Footer />
