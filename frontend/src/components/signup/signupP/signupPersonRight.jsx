@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, ArrowLeft, User, CreditCard, Mail, Phone, CheckCircle2, Camera, Edit2 } from 'lucide-react';
+import { ArrowRight, ArrowLeft, User, MapPin, Calendar, CreditCard, Mail, Phone, CheckCircle2, Camera, Edit2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const InputField = ({ label, icon: Icon, type = "text", placeholder, fullWidth = false, isActive, onFocus, onBlur }) => {
@@ -11,13 +11,22 @@ const InputField = ({ label, icon: Icon, type = "text", placeholder, fullWidth =
         <div className="pl-4 pr-3 text-[#D8C3A5]">
           <Icon size={18} className={isActive ? 'text-[#1F5E2A]' : ''} />
         </div>
-        <input 
-          type={type} 
-          className="w-full bg-transparent py-3 pr-4 outline-none text-[#1F5E2A] placeholder-[#D8C3A5]"
-          placeholder={placeholder}
-          onFocus={onFocus}
-          onBlur={onBlur}
-        />
+        {type === "textarea" ? (
+          <textarea 
+            className="w-full bg-transparent py-3 pr-4 outline-none text-[#1F5E2A] placeholder-[#D8C3A5] resize-none h-24"
+            placeholder={placeholder}
+            onFocus={onFocus}
+            onBlur={onBlur} 
+          />
+        ) : (
+          <input 
+            type={type} 
+            className="w-full bg-transparent py-3 pr-4 outline-none text-[#1F5E2A] placeholder-[#D8C3A5]"
+            placeholder={placeholder}
+            onFocus={onFocus}
+            onBlur={onBlur}
+          />
+        )}
         <AnimatePresence>
           {isActive && (
             <motion.div 
@@ -35,7 +44,7 @@ const InputField = ({ label, icon: Icon, type = "text", placeholder, fullWidth =
   );
 };
 
-const SignupOrgGardRight = () => {
+const SignupPersonRight = () => {
   const [activeInput, setActiveInput] = useState(null);
   const [selectedGender, setSelectedGender] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
@@ -57,17 +66,9 @@ const SignupOrgGardRight = () => {
         transition={{ duration: 0.6 }}
         className="w-full max-w-lg mx-auto"
       >
-        {/* Step indicator */}
-        <div className="flex items-center mb-6 text-sm font-bold text-[#1a84ae]">
-          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#9BC7D8] text-[#1F5E2A] mr-3 shadow-sm border border-[#D67A5C]/20">
-            2
-          </span>
-          Step 2 of 3: Representative Details
-        </div>
-
         <div className="mb-4 text-center sm:text-left">
-          <h2 className="text-3xl font-extrabold text-[#1F5E2A] mb-2">Representative Details</h2>
-          <p className="text-[#A7D63B] font-semibold">Fill in your personal information</p>
+          <h2 className="text-3xl font-extrabold text-[#1F5E2A] mb-2 flex items-center sm:justify-start justify-center">Create Account</h2>
+          <p className="text-[#A7D63B] font-semibold">Join as a Food Receiver</p>
         </div>
 
         {/* Profile Picture Upload Section */}
@@ -134,6 +135,32 @@ const SignupOrgGardRight = () => {
                 onFocus={() => setActiveInput("Full Name")}
                 onBlur={() => setActiveInput(null)}
               />
+              <InputField 
+                label="Home Address" 
+                icon={MapPin} 
+                type="textarea" 
+                placeholder="Full residential address" 
+                fullWidth={true} 
+                isActive={activeInput === "Home Address"}
+                onFocus={() => setActiveInput("Home Address")}
+                onBlur={() => setActiveInput(null)}
+              />
+              <InputField 
+                label="Date of Birth" 
+                icon={Calendar} 
+                type="date" 
+                isActive={activeInput === "Date of Birth"}
+                onFocus={() => setActiveInput("Date of Birth")}
+                onBlur={() => setActiveInput(null)}
+              />
+              <InputField 
+                label="NIC" 
+                icon={CreditCard} 
+                placeholder="National ID number" 
+                isActive={activeInput === "NIC"}
+                onFocus={() => setActiveInput("NIC")}
+                onBlur={() => setActiveInput(null)}
+              />
               
               {/* Gender Radio Pills */}
               <div className="col-span-1 md:col-span-2 mb-4">
@@ -160,18 +187,10 @@ const SignupOrgGardRight = () => {
               </div>
 
               <InputField 
-                label="NIC" 
-                icon={CreditCard} 
-                placeholder="National ID number" 
-                isActive={activeInput === "NIC"}
-                onFocus={() => setActiveInput("NIC")}
-                onBlur={() => setActiveInput(null)}
-              />
-              <InputField 
                 label="Email" 
                 icon={Mail} 
                 type="email" 
-                placeholder="representative@example.com" 
+                placeholder="user@example.com" 
                 isActive={activeInput === "Email"}
                 onFocus={() => setActiveInput("Email")}
                 onBlur={() => setActiveInput(null)}
@@ -181,7 +200,6 @@ const SignupOrgGardRight = () => {
                 icon={Phone} 
                 type="tel" 
                 placeholder="+1 (555) 000-0000" 
-                fullWidth={true}
                 isActive={activeInput === "Phone Number"}
                 onFocus={() => setActiveInput("Phone Number")}
                 onBlur={() => setActiveInput(null)}
@@ -206,7 +224,7 @@ const SignupOrgGardRight = () => {
                 whileTap={{ scale: 0.95 }}
                 className="flex items-center bg-[#A7D63B] hover:bg-[#D67A5C] text-[#1F5E2A] hover:text-white px-8 py-4 rounded-xl font-bold shadow-md hover:shadow-lg transition-all duration-300"
               >
-                Next Step <ArrowRight className="ml-2" size={20} />
+                Next <ArrowRight className="ml-2" size={20} />
               </motion.button>
             </div>
           </form>
@@ -216,4 +234,4 @@ const SignupOrgGardRight = () => {
   );
 };
 
-export default SignupOrgGardRight;
+export default SignupPersonRight;

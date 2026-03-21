@@ -9,6 +9,9 @@ import DonateFood from './components/donate/donateFood';
 import Faq from './components/faq/faq';
 import SignupBefore from './components/signup/signupBefore';
 import SignupAfter from './components/signup/signupAfter';
+import SignupPerson from './components/signup/signupP/signupPerson';
+import SignupOrg from './components/signup/signupO/signupOrg';
+import SignupOrgGard from './components/signup/signupO/signupOrgGard';
 import SignupRestaurants from './components/signup/signupRestaurants/signupRestaurents';
 import SignupRestOwner from './components/signup/signupRestaurants/signupRestOwner';
 import './index.css';
@@ -28,6 +31,10 @@ const AppLayout = () => {
           <Route path="/donate" element={<DonateFood />} />
           <Route path="/faq" element={<Faq />} />
           <Route path="/signup" element={<SignupBefore />} />
+          <Route path="/signup-person" element={<SignupPerson />} />
+          <Route path="/signup-org" element={<SignupOrg />} />
+          <Route path="/signup-org-guardian" element={<SignupOrgGard />} />
+          <Route path="/signup-after" element={<SignupAfter />} />
           <Route path="/signup/signupAfter" element={<SignupAfter />} />
           <Route path="/signup/restaurant" element={<SignupRestaurants />} />
           <Route path="/signup/restaurant/owner" element={<SignupRestOwner />} />

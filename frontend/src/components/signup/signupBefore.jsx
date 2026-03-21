@@ -200,6 +200,10 @@ const SignupBefore = () => {
                       ? 'bg-[#2C6E3B] shadow-md shadow-[#2C6E3B]/30 hover:bg-[#1A4D23]' 
                       : 'bg-[#D5DCCC] cursor-not-allowed text-[#8F9B88]'
                   }`}
+                  onClick={() => {
+                    if (requesterType === 'personal') navigate('/signup-person');
+                    if (requesterType === 'organization') navigate('/signup-org');
+                  }}
                 >
                   Proceed to Sign Up <ArrowRight size={18} />
                 </motion.button>
