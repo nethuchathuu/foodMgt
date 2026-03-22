@@ -14,11 +14,12 @@ import SignupOrg from './components/signup/signupO/signupOrg';
 import SignupOrgGard from './components/signup/signupO/signupOrgGard';
 import SignupRestaurants from './components/signup/signupRestaurants/signupRestaurents';
 import SignupRestOwner from './components/signup/signupRestaurants/signupRestOwner';
+import Signin from './components/signin/signin';
 import './index.css';
 
 const AppLayout = () => {
   const location = useLocation();
-  const isSignupRoute = location.pathname.startsWith('/signup');
+  const isAuthRoute = location.pathname.startsWith('/signup') || location.pathname.startsWith('/signin');
 
   return (
     <div className="font-sans bg-[#F8F8F6] min-h-screen text-[#1F5E2A] selection:bg-[#A7D63B] selection:text-[#1F5E2A] scroll-smooth flex flex-col">
@@ -31,6 +32,7 @@ const AppLayout = () => {
           <Route path="/donate" element={<DonateFood />} />
           <Route path="/faq" element={<Faq />} />
           <Route path="/signup" element={<SignupBefore />} />
+          <Route path="/signin" element={<Signin />} />
           <Route path="/signup-person" element={<SignupPerson />} />
           <Route path="/signup-org" element={<SignupOrg />} />
           <Route path="/signup-org-guardian" element={<SignupOrgGard />} />
@@ -40,7 +42,7 @@ const AppLayout = () => {
           <Route path="/signup/restaurant/owner" element={<SignupRestOwner />} />
         </Routes>
       </main>
-      {!isSignupRoute && <Footer />}
+      {!isAuthRoute && <Footer />}
     </div>
   );
 };

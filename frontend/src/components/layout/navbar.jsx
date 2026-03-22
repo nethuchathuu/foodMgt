@@ -49,6 +49,7 @@ const Navbar = () => {
             <div className="flex items-center space-x-4 ml-4">
               <motion.button 
                 whileHover={{ scale: 1.05, boxShadow: "0 0 15px rgba(31, 94, 42, 0.2)" }}
+                onClick={() => navigate('/signin')}
                 className="px-5 py-2 text-[#1F5E2A] border-2 border-[#1F5E2A] rounded-full font-bold transition-colors hover:bg-[#1F5E2A] hover:text-white"
               >
                 Sign In
@@ -102,7 +103,13 @@ const Navbar = () => {
                 </Link>
               ))}
               <div className="flex flex-col space-y-2 mt-4 px-3">
-                <button className="w-full px-5 py-2 text-[#1F5E2A] border-2 border-[#1F5E2A] rounded-full font-bold hover:bg-[#1F5E2A] hover:text-white">
+                <button 
+                  onClick={() => {
+                    setIsOpen(false);
+                    navigate('/signin');
+                  }}
+                  className="w-full px-5 py-2 text-[#1F5E2A] border-2 border-[#1F5E2A] rounded-full font-bold hover:bg-[#1F5E2A] hover:text-white"
+                >
                   Sign In
                 </button>
                 <button 
