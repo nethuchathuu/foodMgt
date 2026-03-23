@@ -5,16 +5,41 @@ import { useNavigate } from 'react-router-dom';
 
 const Form = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    setError('');
+
+    // Hardcoded mock credentials
+    const restaurantUser = { email: 'restaurant@test.com', password: 'password123' };
+    const requesterUser = { email: 'requester@test.com', password: 'password123' };
+
+    if (email === restaurantUser.email && password === restaurantUser.password) {
+      navigate('/restaurant-dashboard');
+    } else if (email === requesterUser.email && password === requesterUser.password) {
+      navigate('/requester-dashboard'); // Or wherever the requester dash is mapped
+    } else {
+      setError('Invalid email or password. Please use standard mock credentials.');
+    }
+  };
 
   return (
     <div>
-      <div className='text-center mb-8'>
+      <div className='text-center mb-6'>
         <h2 className='text-3xl font-extrabold text-[#1F5E2A]'>Welcome Back</h2>
         <p className='text-gray-500 mt-2'>Sign in to continue</p>
+        <div className="mt-2 text-xs text-gray-400 bg-gray-50 p-2 rounded">
+          <p><strong>Restaurant:</strong> restaurant@test.com / password123</p>
+          <p><strong>Requester:</strong> requester@test.com / password123</p>
+        </div>
       </div>
 
-      <form className='space-y-5' onSubmit={(e) => e.preventDefault()}>
+      <form className='space-y-5' onSubmit={handleLogin}>
+        {error && <div className="text-red-500 text-sm text-center font-medium">{error}</div>}
         {/* Email */}
         <div>
           <label className='text-sm font-semibold text-[#1F5E2A] ml-1'>Email</label>
@@ -22,8 +47,11 @@ const Form = () => {
             <Mail className='absolute left-4 text-gray-400' size={18} />
             <input
               type='email'
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder='Enter your email'
               className='w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#A7D63B] outline-none'
+              required
             />
           </div>
         </div>
@@ -35,8 +63,11 @@ const Form = () => {
             <Lock className='absolute left-4 text-gray-400' size={18} />
             <input
               type={showPassword ? 'text' : 'password'}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder='Enter password'
               className='w-full pl-11 pr-12 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#A7D63B] outline-none'
+              required
             />
             <button
               type='button'
@@ -55,9 +86,9 @@ const Form = () => {
 
         {/* Button */}
         <motion.button
+          type="submit"
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          onClick={() => navigate('/home')}
           className='w-full py-3 rounded-xl font-bold bg-[#A7D63B] text-[#1F5E2A] shadow-lg hover:bg-[#C8E66A] transition-all'
         >
           Sign In

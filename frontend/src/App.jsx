@@ -15,15 +15,16 @@ import SignupOrgGard from './components/signup/signupO/signupOrgGard';
 import SignupRestaurants from './components/signup/signupRestaurants/signupRestaurents';
 import SignupRestOwner from './components/signup/signupRestaurants/signupRestOwner';
 import Signin from './components/signin/signin';
+import RestaurantDashboard from './components/resturant/dashboard';
 import './index.css';
 
 const AppLayout = () => {
   const location = useLocation();
-  const isAuthRoute = location.pathname.startsWith('/signup') || location.pathname.startsWith('/signin');
+  const isAuthRoute = location.pathname.startsWith('/signup') || location.pathname.startsWith('/signin') || location.pathname.includes('dashboard');
 
   return (
     <div className="font-sans bg-[#F8F8F6] min-h-screen text-[#1F5E2A] selection:bg-[#A7D63B] selection:text-[#1F5E2A] scroll-smooth flex flex-col">
-      <Navbar />
+      {!isAuthRoute && <Navbar />}
       <main className="flex-grow">
         <Routes>
           <Route path="/" element={<Home />} />
@@ -40,6 +41,9 @@ const AppLayout = () => {
           <Route path="/signup/signupAfter" element={<SignupAfter />} />
           <Route path="/signup/restaurant" element={<SignupRestaurants />} />
           <Route path="/signup/restaurant/owner" element={<SignupRestOwner />} />
+          <Route path="/restaurant-dashboard" element={<RestaurantDashboard />} />
+          {/* Add a placeholder route for requester dashboard if it doesn't exist yet */}
+          <Route path="/requester-dashboard" element={<Home />} />
         </Routes>
       </main>
       {!isAuthRoute && <Footer />}
