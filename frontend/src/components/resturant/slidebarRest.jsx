@@ -20,9 +20,7 @@ const menuItems = [
   { id: 'reports', label: 'Reports', icon: BarChart3 },
 ];
 
-const SidebarRest = () => {
-  const [activeItem, setActiveItem] = useState('dashboard');
-
+const SidebarRest = ({ activeItem, setActiveItem }) => {
   return (
     <aside className="fixed left-0 top-0 h-full w-64 bg-[#1F5E2A] rounded-r-3xl shadow-xl flex flex-col z-20 transition-all duration-300">
       <div className="p-6 pb-8 border-b border-white/10">
