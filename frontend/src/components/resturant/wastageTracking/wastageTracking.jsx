@@ -1,104 +1,147 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Trash2, BarChart3, Calendar, DollarSign, Plus } from 'lucide-react';
+﻿import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { PlusCircle, Leaf, Trash2 } from 'lucide-react';
 import AddWasted from './addWasted';
-import ReportWasted from './reportWasted';
-import CalendarWasted from './calendarWasted';
+
+const getEmoji = (name) => {
+  const lowerName = name.toLowerCase();
+  if (lowerName.includes('rice')) return "🍛";
+  if (lowerName.includes('chicken') || lowerName.includes('meat')) return "🍗";
+  if (lowerName.includes('salad') || lowerName.includes('veg')) return "🥗";
+  if (lowerName.includes('bread') || lowerName.includes('bun')) return "🍞";
+  if (lowerName.includes('curry')) return "🍲";
+  return "🍽️";
+};
 
 const WastageTracking = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [logs, setLogs] = useState([
+    { id: 1, foodName: "Rice", quantity: 3, unit: "kg", reason: "Overcooked" },
+    { id: 2, foodName: "Rice", quantity: 2, unit: "kg", reason: "Expired" },
+    { id: 3, foodName: "Bread", quantity: 6, unit: "units", reason: "Expired" },
+    { id: 4, foodName: "Bread", quantity: 4, unit: "units", reason: "Customer leftovers" },
+  ]);
 
-  const summaryCards = [
-    { title: "Today's Wastage", value: "7 kg", sub: "2 items recorded", icon: Trash2, color: "text-[#E9A38E]", bg: "bg-[#E9A38E]/10" },
-    { title: "Weekly Wastage", value: "122 kg", sub: "↓ 12% vs last week", icon: BarChart3, color: "text-[#9BC7D8]", bg: "bg-[#9BC7D8]/10" },
-    { title: "Monthly Wastage", value: "382 kg", sub: "-18 kg under target", icon: Calendar, color: "text-[#C8E66A]", bg: "bg-[#A7D63B]/20" },
-    { title: "Estimated Loss", value: "LKR 47.5k", sub: "↑ 5% vs last month", icon: DollarSign, color: "text-[#D67A5C]", bg: "bg-[#D67A5C]/10" }
-  ];
+  const handleAddLog = (newLog) => {
+    setLogs([{ ...newLog, id: Date.now() }, ...logs]);
+  };
+
+  const handleDelete = (id) => {
+    setLogs(logs.filter(log => log.id !== id));
+  };
+
+  const groupedLogs = logs.reduce((acc, log) => {
+    if (!acc[log.foodName]) {
+      acc[log.foodName] = { 
+        items: [], 
+        total: 0, 
+        unit: log.unit 
+      };
+    }
+    acc[log.foodName].items.push(log);
+    acc[log.foodName].total += Number(log.quantity);
+    return acc;
+  }, {});
 
   return (
-    <div className="bg-[#F8F8F6] min-h-screen p-6 font-sans pb-24">
-      {/* Header */}
-      <motion.div 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4"
-      >
-        <div>
-          <h1 className="text-3xl font-bold text-[#1F5E2A] flex items-center gap-3">
-            Wastage Tracking ♻️
-          </h1>
-          <p className="text-gray-600 mt-1">Monitor, analyze, and reduce food waste efficiently.</p>
-        </div>
-        <motion.button 
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={() => setIsAddModalOpen(true)}
-          className="bg-[#D67A5C] text-white px-6 py-3 rounded-xl font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2"
+    <div className="bg-[#F8F8F6] min-h-screen p-6 font-sans pb-24 relative overflow-hidden">
+      <div className="max-w-3xl mx-auto relative z-10">
+        {/* Header */}
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex justify-between items-center mb-8 pt-4"
         >
-          <Plus size={20} /> Add Wastage
-        </motion.button>
-      </motion.div>
-
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {summaryCards.map((card, idx) => (
-          <motion.div
-            key={idx}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.1 }}
-            className="bg-white rounded-2xl p-6 shadow-sm border border-[#D8C3A5]/30 hover:shadow-md transition-shadow relative overflow-hidden group"
+          <div>
+            <h1 className="text-3xl font-extrabold text-[#1F5E2A] flex items-center gap-2">
+              Today's Wastage ♻️
+            </h1>
+            <p className="text-gray-500 mt-1">Track and reduce daily food waste</p>
+          </div>
+          
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setIsAddModalOpen(true)}
+            className="bg-[#D67A5C] text-white px-6 py-3 rounded-2xl font-bold shadow-lg hover:bg-[#E9A38E] transition flex items-center gap-2"
           >
-            <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full ${card.bg} opacity-50 group-hover:scale-150 transition-transform duration-500`}></div>
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${card.bg} ${card.color} relative z-10`}>
-              <card.icon size={24} />
-            </div>
-            <h3 className="text-gray-500 font-medium text-sm mb-1 relative z-10">{card.title}</h3>
-            <div className="flex items-baseline gap-2 relative z-10">
-              <p className="text-3xl font-black text-[#1F5E2A]">{card.value}</p>
-            </div>
-            <p className={`text-xs font-semibold mt-2 relative z-10 ${card.sub.includes('↓') || card.sub.includes('under') ? 'text-green-600' : card.sub.includes('↑') ? 'text-red-500' : 'text-gray-400'}`}>
-              {card.sub}
-            </p>
+            <PlusCircle size={20} /> <span className="hidden sm:inline">Add Wastage</span>
+          </motion.button>
+        </motion.div>
+
+        {/* List Content */}
+        {logs.length === 0 ? (
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center text-gray-400 mt-16 p-10 bg-white/50 rounded-3xl border border-dashed border-[#D8C3A5]"
+          >
+            <Leaf size={48} className="mx-auto mb-4 text-[#A7D63B] opacity-50" />
+            <p className="text-xl font-semibold text-[#1F5E2A]">No wastage recorded today 🌿</p>
+            <p className="text-md mt-2">Great job! Keep reducing food waste.</p>
           </motion.div>
-        ))}
+        ) : (
+          <div className="space-y-6">
+            <AnimatePresence>
+              {Object.entries(groupedLogs).map(([foodName, group]) => (
+                <motion.div 
+                  layout
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  key={foodName}
+                  className="bg-white rounded-2xl shadow-sm p-6 border border-gray-100 hover:shadow-md transition group"
+                >
+                  <div className="flex justify-between items-center mb-4 border-b border-gray-50 pb-3">
+                    <h2 className="text-xl font-bold text-[#1F5E2A] flex items-center gap-2">
+                      <span className="text-2xl">{getEmoji(foodName)}</span> {foodName}
+                    </h2>
+                    <div className="text-sm font-semibold text-[#D67A5C] bg-[#D67A5C]/10 px-3 py-1 rounded-lg">
+                      Total: {group.total} {group.unit}
+                    </div>
+                  </div>
+
+                  <div className="mt-3 space-y-2">
+                    {group.items.map((item) => (
+                      <motion.div 
+                        key={item.id}
+                        whileHover={{ x: 4 }}
+                        className="flex justify-between items-center bg-[#F8F8F6] px-4 py-3 rounded-xl group/item"
+                      >
+                        <span className="text-sm text-gray-600 font-medium flex items-center gap-2">
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#A7D63B]"></span>
+                          {item.reason}
+                        </span>
+                        <div className="flex items-center gap-4">
+                          <span className="text-sm font-bold text-[#1F5E2A]">
+                            {item.quantity} {item.unit}
+                          </span>
+                          <button 
+                            onClick={() => handleDelete(item.id)}
+                            className="text-gray-400 hover:text-red-500 transition opacity-0 group-hover/item:opacity-100"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
       </div>
 
-      {/* Main Content Area */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        
-        {/* Reports & Charts (Takes up 2 columns on extra large screens) */}
-        <div className="xl:col-span-2">
-           <ReportWasted />
-        </div>
-
-        {/* Calendar Side Panel */}
-        <div className="xl:col-span-1">
-           <CalendarWasted />
-           
-           {/* Gamification Idea Widget */}
-           <motion.div 
-             initial={{ opacity: 0, scale: 0.9 }}
-             animate={{ opacity: 1, scale: 1 }}
-             transition={{ delay: 0.5 }}
-             className="mt-6 bg-[#A7D63B] text-[#1F5E2A] p-6 rounded-2xl shadow-sm border border-[#1F5E2A]/10 relative overflow-hidden"
-           >
-              <div className="absolute right-0 top-0 w-32 h-32 bg-white/20 rounded-bl-full"></div>
-              <h4 className="font-bold text-lg mb-2 relative z-10">Eco Warrior Status</h4>
-              <p className="text-sm font-medium opacity-90 relative z-10">You've successfully diverted 45kg of food from landfills this month by donating leftovers!</p>
-              
-              <div className="mt-4 bg-white/30 rounded-full h-2 w-full relative z-10">
-                 <div className="bg-[#1F5E2A] h-2 rounded-full w-[70%]"></div>
-              </div>
-              <p className="text-xs font-bold mt-2 text-right relative z-10">70% to Next Goal</p>
-           </motion.div>
-        </div>
-
-      </div>
-
-      {/* Modals */}
-      <AddWasted isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
-
+      <AnimatePresence>
+        {isAddModalOpen && (
+          <AddWasted 
+            isOpen={isAddModalOpen} 
+            onClose={() => setIsAddModalOpen(false)} 
+            onSave={handleAddLog}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };
