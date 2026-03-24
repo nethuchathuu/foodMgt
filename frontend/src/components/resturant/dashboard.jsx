@@ -4,8 +4,7 @@ import SidebarRest from './slidebarRest';
 import MainContentRest from './dashboard/mainContentRest';
 import FoodListing from './foodListing/foodListing';
 import FoodOrders from './foodOrders/foodOrders';
-import DonationRequests from './donationRequests/donationRequests';
-
+import DonationRequests from './donationRequests/donationRequests';import WastageTracking from './wastageTracking/wastageTracking.jsx';
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState('dashboard');
 
@@ -25,6 +24,7 @@ const Dashboard = () => {
           {activeTab === 'listings' && <FoodListing />}
           {activeTab === 'orders' && <FoodOrders />}
           {activeTab === 'donations' && <DonationRequests />}
+          {activeTab === 'wastage' && <WastageTracking />}
         </div>
       </div>
     </div>
