@@ -1,23 +1,23 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { 
-  LayoutDashboard, 
-  Utensils, 
-  ShoppingCart, 
-  Heart, 
-  Trash2, 
-  DollarSign, 
-  BarChart3,
+  LayoutDashboard,
+  Utensils,
+  ShoppingCart,
+  Heart,
+  Trash2,
+  DollarSign,
+  Package,
   Leaf
 } from 'lucide-react';
 
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { id: 'inventory', label: 'Inventory', icon: Package },
   { id: 'listings', label: 'Food Listings', icon: Utensils },
   { id: 'orders', label: 'Food Orders', icon: ShoppingCart },
   { id: 'donations', label: 'Donation Requests', icon: Heart },
   { id: 'wastage', label: 'Wastage Tracking', icon: Trash2 },
   { id: 'loss', label: 'Financial Loss', icon: DollarSign },
-  { id: 'reports', label: 'Reports', icon: BarChart3 },
 ];
 
 const SidebarRest = ({ activeItem, setActiveItem }) => {
@@ -37,14 +37,14 @@ const SidebarRest = ({ activeItem, setActiveItem }) => {
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = activeItem === item.id;
-          
+
           return (
             <button
               key={item.id}
               onClick={() => setActiveItem(item.id)}
               className={`flex items-center gap-4 px-4 py-3 rounded-xl w-full transition-all duration-300 group ${
-                isActive 
-                  ? 'bg-[#A7D63B] text-[#1F5E2A] shadow-md' 
+                isActive
+                  ? 'bg-[#A7D63B] text-[#1F5E2A] shadow-md'
                   : 'text-white/80 hover:bg-white/10 hover:text-white'
               }`}
             >
