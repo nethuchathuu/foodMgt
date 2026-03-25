@@ -153,16 +153,8 @@ export default function DetailsOrder() {
               </div>
 
               {/* Actions Section */}
-              <div className="pt-6 border-t border-gray-100 flex flex-col sm:flex-row gap-4 justify-end">
-                <Link 
-                  to="/receiver/orders"
-                  className="px-6 py-3 rounded-xl font-bold transition-all text-center"
-                  style={{ backgroundColor: '#D8C3A5', color: '#1F5E2A' }}
-                >
-                  Back to Orders
-                </Link>
-                
-                {order.status === 'Accepted' && (
+              {order.status === 'Accepted' && (
+                <div className="pt-6 border-t border-gray-100 flex flex-col sm:flex-row gap-4 justify-end">
                   <button 
                     className="px-6 py-3 rounded-xl font-bold text-white shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
                     style={{ backgroundColor: '#E9A38E' }}
@@ -170,8 +162,8 @@ export default function DetailsOrder() {
                     <CheckCircle className="w-5 h-5" />
                     Confirm Received
                   </button>
-                )}
-              </div>
+                </div>
+              )}
 
             </div>
           </div>
