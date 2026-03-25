@@ -16,12 +16,12 @@ const Form = () => {
 
     // Hardcoded mock credentials
     const restaurantUser = { email: 'restaurant@test.com', password: 'password123' };
-    const requesterUser = { email: 'requester@test.com', password: 'password123' };
+    const requesterUser = { email: 'requester@test.com', password: 'password123..' };
 
     if (email === restaurantUser.email && password === restaurantUser.password) {
       navigate('/restaurant-dashboard');
     } else if (email === requesterUser.email && password === requesterUser.password) {
-      navigate('/requester-dashboard'); // Or wherever the requester dash is mapped
+      navigate('/receiver/home');
     } else {
       setError('Invalid email or password. Please use standard mock credentials.');
     }
@@ -34,7 +34,7 @@ const Form = () => {
         <p className='text-gray-500 mt-2'>Sign in to continue</p>
         <div className="mt-2 text-xs text-gray-400 bg-gray-50 p-2 rounded">
           <p><strong>Restaurant:</strong> restaurant@test.com / password123</p>
-          <p><strong>Requester:</strong> requester@test.com / password123</p>
+          <p><strong>Requester:</strong> requester@test.com / password123..</p>
         </div>
       </div>
 
