@@ -17,6 +17,9 @@ import SignupRestOwner from './components/signup/signupRestaurants/signupRestOwn
 import Signin from './components/signin/signin';
 import RestaurantDashboard from './components/resturant/dashboard';
 import ReceiverDashboard from './components/receiver/home';
+import BrowseFood from './components/receiver/browseFood/browseFood';
+import DisplayFood from './components/receiver/browseFood/displayFood';
+import OrderFood from './components/receiver/orderFood/orderFood';
 import './index.css';
 
 const AppLayout = () => {
@@ -43,7 +46,16 @@ const AppLayout = () => {
           <Route path="/signup/restaurant" element={<SignupRestaurants />} />
           <Route path="/signup/restaurant/owner" element={<SignupRestOwner />} />
           <Route path="/restaurant-dashboard" element={<RestaurantDashboard />} />
+          
+          {/* Receiver Routes */}
+          <Route path="/receiver/home" element={<ReceiverDashboard />} />
+          <Route path="/receiver/foods" element={<BrowseFood />} />
+          <Route path="/receiver/food/:id" element={<DisplayFood />} />
+          <Route path="/receiver/order/:id" element={<OrderFood />} />
+          
+          {/* Default receiver route to home */}
           <Route path="/receiver/*" element={<ReceiverDashboard />} />
+          
           {/* Add a placeholder route for requester dashboard if it doesn't exist yet */}
           <Route path="/requester-dashboard" element={<Home />} />
         </Routes>
