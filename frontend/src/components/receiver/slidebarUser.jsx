@@ -9,7 +9,7 @@ const navItems = [
       { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/receiver/home' },
       { id: 'browseFood', label: 'Browse Food', icon: Utensils, path: '/receiver/foods' },
       { id: 'orders', label: 'My Orders', icon: ShoppingBag, path: '/receiver/orders' },
-      { id: 'myRequests', label: 'My Requests', icon: ClipboardList, path: '/receiver/my-requests' },
+      { id: 'myRequests', label: 'My Requests', icon: ClipboardList, path: '/receiver/requests' },
     ]
   },
   
