@@ -4,28 +4,15 @@ import { NavLink } from 'react-router-dom';
 
 const navItems = [
   {
-    section: 'Main Menu',
+    
     items: [
       { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, path: '/receiver/home' },
       { id: 'browseFood', label: 'Browse Food', icon: Utensils, path: '/receiver/foods' },
       { id: 'orders', label: 'My Orders', icon: ShoppingBag, path: '/receiver/orders' },
-      { id: 'requestDonation', label: 'Request Donation', icon: HandHeart, path: '/receiver/request' },
-    ]
-  },
-  {
-    section: 'Activity',
-    items: [
       { id: 'myRequests', label: 'My Requests', icon: ClipboardList, path: '/receiver/my-requests' },
-      { id: 'history', label: 'History', icon: History, path: '/receiver/history' },
     ]
   },
-  {
-    section: 'Account',
-    items: [
-      { id: 'profile', label: 'Profile', icon: User, path: '/receiver/profile' },
-      { id: 'settings', label: 'Settings', icon: Settings, path: '/receiver/settings' },
-    ]
-  }
+  
 ];
 
 export default function SidebarUser() {

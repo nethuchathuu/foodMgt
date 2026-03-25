@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, Heart } from 'lucide-react';
 import SidebarUser from '../slidebarUser';
 import NavbarUser from '../navbarUser';
 import AvailableFood from './availableFood';
@@ -13,6 +13,7 @@ const mockFoods = [
     location: 'Colombo',
     quantity: 5,
     expiresIn: '2 hours',
+    donationEnabled: true,
     image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80',
   },
   {
@@ -23,6 +24,7 @@ const mockFoods = [
     location: 'Nearby',
     quantity: 12,
     expiresIn: '4 hours',
+    donationEnabled: false,
     image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80',
   },
   {
@@ -33,6 +35,7 @@ const mockFoods = [
     location: 'Colombo',
     quantity: 8,
     expiresIn: '1 day',
+    donationEnabled: true,
     image: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80',
   },
 ];
@@ -42,14 +45,16 @@ const categories = ["All", "Rice", "Bakery", "Drinks", "Snacks"];
 export default function BrowseFood() {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
+  const [donationOnly, setDonationOnly] = useState(false);
 
   // Filter functionality
   const filteredFoods = mockFoods.filter(food => {
     const matchesSearch = food.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           food.restaurant.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = activeCategory === 'All' || food.category === activeCategory;
+    const matchesDonation = donationOnly ? food.donationEnabled : true;
     
-    return matchesSearch && matchesCategory;
+    return matchesSearch && matchesCategory && matchesDonation;
   });
 
   return (
@@ -86,10 +91,10 @@ export default function BrowseFood() {
               </div>
 
               {/* Filters */}
-              <div className="flex flex-col md:flex-row gap-6">
+              <div className="flex flex-col md:flex-row gap-6 items-start md:items-end">
                 
                 {/* Category Filter */}
-                <div>
+                <div className="flex-1">
                   <h3 className="text-sm font-bold mb-3 uppercase tracking-wider text-gray-500">Category</h3>
                   <div className="flex flex-wrap gap-2">
                     {categories.map(cat => (
@@ -107,6 +112,22 @@ export default function BrowseFood() {
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* Donation Filter */}
+                <div className="mb-2">
+                  <button
+                    onClick={() => setDonationOnly(!donationOnly)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors border shadow-sm"
+                    style={{
+                      backgroundColor: donationOnly ? '#1F5E2A' : '#FFFFFF',
+                      color: donationOnly ? '#FFFFFF' : '#1F5E2A',
+                      borderColor: '#1F5E2A'
+                    }}
+                  >
+                    <Heart className="h-4 w-4" fill={donationOnly ? "#FFFFFF" : "none"} />
+                    Donation Available Only
+                  </button>
                 </div>
 
               </div>
