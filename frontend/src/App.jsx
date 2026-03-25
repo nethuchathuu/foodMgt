@@ -20,6 +20,8 @@ import ReceiverDashboard from './components/receiver/home';
 import BrowseFood from './components/receiver/browseFood/browseFood';
 import DisplayFood from './components/receiver/browseFood/displayFood';
 import OrderFood from './components/receiver/browseFood/orderFood';
+import MyOrders from './components/receiver/myOrders/myOrders';
+import DetailsOrder from './components/receiver/myOrders/detailsOrder';
 import './index.css';
 
 const AppLayout = () => {
@@ -52,6 +54,8 @@ const AppLayout = () => {
           <Route path="/receiver/foods" element={<BrowseFood />} />
           <Route path="/receiver/food/:id" element={<DisplayFood />} />
           <Route path="/receiver/order/:id" element={<OrderFood />} />
+          <Route path="/receiver/orders" element={<MyOrders />} />
+          <Route path="/receiver/orders/:id" element={<DetailsOrder />} />
           
           {/* Default receiver route to home */}
           <Route path="/receiver/*" element={<ReceiverDashboard />} />
