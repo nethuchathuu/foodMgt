@@ -19,7 +19,7 @@ import RestaurantDashboard from './components/resturant/dashboard';
 import ReceiverDashboard from './components/receiver/home';
 import BrowseFood from './components/receiver/browseFood/browseFood';
 import DisplayFood from './components/receiver/browseFood/displayFood';
-import OrderFood from './components/receiver/orderFood/orderFood';
+import OrderFood from './components/receiver/browseFood/orderFood';
 import './index.css';
 
 const AppLayout = () => {
