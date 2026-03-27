@@ -16,7 +16,7 @@ const SlidebarAdmin = () => {
     { name: 'Restaurant Approvals', icon: Store, route: '/admin/restaurants', highlight: true },
     { name: 'Organization Approvals', icon: Building, route: '/admin/organizations', highlight: true },
     { name: 'Users', icon: Users, route: '/admin/users' },
-    { name: 'Food Listings', icon: Utensils, route: '/admin/foods' },
+    { name: 'Food Listings', icon: Utensils, route: '/admin/food-listings' },
     { name: 'Orders', icon: ShoppingCart, route: '/admin/orders' },
     { name: 'Donations', icon: HeartHandshake, route: '/admin/donations' }
   ];

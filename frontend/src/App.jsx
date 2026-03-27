@@ -22,6 +22,14 @@ import RestApprovel from './components/admin/restApprovel/restapprovel';
 import ViewRestDetails from './components/admin/restApprovel/viewRestDetails';
 import OrgApprovel from './components/admin/orgApprovel/orgapprovel';
 import ViewOrgDetails from './components/admin/orgApprovel/viewOrgDetails';
+import UserManagement from './components/admin/userManagement/userManagement';
+import ViewUserDetails from './components/admin/userManagement/viewUserDetails';
+import FoodListing from './components/admin/foodListing/foodListing';
+import ViewFoodDetails from './components/admin/foodListing/viewFoodDetails';
+import OrderMonitoring from './components/admin/orderMonitoring/orderMonitoring';
+import ViewOrderDetails from './components/admin/orderMonitoring/viewOrderDetails';
+import Donation from './components/admin/donation/donation';
+import ViewDonation from './components/admin/donation/viewDonation';
 import RestaurantDashboard from './components/resturant/dashboard';
 import ReceiverDashboard from './components/receiver/home';
 import BrowseFood from './components/receiver/browseFood/browseFood';
@@ -67,12 +75,16 @@ const AppLayout = () => {
             <Route path="restaurants/:id" element={<ViewRestDetails />} />
             <Route path="organizations" element={<OrgApprovel />} />
             <Route path="organizations/:id" element={<ViewOrgDetails />} />
-            <Route path="users" element={<div>Users Content</div>} />
-            <Route path="foods" element={<div>Foods Content</div>} />
-            <Route path="orders" element={<div>Orders Content</div>} />
-            <Route path="donations" element={<div>Donations Content</div>} />
+            <Route path="users" element={<UserManagement />} />
+            <Route path="users/:id" element={<ViewUserDetails />} />
+            <Route path="food-listings" element={<FoodListing />} />
+            <Route path="food-listings/:id" element={<ViewFoodDetails />} />
+            <Route path="orders" element={<OrderMonitoring />} />
+            <Route path="orders/:id" element={<ViewOrderDetails />} />
+            <Route path="donations" element={<Donation />} />
+            <Route path="donations/:id" element={<ViewDonation />} />
           </Route>
-          
+
           {/* Receiver Routes */}
           <Route path="/receiver/home" element={<ReceiverDashboard />} />
           <Route path="/receiver/foods" element={<BrowseFood />} />
