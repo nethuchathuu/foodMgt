@@ -20,6 +20,8 @@ import Admin from './components/admin/admin';
 import Dashboard from './components/admin/dashboard/dashboard';
 import RestApprovel from './components/admin/restApprovel/restapprovel';
 import ViewRestDetails from './components/admin/restApprovel/viewRestDetails';
+import OrgApprovel from './components/admin/orgApprovel/orgapprovel';
+import ViewOrgDetails from './components/admin/orgApprovel/viewOrgDetails';
 import RestaurantDashboard from './components/resturant/dashboard';
 import ReceiverDashboard from './components/receiver/home';
 import BrowseFood from './components/receiver/browseFood/browseFood';
@@ -63,7 +65,8 @@ const AppLayout = () => {
             <Route path="dashboard" element={<Dashboard />} />
             <Route path="restaurants" element={<RestApprovel />} />
             <Route path="restaurants/:id" element={<ViewRestDetails />} />
-            <Route path="organizations" element={<div>Organizations Content</div>} />
+            <Route path="organizations" element={<OrgApprovel />} />
+            <Route path="organizations/:id" element={<ViewOrgDetails />} />
             <Route path="users" element={<div>Users Content</div>} />
             <Route path="foods" element={<div>Foods Content</div>} />
             <Route path="orders" element={<div>Orders Content</div>} />
