@@ -1,13 +1,42 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const SignupAfter = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleSignup = async (e) => {
+    e.preventDefault();
+    setError('');
+
+    const name = location.state?.name || 'User';
+    const role = location.state?.role || 'requester'; // default
+
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password, role })
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        navigate('/signin');
+      } else {
+        setError(data.message || 'Registration failed');
+      }
+    } catch (err) {
+      setError('Server error.');
+    }
+  };
 
   // Simple password strength calculator
   const calculateStrength = (pass) => {
@@ -44,7 +73,8 @@ const SignupAfter = () => {
           <p className="text-gray-500 mt-2">Secure your account to start using FoodShare</p>
         </div>
 
-        <form className="space-y-5 mt-6" onSubmit={(e) => e.preventDefault()}>
+        <form className="space-y-5 mt-6" onSubmit={handleSignup}>
+          {error && <div className="text-red-500 text-sm text-center font-medium">{error}</div>}
           {/* Email Field */}
           <div className="space-y-1">
             <label className="text-sm font-semibold text-[#1F5E2A] ml-1">Email Address</label>
@@ -54,8 +84,11 @@ const SignupAfter = () => {
               </div>
               <input 
                 type="email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email" 
                 className="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#A7D63B] hover:border-[#A7D63B] outline-none transition text-gray-800"
+                required
               />
             </div>
           </div>
@@ -125,9 +158,9 @@ const SignupAfter = () => {
           {/* Actions */}
           <div className="pt-2">
             <motion.button
+              type="submit"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => navigate('/home')}
               className="w-full py-3 rounded-xl font-bold bg-[#A7D63B] text-[#1F5E2A] shadow-lg hover:bg-[#C8E66A] transition-all duration-300"
             >
               Sign Up

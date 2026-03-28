@@ -10,20 +10,35 @@ const Form = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
 
-    // Hardcoded mock credentials
-    const restaurantUser = { email: 'restaurant@test.com', password: 'password123' };
-    const requesterUser = { email: 'requester@test.com', password: 'password123..' };
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
 
-    if (email === restaurantUser.email && password === restaurantUser.password) {
-      navigate('/restaurant-dashboard');
-    } else if (email === requesterUser.email && password === requesterUser.password) {
-      navigate('/receiver/home');
-    } else {
-      setError('Invalid email or password. Please use standard mock credentials.');
+      const data = await response.json();
+
+      if (response.ok) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        if (data.user.role === 'restaurant') {
+          navigate('/restaurant-dashboard');
+        } else if (data.user.role === 'requester') {
+          navigate('/receiver/home');
+        } else if (data.user.role === 'admin') {
+          navigate('/admin');
+        }
+      } else {
+        setError(data.message || 'Invalid email or password.');
+      }
+    } catch (err) {
+      setError('Server error. Please try again later.');
     }
   };
 
@@ -32,10 +47,6 @@ const Form = () => {
       <div className='text-center mb-6'>
         <h2 className='text-3xl font-extrabold text-[#1F5E2A]'>Welcome Back</h2>
         <p className='text-gray-500 mt-2'>Sign in to continue</p>
-        <div className="mt-2 text-xs text-gray-400 bg-gray-50 p-2 rounded">
-          <p><strong>Restaurant:</strong> restaurant@test.com / password123</p>
-          <p><strong>Requester:</strong> requester@test.com / password123..</p>
-        </div>
       </div>
 
       <form className='space-y-5' onSubmit={handleLogin}>

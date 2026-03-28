@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, Building2, MapPin, FileText, Mail, Phone, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const InputField = ({ label, icon: Icon, type = "text", placeholder, fullWidth = false, isActive, onFocus, onBlur }) => {
+const InputField = ({ label, icon: Icon, type = "text", placeholder, fullWidth = false, isActive, onFocus, onBlur, value, onChange }) => {
   return (
     <div className={`flex flex-col mb-4 relative ${fullWidth ? 'col-span-1 md:col-span-2' : ''}`}>
       <label className="text-sm font-semibold text-[#1F5E2A] mb-2 pl-1">{label}</label>
@@ -15,6 +15,8 @@ const InputField = ({ label, icon: Icon, type = "text", placeholder, fullWidth =
           <textarea 
             className="w-full bg-transparent py-3 pr-4 outline-none text-[#1F5E2A] placeholder-[#D8C3A5] resize-none h-24"
             placeholder={placeholder}
+            value={value}
+            onChange={onChange}
             onFocus={onFocus}
             onBlur={onBlur} 
           />
@@ -23,6 +25,8 @@ const InputField = ({ label, icon: Icon, type = "text", placeholder, fullWidth =
             type={type} 
             className="w-full bg-transparent py-3 pr-4 outline-none text-[#1F5E2A] placeholder-[#D8C3A5]"
             placeholder={placeholder}
+            value={value}
+            onChange={onChange}
             onFocus={onFocus}
             onBlur={onBlur}
           />
@@ -46,7 +50,12 @@ const InputField = ({ label, icon: Icon, type = "text", placeholder, fullWidth =
 
 const SignupOrgRight = () => {
   const [activeInput, setActiveInput] = useState(null);
+  const [orgName, setOrgName] = useState('');
   const navigate = useNavigate();
+
+  const handleNext = () => {
+    navigate('/signup-org-guardian', { state: { name: orgName || 'Organization', role: 'requester' } });
+  };
 
   return (
     <div className="flex flex-col bg-white overflow-y-auto w-full md:w-7/12 h-full relative z-10 p-8 md:p-12">
@@ -81,8 +90,8 @@ const SignupOrgRight = () => {
                 label="Organization Name" 
                 icon={Building2} 
                 placeholder="Enter organization name" 
-                fullWidth={true}
-                isActive={activeInput === "Organization Name"}
+                fullWidth={true}                value={orgName}
+                onChange={(e) => setOrgName(e.target.value)}                isActive={activeInput === "Organization Name"}
                 onFocus={() => setActiveInput("Organization Name")}
                 onBlur={() => setActiveInput(null)}
               />
@@ -138,7 +147,7 @@ const SignupOrgRight = () => {
 
               <motion.button
                 type="button"
-                onClick={() => navigate('/signup-org-guardian')}
+                onClick={handleNext}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="flex items-center bg-[#A7D63B] hover:bg-[#D67A5C] text-[#1F5E2A] hover:text-white px-8 py-4 rounded-xl font-bold shadow-md hover:shadow-lg transition-all duration-300"

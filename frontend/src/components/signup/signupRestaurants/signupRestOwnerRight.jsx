@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, User, MapPin, Calendar, CreditCard, Mail, Phone, CheckCircle2, Camera, Edit2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const InputField = ({ label, icon: Icon, type = "text", placeholder, fullWidth = false, isActive, onFocus, onBlur }) => {
+const InputField = ({ label, icon: Icon, type = "text", placeholder, fullWidth = false, isActive, onFocus, onBlur, value, onChange }) => {
   return (
     <div className={`flex flex-col mb-4 relative ${fullWidth ? 'col-span-1 md:col-span-2' : ''}`}>
       <label className="text-sm font-semibold text-[#1F5E2A] mb-2 pl-1">{label}</label>
@@ -15,6 +15,8 @@ const InputField = ({ label, icon: Icon, type = "text", placeholder, fullWidth =
           <textarea 
             className="w-full bg-transparent py-3 pr-4 outline-none text-[#1F5E2A] placeholder-[#D8C3A5] resize-none h-24"
             placeholder={placeholder}
+            value={value}
+            onChange={onChange}
             onFocus={onFocus}
             onBlur={onBlur} 
           />
@@ -23,6 +25,8 @@ const InputField = ({ label, icon: Icon, type = "text", placeholder, fullWidth =
             type={type} 
             className="w-full bg-transparent py-3 pr-4 outline-none text-[#1F5E2A] placeholder-[#D8C3A5]"
             placeholder={placeholder}
+            value={value}
+            onChange={onChange}
             onFocus={onFocus}
             onBlur={onBlur}
           />
@@ -48,6 +52,7 @@ const SignupRestOwnerRight = () => {
   const [activeInput, setActiveInput] = useState(null);
   const [selectedGender, setSelectedGender] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [ownerName, setOwnerName] = useState('');
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
@@ -56,6 +61,10 @@ const SignupRestOwnerRight = () => {
     if (file) {
       setImagePreview(URL.createObjectURL(file));
     }
+  };
+
+  const handleNext = () => {
+    navigate('/signup-after', { state: { name: ownerName || 'Restaurant Owner', role: 'restaurant' } });
   };
 
   return (
@@ -139,6 +148,8 @@ const SignupRestOwnerRight = () => {
                 icon={User} 
                 placeholder="Enter full name" 
                 fullWidth={true}
+                value={ownerName}
+                onChange={(e) => setOwnerName(e.target.value)}
                 isActive={activeInput === "Owner Name"}
                 onFocus={() => setActiveInput("Owner Name")}
                 onBlur={() => setActiveInput(null)}
@@ -227,7 +238,7 @@ const SignupRestOwnerRight = () => {
 
               <motion.button
                 type="button"
-                onClick={() => navigate('/signup/signupAfter')}
+                onClick={handleNext}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className="flex items-center bg-[#A7D63B] hover:bg-[#D67A5C] text-[#1F5E2A] hover:text-white px-8 py-4 rounded-xl font-bold shadow-md hover:shadow-lg transition-all duration-300"
