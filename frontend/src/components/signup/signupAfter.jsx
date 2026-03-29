@@ -21,18 +21,45 @@ const SignupAfter = () => {
     const profileData = location.state?.profileData || {};
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, role, profileData })
-      });
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('email', email);
+      formData.append('password', password);
+      formData.append('role', role);
 
-      const data = await response.json();
+      // Separate file properties out of regular JSON block
+      const documentsList = profileData.documents || [];
+      const profileImageFile = profileData.owner?.profilePicture;
+
+      // Clean profileData of raw File objects to prevent JSON stringify issues
+      const cleanProfile = { ...profileData };
+      delete cleanProfile.documents;
+      if (cleanProfile.owner && cleanProfile.owner.profilePicture) {
+        delete cleanProfile.owner.profilePicture;
+      }
+      formData.append('profileData', JSON.stringify(cleanProfile));
+
+      // Append files through Multer format
+      if (documentsList.length > 0) {
+        documentsList.forEach(file => {
+           formData.append('documents', file);
+        });
+      }
+      if (profileImageFile) {
+         formData.append('profileImage', profileImageFile);
+      }
+
+      const response = await fetch('http://localhost:5000/api/auth/register', { 
+        method: 'POST',
+        // Note: Do not set Content-Type mapping when using FormData (browser sets boundary automatically)
+        body: formData
+      });
 
       if (response.ok) {
         navigate('/signin');
       } else {
-        setError(data.message || 'Registration failed');
+        const errorData = await response.json();
+        setError(errorData.message || 'Signup failed');
       }
     } catch (err) {
       setError('Server error.');

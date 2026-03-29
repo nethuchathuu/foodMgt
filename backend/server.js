@@ -5,6 +5,8 @@ const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const { setupDefaultAdmin } = require('./controllers/adminController');
 
+const path = require('path');
+
 // Load env vars
 dotenv.config();
 
@@ -18,6 +20,8 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
+// Serve uploads folders statically so image URLs can be fetched by the frontend
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Routes
 app.use('/api/auth', authRoutes);

@@ -1,5 +1,12 @@
 const mongoose = require('mongoose');
 
+const DocumentSchema = new mongoose.Schema({
+  fileName: { type: String },
+  fileUrl: { type: String },
+  fileType: { type: String },
+  uploadedAt: { type: Date, default: Date.now }
+});
+
 const RestaurantSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -13,6 +20,7 @@ const RestaurantSchema = new mongoose.Schema({
   phoneNumber: { type: String },
   description: { type: String },
   mealTypes: [{ type: String }],
+  documents: [DocumentSchema],
   owner: {
     fullName: { type: String },
     homeAddress: { type: String },
@@ -20,7 +28,8 @@ const RestaurantSchema = new mongoose.Schema({
     nic: { type: String },
     gender: { type: String },
     email: { type: String },
-    contactNumber: { type: String }
+    contactNumber: { type: String },
+    profileImage: DocumentSchema
   }
 }, { timestamps: true });
 

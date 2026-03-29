@@ -1,5 +1,12 @@
 const mongoose = require('mongoose');
 
+const DocumentSchema = new mongoose.Schema({
+  fileName: { type: String },
+  fileUrl: { type: String },
+  fileType: { type: String },
+  uploadedAt: { type: Date, default: Date.now }
+});
+
 const OrganizationSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -16,7 +23,8 @@ const OrganizationSchema = new mongoose.Schema({
     gender: { type: String },
     nic: { type: String },
     email: { type: String },
-    phoneNumber: { type: String }
+    phoneNumber: { type: String },
+    profileImage: DocumentSchema
   }
 }, { timestamps: true });
 

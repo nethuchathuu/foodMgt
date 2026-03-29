@@ -19,7 +19,17 @@ const generateToken = (user) => {
 // ===============================
 exports.registerUser = async (req, res) => {
   try {
-    const { name, email, password, role, profileData } = req.body;
+    // When using Multer, JSON payloads from FormData might be in req.body or explicitly parsed
+    let { name, email, password, role, profileData } = req.body;
+    
+    if (typeof profileData === 'string') {
+       try {
+         profileData = JSON.parse(profileData);
+       } catch (e) {
+         console.warn("Failed to parse profileData string");
+         profileData = {};
+       }
+    }
 
     // Check existing user
     const existingUser = await User.findOne({ email });
@@ -69,9 +79,28 @@ exports.registerUser = async (req, res) => {
          restaurantEmail: profileData?.restaurantEmail || email,
          phoneNumber: profileData?.phoneNumber,
          description: profileData?.description,
-         mealTypes: profileData?.mealTypes || [],
-         owner: profileData?.owner || {}
+         mealTypes: profileData?.mealTypes ? JSON.parse(profileData.mealTypes) : [],
+         owner: profileData?.owner ? JSON.parse(profileData.owner) : {}
       };
+
+      // Handle Multer files tracking
+      if (req.files) {
+        if (req.files.documents) {
+          restaurantPayload.documents = req.files.documents.map(file => ({
+            fileName: file.originalname,
+            fileUrl: file.path.replace(/\\/g, '/'),
+            fileType: file.mimetype
+          }));
+        }
+        if (req.files.profileImage && req.files.profileImage[0]) {
+          const pImage = req.files.profileImage[0];
+          restaurantPayload.owner.profileImage = {
+            fileName: pImage.originalname,
+            fileUrl: pImage.path.replace(/\\/g, '/'),
+            fileType: pImage.mimetype
+          };
+        }
+      }
       
       // Prevent Mongoose CastError on empty Date strings
       if (restaurantPayload.owner && !restaurantPayload.owner.dob) {
