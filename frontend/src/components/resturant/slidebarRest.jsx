@@ -21,6 +21,9 @@ const menuItems = [
 ];
 
 const SidebarRest = ({ activeItem, setActiveItem }) => {
+  const userStr = localStorage.getItem('restaurantUser') || localStorage.getItem('user');
+  const user = userStr ? JSON.parse(userStr) : null;
+
   return (
     <aside className="fixed left-0 top-0 h-full w-64 bg-[#1F5E2A] rounded-r-3xl shadow-xl flex flex-col z-20 transition-all duration-300">
       <div className="p-6 pb-8 border-b border-white/10">
@@ -30,7 +33,7 @@ const SidebarRest = ({ activeItem, setActiveItem }) => {
           </div>
           <h1 className="text-2xl font-bold text-[#A7D63B]">FoodShare</h1>
         </div>
-        <p className="text-white text-sm opacity-80 ml-11">Hotel Name</p>
+        <p className="text-[#A7D63B] text-lg font-bold truncate ml-11">{user?.name || "Hotel Name"}</p>
       </div>
 
       <div className="flex-1 overflow-y-auto py-6 px-4 flex flex-col gap-2">

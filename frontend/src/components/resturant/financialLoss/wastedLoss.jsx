@@ -2,7 +2,7 @@
 import { motion } from 'framer-motion';
 
 const getEmoji = (name) => {
-  const lowerName = name.toLowerCase();
+  const lowerName = (name || '').toLowerCase();
   if (lowerName.includes('rice')) return "🍛";
   if (lowerName.includes('bread')) return "🍞";
   if (lowerName.includes('salad')) return "🥗";
@@ -23,7 +23,7 @@ const WastedLoss = ({ data }) => {
       <p className="text-gray-500 mb-4 ml-1">Money lost due to food being wasted directly.</p>
       {data.map((item) => (
         <motion.div 
-          key={item.id}
+          key={item.id || item._id}
           whileHover={{ y: -2 }}
           className="flex justify-between items-center bg-white p-5 rounded-2xl shadow-sm hover:shadow-md transition-all border border-gray-100"
         >

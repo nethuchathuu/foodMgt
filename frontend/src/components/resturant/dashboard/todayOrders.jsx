@@ -1,7 +1,7 @@
 import React from 'react';
 import { ShoppingCart } from 'lucide-react';
 
-const TodayOrders = () => {
+const TodayOrders = ({ data }) => {
   return (
     <div className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-md transition group">
       <div className="flex justify-between items-start mb-4">
@@ -13,7 +13,7 @@ const TodayOrders = () => {
       <div>
         <p className="text-sm font-medium text-gray-500 mb-1">Today's Orders</p>
         <div className="flex items-baseline gap-2">
-          <h4 className="text-3xl font-bold text-gray-800">45</h4>
+          <h4 className="text-3xl font-bold text-gray-800">{data || 0}</h4>
           <span className="text-sm text-gray-500">orders</span>
         </div>
         <div className="mt-2 flex gap-3 text-xs font-medium">

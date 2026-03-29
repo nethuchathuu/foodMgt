@@ -4,6 +4,9 @@ const cors = require('cors');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const inventoryRoutes = require('./routes/restaurentsRoutes/inventoryRoutes');
+const dashboardRoutes = require('./routes/restaurentsRoutes/dashboardRoutes');
+const foodListingRoutes = require('./routes/restaurentsRoutes/foodListingRoutes');
 const { setupDefaultAdmin } = require('./controllers/adminController');
 
 const path = require('path');
@@ -27,6 +30,9 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/inventory', inventoryRoutes);
+app.use('/api/restaurants', dashboardRoutes);
+app.use('/api/food-listings', foodListingRoutes);
 
 const PORT = process.env.PORT || 5000;
 

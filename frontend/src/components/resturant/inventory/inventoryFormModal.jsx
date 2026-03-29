@@ -3,21 +3,26 @@ import { motion } from 'framer-motion';
 
 const InventoryFormModal = ({ isOpen, onClose, onSave, initialData }) => {
   const [formData, setFormData] = useState({
-    foodName: '',
+    name: '',
     unit: 'kg',
     pricePerUnit: '',
-    priceType: 'Making Cost'
+    lossPrice: ''
   });
 
   useEffect(() => {
     if (initialData) {
-      setFormData(initialData);
+      setFormData({
+        name: initialData.name || initialData.foodName || '',
+        unit: initialData.unit || 'kg',
+        pricePerUnit: initialData.pricePerUnit || '',
+        lossPrice: initialData.lossPrice || ''
+      });
     } else {
       setFormData({
-        foodName: '',
+        name: '',
         unit: 'kg',
         pricePerUnit: '',
-        priceType: 'Making Cost'
+        lossPrice: ''
       });
     }
   }, [initialData, isOpen]);
@@ -29,12 +34,13 @@ const InventoryFormModal = ({ isOpen, onClose, onSave, initialData }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.foodName.trim() || !formData.pricePerUnit) return;
+    if (!formData.name.trim() || !formData.pricePerUnit || !formData.lossPrice) return;
     
     onSave({
       ...formData,
-      foodName: formData.foodName.trim(),
+      name: formData.name.trim(),
       pricePerUnit: Number(formData.pricePerUnit),
+      lossPrice: Number(formData.lossPrice),
     });
   };
 
@@ -60,8 +66,8 @@ const InventoryFormModal = ({ isOpen, onClose, onSave, initialData }) => {
             <label className="block text-sm font-semibold text-[#1F5E2A] mb-1">Food Name</label>
             <input 
               type="text" 
-              name="foodName"
-              value={formData.foodName}
+              name="name"
+              value={formData.name}
               onChange={handleChange}
               placeholder="e.g. Rice, Chicken, Bread" 
               className="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition bg-[#F8F8F6]/50"
@@ -109,19 +115,18 @@ const InventoryFormModal = ({ isOpen, onClose, onSave, initialData }) => {
 
           {/* Price Type */}
           <div>
-            <label className="block text-sm font-semibold text-[#1F5E2A] mb-1">Price Category</label>
-            <select 
-              name="priceType"
-              value={formData.priceType}
+            <label className="block text-sm font-semibold text-[#1F5E2A] mb-1">Loss Price</label>
+            <input 
+              type="number" 
+              name="lossPrice"
+              value={formData.lossPrice}
               onChange={handleChange}
-              className="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition bg-[#F8F8F6]/50 appearance-none"
+              placeholder="0.00"
+              min="0"
+              step="0.1"
+              className="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition bg-[#F8F8F6]/50 font-bold"
               required
-            >
-              <option value="Making Cost">Making Cost</option>
-              <option value="Actual Cost">Actual Cost</option>
-              <option value="Selling Price">Selling Price</option>
-              <option value="Loss Price">Loss Price</option>
-            </select>
+            />
           </div>
 
           {/* Buttons */}

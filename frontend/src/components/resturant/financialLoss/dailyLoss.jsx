@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 
 const getEmoji = (name) => {
-  const lowerName = name.toLowerCase();
+  const lowerName = (name || '').toLowerCase();
   if (lowerName.includes('rice')) return "🍛";
   if (lowerName.includes('bread')) return "🍞";
   if (lowerName.includes('salad')) return "🥗";

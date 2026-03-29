@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Search, Plus, Filter, LayoutGrid, List, Edit, Trash2, Settings, Tag } from 'lucide-react';
 import AddFoodRest from './addFoodRest';
 import EditFoodRest from './editFoodRest';
@@ -6,40 +7,8 @@ import DeleteFoodRest from './deleteFoodRest';
 import SetFoodRest from './setFoodRest';
 import MarkFoodRest from './markFoodRest';
 
-const mockFoods = [
-  {
-    id: 1,
-    name: "Grilled Chicken Salad",
-    originalPrice: 15.00,
-    discountPrice: 5.00,
-    quantity: 10,
-    expiryTime: "2 hours",
-    status: "Available",
-    image: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&q=80"
-  },
-  {
-    id: 2,
-    name: "Margherita Pizza",
-    originalPrice: 20.00,
-    discountPrice: 8.00,
-    quantity: 0,
-    expiryTime: "Expired",
-    status: "Sold Out",
-    image: "https://images.unsplash.com/photo-1574071318508-1cdbab80d002?w=500&q=80"
-  },
-  {
-    id: 3,
-    name: "Vegetable Biryani",
-    originalPrice: 12.00,
-    discountPrice: 4.00,
-    quantity: 5,
-    expiryTime: "1 hour",
-    status: "Available",
-    image: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=500&q=80"
-  }
-];
-
 const FoodListing = () => {
+  const [foods, setFoods] = useState([]);
   const [viewMode, setViewMode] = useState('card');
   const [searchTerm, setSearchTerm] = useState('');
   
@@ -49,6 +18,35 @@ const FoodListing = () => {
   const [deletingFood, setDeletingFood] = useState(null);
   const [settingFood, setSettingFood] = useState(null);
   const [markingFood, setMarkingFood] = useState(null);
+
+  const fetchFoods = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get('http://localhost:5000/api/food-listings', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setFoods(res.data);
+    } catch (err) {
+      console.error('Error fetching foods:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchFoods();
+  }, []);
+
+  const handleSuccess = () => {
+    fetchFoods();
+    setIsAddOpen(false);
+    setEditingFood(null);
+    setDeletingFood(null);
+    setSettingFood(null);
+    setMarkingFood(null);
+  };
+
+  const filteredFoods = foods.filter(food => 
+    food.foodName?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="p-6 bg-[#F8F8F6] min-h-screen">
@@ -105,12 +103,12 @@ const FoodListing = () => {
       {/* Food Grid / Table */}
       {viewMode === 'card' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {mockFoods.map(food => (
-            <div key={food.id} className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group">
+          {filteredFoods.map(food => (
+            <div key={food._id} className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group">
               <div className="relative h-48 overflow-hidden">
                 <img 
-                  src={food.image} 
-                  alt={food.name} 
+                  src={food.image || "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&q=80"} 
+                  alt={food.foodName} 
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
                 <div className={`absolute top-3 right-3 px-3 py-1 text-xs font-bold rounded-full ${food.status === 'Available' ? 'bg-[#A7D63B] text-[#1F5E2A]' : 'bg-[#D67A5C] text-white'}`}>
@@ -123,11 +121,11 @@ const FoodListing = () => {
                 )}
               </div>
               <div className="p-5">
-                <h3 className="font-bold text-lg text-gray-800 mb-1">{food.name}</h3>
+                <h3 className="font-bold text-lg text-gray-800 mb-1">{food.foodName}</h3>
                 <div className="flex justify-between items-end mb-4">
                   <div>
-                    <span className="text-xl font-black text-[#1F5E2A]">${food.discountPrice}</span>
-                    <span className="text-sm text-gray-400 line-through ml-2">${food.originalPrice}</span>
+                    <span className="text-xl font-black text-[#1F5E2A]">Rs. {food.discountPrice || food.price}</span>
+                    {food.discountPrice && <span className="text-sm text-gray-400 line-through ml-2">Rs. {food.price}</span>}
                   </div>
                   <div className="text-right">
                     <p className="text-xs text-gray-500">Qty: <span className="font-bold text-gray-700">{food.quantity}</span></p>
@@ -166,18 +164,18 @@ const FoodListing = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {mockFoods.map(food => (
-                <tr key={food.id} className="hover:bg-gray-50 transition">
+              {filteredFoods.map(food => (
+                <tr key={food._id} className="hover:bg-gray-50 transition">
                   <td className="px-6 py-4 flex items-center gap-3">
-                    <img src={food.image} alt={food.name} className="w-10 h-10 rounded-lg object-cover" />
+                    <img src={food.image || "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&q=80"} alt={food.foodName} className="w-10 h-10 rounded-lg object-cover" />
                     <div>
-                      <p className="font-bold text-gray-800">{food.name}</p>
+                      <p className="font-bold text-gray-800">{food.foodName}</p>
                       <p className="text-xs text-[#d67a5c]">{food.expiryTime}</p>
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="font-bold text-[#1F5E2A]">${food.discountPrice}</span>
-                    <span className="text-gray-400 line-through text-xs ml-2">${food.originalPrice}</span>
+                    <span className="font-bold text-[#1F5E2A]">Rs. {food.discountPrice || food.price}</span>
+                    {food.discountPrice && <span className="text-gray-400 line-through text-xs ml-2">Rs. {food.price}</span>}
                   </td>
                   <td className="px-6 py-4 font-medium text-gray-600">{food.quantity}</td>
                   <td className="px-6 py-4">
@@ -201,11 +199,11 @@ const FoodListing = () => {
       )}
 
       {/* Modals */}
-      {isAddOpen && <AddFoodRest onClose={() => setIsAddOpen(false)} />}
-      {editingFood && <EditFoodRest food={editingFood} onClose={() => setEditingFood(null)} />}
-      {deletingFood && <DeleteFoodRest food={deletingFood} onClose={() => setDeletingFood(null)} />}
-      {settingFood && <SetFoodRest food={settingFood} onClose={() => setSettingFood(null)} />}
-      {markingFood && <MarkFoodRest food={markingFood} onClose={() => setMarkingFood(null)} />}
+      {isAddOpen && <AddFoodRest onClose={() => setIsAddOpen(false)} onSuccess={handleSuccess} />}
+      {editingFood && <EditFoodRest food={editingFood} onClose={() => setEditingFood(null)} onSuccess={handleSuccess} />}
+      {deletingFood && <DeleteFoodRest food={deletingFood} onClose={() => setDeletingFood(null)} onSuccess={handleSuccess} />}
+      {settingFood && <SetFoodRest food={settingFood} onClose={() => setSettingFood(null)} onSuccess={handleSuccess} />}
+      {markingFood && <MarkFoodRest food={markingFood} onClose={() => setMarkingFood(null)} onSuccess={handleSuccess} />}
 
     </div>
   );

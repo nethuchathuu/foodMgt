@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import {
   LineChart,
   Line,
@@ -9,17 +10,23 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 
-const data = [
-  { time: '8 AM', orders: 12, sales: 150 },
-  { time: '10 AM', orders: 25, sales: 300 },
-  { time: '12 PM', orders: 45, sales: 600 },
-  { time: '2 PM', orders: 30, sales: 400 },
-  { time: '4 PM', orders: 15, sales: 200 },
-  { time: '6 PM', orders: 60, sales: 800 },
-  { time: '8 PM', orders: 50, sales: 700 },
-];
-
 const TodayChart = () => {
+  const [data, setData] = useState([]);
+
+  useEffect(() => {
+    const fetchChartData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get('http://localhost:5000/api/restaurants/today-chart', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setData(res.data);
+      } catch (err) {
+        console.error('Error fetching today chart data:', err);
+      }
+    };
+    fetchChartData();
+  }, []);
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition">
       <h3 className="text-lg font-semibold text-[#1F5E2A] mb-4">Today's Orders & Sales</h3>

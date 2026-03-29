@@ -1,7 +1,7 @@
 import React from 'react';
 import { Trash2 } from 'lucide-react';
 
-const TotalFoodWastage = () => {
+const TotalFoodWastage = ({ data }) => {
   return (
     <div className="bg-white rounded-2xl shadow-sm p-6 hover:shadow-md transition group">
       <div className="flex justify-between items-start mb-4">
@@ -13,8 +13,8 @@ const TotalFoodWastage = () => {
       <div>
         <p className="text-sm font-medium text-gray-500 mb-1">Total Food Wastage</p>
         <div className="flex items-baseline gap-2">
-          <h4 className="text-3xl font-bold text-gray-800">12.5</h4>
-          <span className="text-sm text-gray-500">kg</span>
+          <h4 className="text-3xl font-bold text-gray-800">{data || 0}</h4>
+          <span className="text-sm text-gray-500">kg/units</span>
         </div>
         <p className="text-xs text-red-500 font-medium mt-2 flex items-center gap-1">
           <span>+2.1kg</span>

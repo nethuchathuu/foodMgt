@@ -1,8 +1,59 @@
-import React from 'react';
-import { X } from 'lucide-react';
-import UploadFoodRest from './uploadFoodRest';
+import React, { useState } from 'react';
+import axios from 'axios';
+import { X, UploadCloud } from 'lucide-react';
+// Removing external UploadFoodRest if image url logic is direct, or we can handle file here.
+// In this case, we use a simple text input for URL for now to bypass image uploading complexities,
+// or we can implement real file upload based on how it's done elsewhere.
 
-const AddFoodRest = ({ onClose }) => {
+const AddFoodRest = ({ onClose, onSuccess }) => {
+  const [formData, setFormData] = useState({
+    foodName: '',
+    description: '',
+    price: '',
+    discountPrice: '',
+    quantity: '',
+    expiryTime: '',
+    foodImage: null
+  });
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value, files } = e.target;
+    if (name === 'foodImage') {
+      setFormData(prev => ({ ...prev, foodImage: files[0] }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      
+      const submitData = new FormData();
+      Object.keys(formData).forEach(key => {
+        if (formData[key] !== null) {
+          submitData.append(key, formData[key]);
+        }
+      });
+
+      await axios.post('http://localhost:5000/api/food-listings', submitData, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      if (onSuccess) onSuccess();
+    } catch (error) {
+      console.error('Error adding food:', error);
+      alert('Failed to add food');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4 animate-in slide-in-from-bottom-4 duration-300">
@@ -14,47 +65,72 @@ const AddFoodRest = ({ onClose }) => {
         </div>
 
         <div className="p-8">
-          <form className="space-y-6">
-            <UploadFoodRest />
-
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2 md:col-span-2">
                 <label className="text-sm font-semibold text-gray-700">Food Name</label>
-                <input type="text" placeholder="e.g. Grilled Chicken Salad" className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition" />
+                <input required name="foodName" value={formData.foodName} onChange={handleChange} type="text" placeholder="e.g. Grilled Chicken Salad" className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition" />
+              </div>
+
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-sm font-semibold text-gray-700">Food Image</label>
+                <div className="relative group w-full h-32 border-2 border-dashed border-gray-300 hover:border-[#A7D63B] rounded-xl flex flex-col items-center justify-center bg-gray-50 hover:bg-[#A7D63B]/5 transition-colors cursor-pointer overflow-hidden">
+                  {formData.foodImage ? (
+                    <div className="absolute inset-0 w-full h-full">
+                      <img src={URL.createObjectURL(formData.foodImage)} alt="Preview" className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <p className="text-white font-semibold flex items-center gap-2"><UploadCloud size={20} /> Change Image</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <UploadCloud className="w-8 h-8 text-gray-400 mx-auto mb-2 group-hover:text-[#A7D63B] transition-colors" />
+                      <span className="text-sm text-gray-500 font-medium group-hover:text-[#1F5E2A] transition-colors">Click to upload image</span>
+                      <p className="text-xs text-gray-400 mt-1">PNG, JPG, JPEG (Max. 5MB)</p>
+                    </div>
+                  )}
+                  <input 
+                    type="file" 
+                    name="foodImage" 
+                    accept="image/*" 
+                    onChange={handleChange} 
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+                  />
+                </div>
               </div>
 
               <div className="space-y-2 md:col-span-2">
                 <label className="text-sm font-semibold text-gray-700">Description</label>
-                <textarea rows="3" placeholder="Describe the food item..." className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition resize-none"></textarea>
+                <textarea name="description" value={formData.description} onChange={handleChange} rows="3" placeholder="Describe the food item..." className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition resize-none"></textarea>
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Original Price ($)</label>
-                <input type="number" placeholder="0.00" className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition" />
+                <label className="text-sm font-semibold text-gray-700">Original Price (Rs.)</label>
+                <input required name="price" value={formData.price} onChange={handleChange} type="number" placeholder="0.00" className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition" />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Discount Price ($)</label>
-                <input type="number" placeholder="0.00" className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition" />
+                <label className="text-sm font-semibold text-gray-700">Discount Price (Rs.)</label>
+                <input name="discountPrice" value={formData.discountPrice} onChange={handleChange} type="number" placeholder="0.00" className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition" />
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-700">Quantity</label>
-                <input type="number" placeholder="e.g. 5" className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition" />
+                <input required name="quantity" value={formData.quantity} onChange={handleChange} type="number" placeholder="e.g. 5" className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition" />
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-700">Expiry Time</label>
-                <input type="time" className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition text-gray-600" />
+                <input name="expiryTime" value={formData.expiryTime} onChange={handleChange} type="time" className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition text-gray-600" />
               </div>
             </div>
 
             <div className="pt-6 mt-6 border-t border-gray-100 flex gap-4">
-              <button type="button" onClick={onClose} className="px-6 py-3 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors w-full">
+              <button type="button" onClick={onClose} disabled={loading} className="px-6 py-3 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors w-full">
                 Cancel
               </button>
-              <button type="submit" className="bg-[#A7D63B] text-[#1F5E2A] w-full py-3 rounded-xl font-bold shadow-md hover:bg-[#C8E66A] transition-colors focus:ring-4 focus:ring-[#A7D63B]/30">
-                Add Food
+              <button type="submit" disabled={loading} className="bg-[#A7D63B] text-[#1F5E2A] w-full py-3 rounded-xl font-bold shadow-md hover:bg-[#C8E66A] transition-colors focus:ring-4 focus:ring-[#A7D63B]/30">
+                {loading ? 'Adding...' : 'Add Food'}
               </button>
             </div>
           </form>

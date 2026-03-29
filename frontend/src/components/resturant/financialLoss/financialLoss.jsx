@@ -1,21 +1,30 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import WastedLoss from './wastedLoss';
 import UnsoldLoss from './unsoldLoss';
 import DailyLoss from './dailyLoss';
 
-const wastedData = [
-  { id: 1, foodName: "Rice", quantity: 5, unit: "kg", loss: 800 },
-  { id: 2, foodName: "Bread", quantity: 10, unit: "units", loss: 500 },
-];
-
-const unsoldData = [
-  { id: 1, foodName: "Salad", quantity: 2, unit: "kg", originalPrice: 600, lostRevenue: 400 },
-  { id: 2, foodName: "Vegetable Curry", quantity: 3, unit: "portions", originalPrice: 600, lostRevenue: 450 },
-];
-
 const FinancialLoss = () => {
   const [activeTab, setActiveTab] = useState('wasted');
+  const [wastedData, setWastedData] = useState([]);
+  const [unsoldData, setUnsoldData] = useState([]);
+
+  useEffect(() => {
+    const fetchLossData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get('http://localhost:5000/api/restaurants/financial-loss', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setWastedData(res.data.wastedData || []);
+        setUnsoldData(res.data.unsoldData || []);
+      } catch (err) {
+        console.error('Error fetching financial loss data:', err);
+      }
+    };
+    fetchLossData();
+  }, []);
 
   const totalWasted = wastedData.reduce((sum, item) => sum + item.loss, 0);
   const totalUnsold = unsoldData.reduce((sum, item) => sum + item.lostRevenue, 0);

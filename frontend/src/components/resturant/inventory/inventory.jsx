@@ -1,10 +1,11 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PlusCircle, Search, Edit2, Trash2, Package } from 'lucide-react';
 import InventoryFormModal from './inventoryFormModal';
 
 const getEmoji = (name) => {
-  const lowerName = name.toLowerCase();
+  const lowerName = (name || '').toLowerCase();
   if (lowerName.includes('rice')) return "🍛";
   if (lowerName.includes('bread') || lowerName.includes('bun')) return "🍞";
   if (lowerName.includes('salad') || lowerName.includes('veg')) return "🥗";
@@ -13,33 +14,62 @@ const getEmoji = (name) => {
   return "🍲";
 };
 
-const initialInventory = [
-  { id: 1, foodName: "Rice", unit: "kg", pricePerUnit: 200, priceType: "Making Cost" },
-  { id: 2, foodName: "Bread", unit: "units", pricePerUnit: 50, priceType: "Making Cost" },
-  { id: 3, foodName: "Chicken Curry", unit: "kg", pricePerUnit: 800, priceType: "Actual Cost" },
-];
-
 const Inventory = () => {
-  const [items, setItems] = useState(initialInventory);
+  const [items, setItems] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
 
-  const filteredItems = items.filter(item => 
-    item.foodName.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    fetchInventory();
+  }, []);
 
-  const handleSave = (itemData) => {
-    if (editingItem) {
-      setItems(items.map(item => item.id === editingItem.id ? { ...itemData, id: item.id } : item));
-    } else {
-      setItems([{ ...itemData, id: Date.now() }, ...items]);
+  const fetchInventory = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:5000/api/inventory', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setItems(response.data);
+    } catch (error) {
+      console.error("Error fetching inventory:", error);
     }
-    closeModal();
   };
 
-  const handleDelete = (id) => {
-    setItems(items.filter(item => item.id !== id));
+  const filteredItems = items.filter(item => 
+    (item.name || '').toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleSave = async (itemData) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (editingItem) {
+        const response = await axios.put(`http://localhost:5000/api/inventory/${editingItem._id}`, itemData, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setItems(items.map(item => item._id === editingItem._id ? response.data : item));
+      } else {
+        const response = await axios.post('http://localhost:5000/api/inventory', itemData, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setItems([response.data, ...items]);
+      }
+      closeModal();
+    } catch (error) {
+      console.error("Error saving inventory item:", error);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`http://localhost:5000/api/inventory/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setItems(items.filter(item => item._id !== id));
+    } catch (error) {
+      console.error("Error deleting item:", error);
+    }
   };
 
   const openAddModal = () => {
@@ -123,16 +153,16 @@ const Inventory = () => {
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
                   whileHover={{ y: -4 }}
-                  key={item.id}
+                  key={item._id}
                   className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition group relative overflow-hidden"
                 >
                   <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-                    <span className="text-6xl">{getEmoji(item.foodName)}</span>
+                    <span className="text-6xl">{getEmoji(item.name || item.foodName)}</span>
                   </div>
 
                   <div className="flex justify-between items-start mb-4 relative z-10">
                     <h3 className="text-2xl font-bold text-[#1F5E2A] flex items-center gap-2">
-                      <span className="text-3xl">{getEmoji(item.foodName)}</span> {item.foodName}
+                      <span className="text-3xl">{getEmoji(item.name || item.foodName)}</span> {item.name || item.foodName}
                     </h3>
                     <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button 
@@ -142,7 +172,7 @@ const Inventory = () => {
                         <Edit2 size={18} />
                       </button>
                       <button 
-                        onClick={() => handleDelete(item.id)}
+                        onClick={() => handleDelete(item._id)}
                         className="p-2 text-[#D67A5C] hover:bg-red-50 rounded-xl transition"
                       >
                         <Trash2 size={18} />
@@ -160,7 +190,7 @@ const Inventory = () => {
                       <span className="text-md font-black text-[#D67A5C]">Rs. {item.pricePerUnit}</span>
                     </div>
                     <div className="flex justify-between items-center px-4 py-2">
-                       <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{item.priceType}</span>
+                       <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Loss Price: Rs. {item.lossPrice}</span>
                     </div>
                   </div>
                 </motion.div>
