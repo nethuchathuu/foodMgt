@@ -1,24 +1,60 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Eye, Check, X, Filter } from 'lucide-react';
-
-const mockRestaurants = [
-  { id: '1', name: 'Green Leaf Bistro', regId: 'REG-2024-001', location: '123 Main St, New York', status: 'Pending' },
-  { id: '2', name: 'Ocean Catch Seafood', regId: 'REG-2024-002', location: '45 Dock Ave, Boston', status: 'Approved' },
-  { id: '3', name: 'Spicy Delight', regId: 'REG-2024-003', location: '78 Market St, Chicago', status: 'Rejected' },
-  { id: '4', name: 'Urban Plates', regId: 'REG-2024-004', location: '90 Avenue Sq, Miami', status: 'Pending' },
-  { id: '5', name: 'Harvest Moon Cafe', regId: 'REG-2024-005', location: '12 Farm Rd, Seattle', status: 'Pending' },
-];
+import axios from 'axios';
 
 const RestApprovel = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('All');
+  const [restaurants, setRestaurants] = useState([]);
   
+  useEffect(() => {
+    fetchRestaurants();
+  }, []);
+
+  const fetchRestaurants = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:5000/api/admin/restaurants', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setRestaurants(response.data);
+    } catch (error) {
+      console.error("Error fetching restaurants", error);
+    }
+  };
+
+  const handleApprove = async (id, e) => {
+    if (e) e.stopPropagation();
+    try {
+      const token = localStorage.getItem('token');
+      await axios.patch(`http://localhost:5000/api/admin/approve-rest/${id}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchRestaurants();
+    } catch (error) {
+      console.error("Error approving restaurant", error);
+    }
+  };
+
+  const handleReject = async (id, e) => {
+    if (e) e.stopPropagation();
+    try {
+      const token = localStorage.getItem('token');
+      await axios.patch(`http://localhost:5000/api/admin/reject-rest/${id}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchRestaurants();
+    } catch (error) {
+      console.error("Error rejecting restaurant", error);
+    }
+  };
+
   const stats = [
-    { label: 'Pending', value: '12', color: '#F43F5E', bg: '#FFE4E6' },
-    { label: 'Approved', value: '45', color: '#60A5FA', bg: '#EFF6FF' },
-    { label: 'Rejected', value: '8', color: '#D67A5C', bg: '#FDECEA' }
+    { label: 'Pending', value: restaurants.filter(r => r.status === 'Pending').length, color: '#F43F5E', bg: '#FFE4E6' },
+    { label: 'Approved', value: restaurants.filter(r => r.status === 'Approved').length, color: '#60A5FA', bg: '#EFF6FF' },
+    { label: 'Rejected', value: restaurants.filter(r => r.status === 'Rejected').length, color: '#D67A5C', bg: '#FDECEA' }
   ];
 
   const getStatusStyle = (status) => {
@@ -34,9 +70,9 @@ const RestApprovel = () => {
     navigate(`/admin/restaurants/${id}`);
   };
 
-  const filteredRestaurants = mockRestaurants.filter(rest => {
+  const filteredRestaurants = restaurants.filter(rest => {
     const matchesSearch = rest.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          rest.regId.toLowerCase().includes(searchTerm.toLowerCase());
+                          (rest.regId && rest.regId.toLowerCase().includes(searchTerm.toLowerCase()));
     const matchesFilter = filterStatus === 'All' || rest.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
@@ -146,12 +182,14 @@ const RestApprovel = () => {
                         {rest.status === 'Pending' && (
                           <>
                             <button 
+                              onClick={(e) => handleApprove(rest.id, e)}
                               className="p-2 text-emerald-500 hover:bg-emerald-50 rounded-lg transition-colors"
                               title="Approve"
                             >
                               <Check size={18} />
                             </button>
                             <button 
+                              onClick={(e) => handleReject(rest.id, e)}
                               className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                               title="Reject"
                             >
@@ -178,7 +216,7 @@ const RestApprovel = () => {
         
         {/* Pagination placeholder */}
         <div className="p-4 border-t border-slate-100 flex items-center justify-between text-sm text-slate-500">
-          <span>Showing 1 to {filteredRestaurants.length} of {mockRestaurants.length} entries</span>
+          <span>Showing 1 to {filteredRestaurants.length} of {restaurants.length} entries</span>
           <div className="flex gap-1">
             <button className="px-3 py-1 border border-slate-200 rounded hover:bg-slate-50 disabled:opacity-50" disabled>Prev</button>
             <button className="px-3 py-1 bg-blue-500 text-white rounded">1</button>

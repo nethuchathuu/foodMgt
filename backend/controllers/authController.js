@@ -2,6 +2,7 @@ const User = require('../models/User');
 const Person = require('../models/Person');
 const Organization = require('../models/Organization');
 const Restaurant = require('../models/Restaurant');
+const Notification = require('../models/Notification');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -31,8 +32,10 @@ exports.registerUser = async (req, res) => {
        }
     }
 
+    const normalizedEmail = email ? email.trim().toLowerCase() : '';
+
     // Check existing user
-    const existingUser = await User.findOne({ email });
+    const existingUser = await User.findOne({ email: new RegExp('^' + normalizedEmail + '$', 'i') });
     if (existingUser) {
       return res.status(400).json({ message: 'Email already registered' });
     }
@@ -41,15 +44,17 @@ exports.registerUser = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const isVerified = role !== 'restaurant'; // automatically verified unless restaurant
+    const isVerified = !(role === 'restaurant' || role === 'requester_org'); // automatically verified unless restaurant or org
+    const status = isVerified ? 'Active' : 'Pending';
 
     // Create user
     const user = new User({
       name,
-      email,
+      email: normalizedEmail,
       password: hashedPassword,
       role, 
-      isVerified
+      isVerified,
+      status
     });
 
     await user.save();
@@ -59,7 +64,7 @@ exports.registerUser = async (req, res) => {
       await Person.create({
          userId: user._id,
          fullName: profileData?.fullName || name,
-         email: email,
+         email: normalizedEmail,
          gender: profileData?.gender || 'Unknown',
          ...profileData
       });
@@ -67,8 +72,17 @@ exports.registerUser = async (req, res) => {
       await Organization.create({
          userId: user._id,
          orgName: profileData?.orgName || name,
-         officialEmail: email,
+         officialEmail: normalizedEmail,
          ...profileData
+      });
+
+      await Notification.create({
+        type: 'Organization Approval',
+        category: 'Approvals',
+        title: 'Organization Pending Review',
+        message: `${profileData?.orgName || name} submitted a request to join the platform.`,
+        priority: 'High',
+        link: '/admin/organizations'
       });
     } else if (role === 'restaurant') {
       const restaurantPayload = {
@@ -76,11 +90,11 @@ exports.registerUser = async (req, res) => {
          restaurantName: profileData?.restaurantName || name,
          registeredId: profileData?.registeredId,
          address: profileData?.address,
-         restaurantEmail: profileData?.restaurantEmail || email,
+         restaurantEmail: profileData?.restaurantEmail || normalizedEmail,
          phoneNumber: profileData?.phoneNumber,
          description: profileData?.description,
-         mealTypes: profileData?.mealTypes ? JSON.parse(profileData.mealTypes) : [],
-         owner: profileData?.owner ? JSON.parse(profileData.owner) : {}
+         mealTypes: typeof profileData?.mealTypes === 'string' ? JSON.parse(profileData.mealTypes) : (profileData?.mealTypes || []),
+         owner: typeof profileData?.owner === 'string' ? JSON.parse(profileData.owner) : (profileData?.owner || {})
       };
 
       // Handle Multer files tracking
@@ -108,6 +122,15 @@ exports.registerUser = async (req, res) => {
       }
 
       await Restaurant.create(restaurantPayload);
+
+      await Notification.create({
+        type: 'Restaurant Approval',
+        category: 'Approvals',
+        title: 'New Restaurant Registration',
+        message: `${profileData?.restaurantName || name} has registered and is waiting for your approval.`,
+        priority: 'High',
+        link: '/admin/restaurants'
+      });
     }
 
     res.status(201).json({
@@ -126,9 +149,10 @@ exports.registerUser = async (req, res) => {
 exports.loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+    const normalizedEmail = email ? email.trim().toLowerCase() : '';
 
     // Find user
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email: new RegExp('^' + normalizedEmail + '$', 'i') });
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }

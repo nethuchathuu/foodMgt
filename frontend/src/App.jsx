@@ -18,6 +18,7 @@ import Signin from './components/signin/signin';
 import AdminLogin from './components/admin/adminLogin';
 import Admin from './components/admin/admin';
 import Dashboard from './components/admin/dashboard/dashboard';
+import Notification from './components/admin/notification';
 import RestApprovel from './components/admin/restApprovel/restapprovel';
 import ViewRestDetails from './components/admin/restApprovel/viewRestDetails';
 import OrgApprovel from './components/admin/orgApprovel/orgapprovel';
@@ -71,6 +72,7 @@ const AppLayout = () => {
           <Route path="/admin" element={<Admin />}>
             <Route index element={<Dashboard />} />
             <Route path="dashboard" element={<Dashboard />} />
+            <Route path="notifications" element={<Notification />} />
             <Route path="restaurants" element={<RestApprovel />} />
             <Route path="restaurants/:id" element={<ViewRestDetails />} />
             <Route path="organizations" element={<OrgApprovel />} />

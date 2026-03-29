@@ -1,19 +1,29 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Eye, Check, X, Filter, Building2, Heart, Users } from 'lucide-react';
-
-const mockOrganizations = [
-  { id: 1, name: 'Hope Foundation', type: 'NGO', location: '123 Charity Lane, New York', status: 'Pending' },
-  { id: 2, name: 'Food For All', type: 'Charity', location: '45 Care St, Los Angeles', status: 'Approved' },
-  { id: 3, name: 'Local Helpers', type: 'Group', location: '78 Community Dr, Chicago', status: 'Rejected' },
-  { id: 4, name: 'City Relief', type: 'NGO', location: '90 Hope Ave, Houston', status: 'Pending' },
-];
+import axios from 'axios';
 
 const OrgApprovel = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
-  const [organizations, setOrganizations] = useState(mockOrganizations);
+  const [organizations, setOrganizations] = useState([]);
+
+  useEffect(() => {
+    fetchOrganizations();
+  }, []);
+
+  const fetchOrganizations = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:5000/api/admin/organizations', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setOrganizations(response.data);
+    } catch (error) {
+      console.error("Error fetching organizations", error);
+    }
+  };
 
   const stats = [
     { label: 'Pending', value: organizations.filter(o => o.status === 'Pending').length, color: '#E9A38E', bg: '#FFF4F0' },
@@ -35,7 +45,7 @@ const OrgApprovel = () => {
       case 'NGO': return <Building2 size={14} className="mr-1" />;
       case 'Charity': return <Heart size={14} className="mr-1" />;
       case 'Group': return <Users size={14} className="mr-1" />;
-      default: return null;
+      default: return <Building2 size={14} className="mr-1" />;
     }
   };
 
@@ -43,14 +53,30 @@ const OrgApprovel = () => {
     navigate(`/admin/organizations/${id}`);
   };
 
-  const handleApprove = (id, e) => {
+  const handleApprove = async (id, e) => {
     e.stopPropagation();
-    setOrganizations(orgs => orgs.map(o => o.id === id ? { ...o, status: 'Approved' } : o));
+    try {
+      const token = localStorage.getItem('token');
+      await axios.patch(`http://localhost:5000/api/admin/approve-org/${id}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchOrganizations();
+    } catch (error) {
+      console.error("Error approving organization", error);
+    }
   };
   
-  const handleReject = (id, e) => {
+  const handleReject = async (id, e) => {
     e.stopPropagation();
-    setOrganizations(orgs => orgs.map(o => o.id === id ? { ...o, status: 'Rejected' } : o));
+    try {
+      const token = localStorage.getItem('token');
+      await axios.patch(`http://localhost:5000/api/admin/reject-org/${id}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchOrganizations();
+    } catch (error) {
+      console.error("Error rejecting organization", error);
+    }
   };
 
   const filteredOrgs = useMemo(() => {

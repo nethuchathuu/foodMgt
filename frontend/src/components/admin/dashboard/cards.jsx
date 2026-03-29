@@ -1,35 +1,60 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Store, Building, Users, AlertCircle, Utensils, HeartHandshake } from 'lucide-react';
+import axios from 'axios';
 
 const Cards = () => {
+  const [stats, setStats] = useState({
+    totalRestaurants: 0,
+    totalOrganizations: 0,
+    totalUsers: 0,
+    pendingApprovals: 0,
+    todaysFoodListings: 0,
+    todaysDonations: 0
+  });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:5000/api/admin/dashboard-stats', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setStats(response.data);
+      } catch (error) {
+        console.error("Error fetching stats", error);
+      }
+    };
+    fetchStats();
+  }, []);
+
   const cardData = [
     {
       title: "Total Restaurants",
-      value: "120",
+      value: stats.totalRestaurants,
       icon: Store,
       color: "#60A5FA", // Soft Blue from global theme
       bgLight: "#EFF6FF",
-      trend: "+5 this week"
+      trend: "Total registered"
     },
     {
       title: "Total Organizations",
-      value: "75",
+      value: stats.totalOrganizations,
       icon: Building,
       color: "#3B82F6", // Slightly deeper blue
       bgLight: "#DBEAFE",
-      trend: "+3 this week"
+      trend: "Total registered"
     },
     {
       title: "Total Users",
-      value: "540",
+      value: stats.totalUsers,
       icon: Users,
       color: "#2563EB", // Stronger blue
       bgLight: "#BFDBFE",
-      trend: "+12 today"
+      trend: "Total regular users"
     },
     {
       title: "Pending Approvals",
-      value: "9",
+      value: stats.pendingApprovals,
       icon: AlertCircle,
       color: "#F43F5E", // Alert Red from global theme
       bgLight: "#FFE4E6",
@@ -38,19 +63,19 @@ const Cards = () => {
     },
     {
       title: "Today's Food Listings",
-      value: "34",
+      value: stats.todaysFoodListings,
       icon: Utensils,
       color: "#818CF8", // Indigo from global theme
       bgLight: "#EEF2FF",
-      trend: "+10 today"
+      trend: "Listing active"
     },
     {
       title: "Today's Donations",
-      value: "18",
+      value: stats.todaysDonations,
       icon: HeartHandshake,
       color: "#34D399", // Emerald from global theme
       bgLight: "#ECFDF5",
-      trend: "+6 today"
+      trend: "Donations recorded"
     }
   ];
 

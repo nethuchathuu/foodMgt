@@ -20,6 +20,11 @@ const UserSchema = new mongoose.Schema({
     required: true,
     default: 'requester_person',
   },
+  status: {
+    type: String,
+    enum: ['Pending', 'Approved', 'Rejected', 'Blocked', 'Active'],
+    default: 'Pending',
+  },
   isVerified: {
     type: Boolean,
     default: false,

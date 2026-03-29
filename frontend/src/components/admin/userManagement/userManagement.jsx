@@ -1,25 +1,34 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Filter, Ban, CheckCircle, Eye, User as UserIcon, Store, Building2, ChevronDown } from 'lucide-react';
-
-const mockUsers = [
-  { id: 1, name: 'John Doe', email: 'john@example.com', role: 'User', status: 'Active', avatar: '' },
-  { id: 2, name: 'Spicy Delight', email: 'contact@spicy.com', role: 'Restaurant', status: 'Blocked', avatar: '' },
-  { id: 3, name: 'Hope Foundation', email: 'fund@hope.org', role: 'Organization', status: 'Active', avatar: '' },
-  { id: 4, name: 'Sarah Smith', email: 'sarah.smith@example.com', role: 'User', status: 'Active', avatar: '' },
-  { id: 5, name: 'Ocean Catch', email: 'hello@oceancatch.com', role: 'Restaurant', status: 'Active', avatar: '' },
-];
+import axios from 'axios';
 
 const UserManagement = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [users, setUsers] = useState(mockUsers);
+  const [users, setUsers] = useState([]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.get('http://localhost:5000/api/admin/users', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setUsers(response.data);
+    } catch (error) {
+      console.error("Error fetching users", error);
+    }
+  };
 
   const stats = [
     { label: 'Total Users', value: users.length, color: '#9BC7D8', bg: '#F1F7FA' },
-    { label: 'Active Users', value: users.filter(u => u.status === 'Active').length, color: '#6FAFC4', bg: '#EAF6FB' },
+    { label: 'Active Users', value: users.filter(u => u.status === 'Active' || u.status === 'Approved').length, color: '#6FAFC4', bg: '#EAF6FB' },
     { label: 'Blocked Users', value: users.filter(u => u.status === 'Blocked').length, color: '#D67A5C', bg: '#FDECEA' }
   ];
 
@@ -33,27 +42,36 @@ const UserManagement = () => {
   };
 
   const getStatusStyle = (status) => {
-    return status === 'Active' 
+    return (status === 'Active' || status === 'Approved')
       ? { bg: '#EAF6FB', text: '#9BC7D8' } 
-      : { bg: '#FDECEA', text: '#D67A5C' };
+      : status === 'Blocked' 
+        ? { bg: '#FDECEA', text: '#D67A5C' }
+        : { bg: '#FFF4F0', text: '#E9A38E' }; // Pending
   };
 
   const getInitials = (name) => {
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   };
 
-  const toggleUserStatus = (id, e) => {
+  const toggleUserStatus = async (id, e) => {
     e.stopPropagation();
-    setUsers(users.map(u => {
-      if (u.id === id) {
-        // Confirmation before blocking
-        if (u.status === 'Active' && !window.confirm(`Are you sure you want to block ${u.name}?`)) {
-          return u;
-        }
-        return { ...u, status: u.status === 'Active' ? 'Blocked' : 'Active' };
-      }
-      return u;
-    }));
+    const user = users.find(u => u.id === id);
+    if (!user) return;
+    
+    const isCurrentlyActive = user.status === 'Active' || user.status === 'Approved';
+    if (isCurrentlyActive && !window.confirm(`Are you sure you want to block ${user.name}?`)) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      await axios.patch(`http://localhost:5000/api/admin/toggle-user-status/${id}`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      fetchUsers();
+    } catch (error) {
+      console.error("Error toggling user status", error);
+    }
   };
 
   const filteredUsers = useMemo(() => {

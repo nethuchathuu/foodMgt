@@ -28,13 +28,14 @@ const NavbarAdmin = () => {
 
       <div className="flex items-center gap-6">
         <button 
+          onClick={() => navigate('/admin/notifications')}
           className="relative p-2 rounded-full hover:bg-gray-100 transition-colors"
           style={{ color: '#475569' }}
         >
           <Bell size={20} />
           <span 
             className="absolute top-1 right-1 w-2 h-2 rounded-full"
-            style={{ backgroundColor: '#F43F5E' }}
+            style={{ backgroundColor: '#E9A38E' }}
           ></span>
         </button>
 
