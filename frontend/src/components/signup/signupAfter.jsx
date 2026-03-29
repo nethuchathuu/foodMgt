@@ -17,13 +17,14 @@ const SignupAfter = () => {
     setError('');
 
     const name = location.state?.name || 'User';
-    const role = location.state?.role || 'requester'; // default
+    const role = location.state?.role || 'requester_person'; // default
+    const profileData = location.state?.profileData || {};
 
     try {
       const response = await fetch('http://localhost:5000/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password, role })
+        body: JSON.stringify({ name, email, password, role, profileData })
       });
 
       const data = await response.json();

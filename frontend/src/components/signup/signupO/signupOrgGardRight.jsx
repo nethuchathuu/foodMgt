@@ -51,7 +51,18 @@ const SignupOrgGardRight = () => {
   };
 
   const handleNext = () => {
-    navigate('/signup-after', { state: location.state || { name: 'Organization', role: 'requester' } });
+    // In a real scenario we'd combine this with Organization info from the previous screen
+    // `location.state` contains { orgName: ..., role: 'requester_org' } ideally.
+    navigate('/signup-after', { 
+      state: { 
+        ...location.state,
+        role: 'requester_org', // update role to be specific
+        profileData: {
+          orgName: location.state?.name,
+          representative: { gender: selectedGender }
+        }
+      } 
+    });
   };
 
   return (

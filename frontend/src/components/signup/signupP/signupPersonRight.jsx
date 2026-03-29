@@ -64,7 +64,20 @@ const SignupPersonRight = () => {
   };
 
   const handleNext = () => {
-    navigate('/signup/signupAfter', { state: { name: name || 'User', role: 'requester' } });
+    // Collecting all fields from state. To make it complete, 
+    // ideally we have state variables for everything, but since we didn't add all,
+    // we'll pass whatever we have, assuming the form sets them.
+    navigate('/signup/signupAfter', { 
+      state: { 
+        name: name || 'Person', 
+        role: 'requester_person',
+        profileData: {
+          fullName: name,
+          gender: selectedGender
+          // Need to add other states if tracking them
+        }
+      } 
+    });
   };
 
   return (

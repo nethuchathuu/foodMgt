@@ -1,4 +1,7 @@
 const User = require('../models/User');
+const Person = require('../models/Person');
+const Organization = require('../models/Organization');
+const Restaurant = require('../models/Restaurant');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
@@ -6,18 +9,17 @@ const jwt = require('jsonwebtoken');
 const generateToken = (user) => {
   return jwt.sign(
     { id: user._id, role: user.role },
-    process.env.JWT_SECRET,
+    process.env.JWT_SECRET || 'secret123',
     { expiresIn: '7d' }
   );
 };
-
 
 // ===============================
 // 🟢 REGISTER (Restaurant / Organization / User)
 // ===============================
 exports.registerUser = async (req, res) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role, profileData } = req.body;
 
     // Check existing user
     const existingUser = await User.findOne({ email });
@@ -29,27 +31,65 @@ exports.registerUser = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
+    const isVerified = role !== 'restaurant'; // automatically verified unless restaurant
+
     // Create user
     const user = new User({
       name,
       email,
       password: hashedPassword,
-      role, // "restaurant" | "requester"
-      isVerified: role === 'requester' ? true : false // only admin approves restaurant
+      role, 
+      isVerified
     });
 
     await user.save();
 
+    // Create related profile entity based on role
+    if (role === 'requester_person') {
+      await Person.create({
+         userId: user._id,
+         fullName: profileData?.fullName || name,
+         email: email,
+         gender: profileData?.gender || 'Unknown',
+         ...profileData
+      });
+    } else if (role === 'requester_org') {
+      await Organization.create({
+         userId: user._id,
+         orgName: profileData?.orgName || name,
+         officialEmail: email,
+         ...profileData
+      });
+    } else if (role === 'restaurant') {
+      const restaurantPayload = {
+         userId: user._id,
+         restaurantName: profileData?.restaurantName || name,
+         registeredId: profileData?.registeredId,
+         address: profileData?.address,
+         restaurantEmail: profileData?.restaurantEmail || email,
+         phoneNumber: profileData?.phoneNumber,
+         description: profileData?.description,
+         mealTypes: profileData?.mealTypes || [],
+         owner: profileData?.owner || {}
+      };
+      
+      // Prevent Mongoose CastError on empty Date strings
+      if (restaurantPayload.owner && !restaurantPayload.owner.dob) {
+         delete restaurantPayload.owner.dob;
+      }
+
+      await Restaurant.create(restaurantPayload);
+    }
+
     res.status(201).json({
-      message: `${role} registered successfully. Waiting for admin approval.`,
+      message: `${role} registered successfully.`,
     });
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Registration failed' });
+    res.status(500).json({ message: 'Registration failed', error: error.message });
   }
 };
-
 
 // ===============================
 // 🔵 LOGIN
@@ -91,37 +131,5 @@ exports.loginUser = async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Login failed' });
-  }
-};
-
-
-// ===============================
-// 🔴 ADMIN LOGIN (hardcoded as requested)
-// ===============================
-exports.adminLogin = async (req, res) => {
-  const { username, password } = req.body;
-
-  try {
-    if (username === 'admin' && password === 'admin123') {
-      const token = jwt.sign(
-        { id: 'admin_id_hardcoded', role: 'admin' },
-        process.env.JWT_SECRET,
-        { expiresIn: '7d' }
-      );
-
-      return res.json({
-        message: 'Admin login successful',
-        token,
-        user: {
-          id: 'admin_id_hardcoded',
-          name: 'Admin',
-          role: 'admin'
-        }
-      });
-    } else {
-      return res.status(401).json({ message: 'Invalid admin credentials' });
-    }
-  } catch (error) {
-    res.status(500).json({ message: 'Admin login failed' });
   }
 };

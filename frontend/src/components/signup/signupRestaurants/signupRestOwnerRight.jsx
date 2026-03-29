@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, User, MapPin, Calendar, CreditCard, Mail, Phone, CheckCircle2, Camera, Edit2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const InputField = ({ label, icon: Icon, type = "text", placeholder, fullWidth = false, isActive, onFocus, onBlur, value, onChange }) => {
   return (
@@ -50,26 +50,72 @@ const InputField = ({ label, icon: Icon, type = "text", placeholder, fullWidth =
 
 const SignupRestOwnerRight = () => {
   const [activeInput, setActiveInput] = useState(null);
-  const [selectedGender, setSelectedGender] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
-  const [ownerName, setOwnerName] = useState('');
+  
+  // Owner state
+  const [ownerData, setOwnerData] = useState({
+    fullName: '',
+    address: '',
+    dateOfBirth: '',
+    nic: '',
+    gender: '',
+    email: '',
+    contactNumber: ''
+  });
+
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const handleInputChange = (field, value) => {
+    setOwnerData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       setImagePreview(URL.createObjectURL(file));
+      setOwnerData(prev => ({ ...prev, profilePicture: file }));
     }
   };
 
   const handleNext = () => {
-    navigate('/signup-after', { state: { name: ownerName || 'Restaurant Owner', role: 'restaurant' } });
+    const restaurantData = location.state?.restaurantData || {};
+    
+    navigate('/signup/signupAfter', {
+      state: {
+        name: restaurantData.restaurantName || ownerData.fullName || 'Restaurant Owner',
+        role: 'restaurant',
+        profileData: {
+          restaurantName: restaurantData.restaurantName,
+          registeredId: restaurantData.registeredId,
+          address: restaurantData.address,
+          restaurantEmail: restaurantData.restaurantEmail,
+          phoneNumber: restaurantData.phoneNumber,
+          description: restaurantData.description,
+          mealTypes: restaurantData.selectedMeals,
+          // document tracking not fully sent to server unless setup in FormData, let's keep array
+          documents: restaurantData.documents, 
+          owner: { 
+            fullName: ownerData.fullName,
+            homeAddress: ownerData.address,
+            dob: ownerData.dateOfBirth,
+            nic: ownerData.nic,
+            gender: ownerData.gender,
+            email: ownerData.email,
+            contactNumber: ownerData.contactNumber
+          }
+        }
+      }
+    });
   };
 
   return (
     <div className="flex flex-col bg-white overflow-y-auto w-full h-full relative z-10 p-8 md:p-12 shadow-inner">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, x: 50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.6 }}
@@ -77,7 +123,7 @@ const SignupRestOwnerRight = () => {
       >
         {/* Step indicator */}
         <div className="flex items-center mb-6 text-sm font-bold text-[#1a84ae]">
-          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#9BC7D8] text-[#1F5E2A] mr-3 shadow-sm border border-[#D67A5C]/20">
+          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#9BC7D8] text-[#1F5E2A] mr-3 shadow-sm border border-[#D67A5C]/20">        
             2
           </span>
           Step 2 of 3: Owner Details
@@ -148,39 +194,45 @@ const SignupRestOwnerRight = () => {
                 icon={User} 
                 placeholder="Enter full name" 
                 fullWidth={true}
-                value={ownerName}
-                onChange={(e) => setOwnerName(e.target.value)}
+                value={ownerData.fullName}
+                onChange={(e) => handleInputChange('fullName', e.target.value)}
                 isActive={activeInput === "Owner Name"}
                 onFocus={() => setActiveInput("Owner Name")}
                 onBlur={() => setActiveInput(null)}
               />
-              <InputField 
-                label="Home Address" 
-                icon={MapPin} 
-                type="textarea" 
-                placeholder="Full residential address" 
-                fullWidth={true} 
+              <InputField
+                label="Home Address"
+                icon={MapPin}
+                type="textarea"
+                placeholder="Full residential address"
+                fullWidth={true}
+                value={ownerData.address}
+                onChange={(e) => handleInputChange('address', e.target.value)}
                 isActive={activeInput === "Home Address"}
                 onFocus={() => setActiveInput("Home Address")}
                 onBlur={() => setActiveInput(null)}
               />
-              <InputField 
-                label="Date of Birth" 
-                icon={Calendar} 
-                type="date" 
+              <InputField
+                label="Date of Birth"
+                icon={Calendar}
+                type="date"
+                value={ownerData.dateOfBirth}
+                onChange={(e) => handleInputChange('dateOfBirth', e.target.value)}
                 isActive={activeInput === "Date of Birth"}
                 onFocus={() => setActiveInput("Date of Birth")}
                 onBlur={() => setActiveInput(null)}
               />
-              <InputField 
-                label="NIC" 
-                icon={CreditCard} 
-                placeholder="National ID number" 
+              <InputField
+                label="NIC"
+                icon={CreditCard}
+                placeholder="National ID number"
+                value={ownerData.nic}
+                onChange={(e) => handleInputChange('nic', e.target.value)}
                 isActive={activeInput === "NIC"}
                 onFocus={() => setActiveInput("NIC")}
                 onBlur={() => setActiveInput(null)}
               />
-              
+
               {/* Gender Radio Pills */}
               <div className="col-span-1 md:col-span-2 mb-4">
                 <label className="text-sm font-semibold text-[#1F5E2A] mb-3 pl-1 block">Gender</label>
@@ -191,40 +243,44 @@ const SignupRestOwnerRight = () => {
                       type="button"
                       whileHover={{ scale: 1.03 }}
                       whileTap={{ scale: 0.97 }}
-                      onClick={() => setSelectedGender(gender)}
+                      onClick={() => handleInputChange('gender', gender)}
                       className={`flex-1 py-3 px-4 rounded-xl text-sm font-semibold border transition-all duration-300 flex items-center justify-center gap-2 ${
-                        selectedGender === gender 
-                          ? 'bg-[#A7D63B] text-[#1F5E2A] border-[#A7D63B] shadow-sm' 
+                        ownerData.gender === gender
+                          ? 'bg-[#A7D63B] text-[#1F5E2A] border-[#A7D63B] shadow-sm'
                           : 'bg-white text-[#1F5E2A]/70 border-[#D8C3A5]/50 hover:border-[#9BC7D8] hover:bg-[#9BC7D8]/10'
                       }`}
                     >
-                      {selectedGender === gender && <CheckCircle2 size={16} />}
+                      {ownerData.gender === gender && <CheckCircle2 size={16} />} 
                       {gender}
                     </motion.button>
                   ))}
                 </div>
               </div>
 
-              <InputField 
-                label="Email" 
-                icon={Mail} 
-                type="email" 
-                placeholder="owner@example.com" 
+              <InputField
+                label="Email"
+                icon={Mail}
+                type="email"
+                placeholder="owner@example.com"
+                value={ownerData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
                 isActive={activeInput === "Email"}
                 onFocus={() => setActiveInput("Email")}
                 onBlur={() => setActiveInput(null)}
               />
-              <InputField 
-                label="Contact Number" 
-                icon={Phone} 
-                type="tel" 
-                placeholder="+1 (555) 000-0000" 
+              <InputField
+                label="Contact Number"
+                icon={Phone}
+                type="tel"
+                placeholder="+1 (555) 000-0000"
+                value={ownerData.contactNumber}
+                onChange={(e) => handleInputChange('contactNumber', e.target.value)}
                 isActive={activeInput === "Contact Number"}
                 onFocus={() => setActiveInput("Contact Number")}
                 onBlur={() => setActiveInput(null)}
               />
             </div>
-
+            
             <div className="mt-8 pt-6 border-t border-[#D8C3A5]/30 flex justify-end gap-4">
               <motion.button
                 type="button"

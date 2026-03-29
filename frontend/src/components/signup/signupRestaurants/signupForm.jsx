@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Building2, IdCard, MapPin, Mail, Phone, UploadCloud, Info, CheckCircle2 } from 'lucide-react';
+import { Building2, IdCard, MapPin, Mail, Phone, UploadCloud, Info, CheckCircle2, FileText, X } from 'lucide-react';
 
-const InputField = ({ label, icon: Icon, type = "text", placeholder, fullWidth = false, isActive, onFocus, onBlur }) => {
+const InputField = ({ label, icon: Icon, type = "text", placeholder, fullWidth = false, isActive, onFocus, onBlur, value, onChange }) => {
   return (
     <div className={`flex flex-col mb-4 relative ${fullWidth ? 'col-span-1 md:col-span-2' : ''}`}>
       <label className="text-sm font-semibold text-[#1F5E2A] mb-2 pl-1">{label}</label>
@@ -14,6 +14,8 @@ const InputField = ({ label, icon: Icon, type = "text", placeholder, fullWidth =
           <textarea 
             className="w-full bg-transparent py-3 pr-4 outline-none text-[#1F5E2A] placeholder-[#D8C3A5] resize-none h-24"
             placeholder={placeholder}
+            value={value}
+            onChange={onChange}
             onFocus={onFocus}
             onBlur={onBlur} 
           />
@@ -22,6 +24,8 @@ const InputField = ({ label, icon: Icon, type = "text", placeholder, fullWidth =
             type={type} 
             className="w-full bg-transparent py-3 pr-4 outline-none text-[#1F5E2A] placeholder-[#D8C3A5]"
             placeholder={placeholder}
+            value={value}
+            onChange={onChange}
             onFocus={onFocus}
             onBlur={onBlur}
           />
@@ -43,9 +47,8 @@ const InputField = ({ label, icon: Icon, type = "text", placeholder, fullWidth =
   );
 };
 
-const SignupForm = () => {
+const SignupForm = ({ formData, handleInputChange, handleFileUpload, handleMealToggle, removeFile }) => {
   const [activeInput, setActiveInput] = useState(null);
-  const [selectedMeals, setSelectedMeals] = useState([]);
   const fileInputRef = useRef(null);
   
   const mealOptions = [
@@ -54,14 +57,6 @@ const SignupForm = () => {
     "Buffet Meals", "Family Packs", "One-Day Meals"
   ];
 
-  const handleMealToggle = (meal) => {
-    setSelectedMeals(prev => 
-      prev.includes(meal) 
-        ? prev.filter(m => m !== meal)
-        : [...prev, meal]
-    );
-  };
-
   return (
     <form className="w-full" onSubmit={(e) => e.preventDefault()}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
@@ -69,6 +64,8 @@ const SignupForm = () => {
           label="Restaurant Name" 
           icon={Building2} 
           placeholder="Enter restaurant name" 
+          value={formData.restaurantName || ''}
+          onChange={(e) => handleInputChange('restaurantName', e.target.value)}
           isActive={activeInput === "Restaurant Name"}
           onFocus={() => setActiveInput("Restaurant Name")}
           onBlur={() => setActiveInput(null)}
@@ -77,6 +74,8 @@ const SignupForm = () => {
           label="Registered ID" 
           icon={IdCard} 
           placeholder="Business registration number" 
+          value={formData.registeredId || ''}
+          onChange={(e) => handleInputChange('registeredId', e.target.value)}
           isActive={activeInput === "Registered ID"}
           onFocus={() => setActiveInput("Registered ID")}
           onBlur={() => setActiveInput(null)}
@@ -87,6 +86,8 @@ const SignupForm = () => {
           type="textarea" 
           placeholder="Full address" 
           fullWidth={true} 
+          value={formData.address || ''}
+          onChange={(e) => handleInputChange('address', e.target.value)}
           isActive={activeInput === "Address"}
           onFocus={() => setActiveInput("Address")}
           onBlur={() => setActiveInput(null)}
@@ -96,6 +97,8 @@ const SignupForm = () => {
           icon={Mail} 
           type="email" 
           placeholder="example@restaurant.com" 
+          value={formData.restaurantEmail || ''}
+          onChange={(e) => handleInputChange('restaurantEmail', e.target.value)}
           isActive={activeInput === "Restaurant Email"}
           onFocus={() => setActiveInput("Restaurant Email")}
           onBlur={() => setActiveInput(null)}
@@ -105,6 +108,8 @@ const SignupForm = () => {
           icon={Phone} 
           type="tel" 
           placeholder="+1 (555) 000-0000" 
+          value={formData.phoneNumber || ''}
+          onChange={(e) => handleInputChange('phoneNumber', e.target.value)}
           isActive={activeInput === "Phone Number"}
           onFocus={() => setActiveInput("Phone Number")}
           onBlur={() => setActiveInput(null)}
@@ -125,8 +130,36 @@ const SignupForm = () => {
             </motion.div>
             <p className="text-[#1F5E2A] font-medium mb-1">Click to upload or drag and drop</p>
             <p className="text-xs text-[#D8C3A5]">PDF, JPG, PNG (Max 5MB)</p>
-            <input type="file" ref={fileInputRef} className="hidden" accept="image/*,application/pdf" multiple />
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              className="hidden" 
+              accept="image/*,application/pdf" 
+              multiple 
+              onChange={handleFileUpload}
+            />
           </div>
+          {formData.documents && formData.documents.length > 0 && (
+            <div className="mt-4 grid gap-2">
+              {formData.documents.map((file, index) => (
+                <div key={index} className="flex items-center justify-between bg-white p-3 rounded-lg border border-[#D8C3A5] shadow-sm">
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <FileText size={18} className="text-[#1a84ae] flex-shrink-0" />
+                    <span className="text-sm text-[#1F5E2A] truncate">
+                      {file.name}
+                    </span>
+                  </div>
+                  <button 
+                    type="button" 
+                    onClick={() => removeFile && removeFile(index)} 
+                    className="p-1 hover:bg-red-50 rounded-full text-red-500 transition-colors"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
         
         <InputField 
@@ -135,6 +168,8 @@ const SignupForm = () => {
           type="textarea" 
           placeholder="Tell us about your restaurant..." 
           fullWidth={true} 
+          value={formData.description || ''}
+          onChange={(e) => handleInputChange('description', e.target.value)}
           isActive={activeInput === "Description"}
           onFocus={() => setActiveInput("Description")}
           onBlur={() => setActiveInput(null)}
@@ -145,7 +180,7 @@ const SignupForm = () => {
           <label className="text-sm font-semibold text-[#1F5E2A] mb-3 pl-1 block">Meal Types Available</label>
           <div className="flex flex-wrap gap-3">
             {mealOptions.map((meal) => {
-              const isSelected = selectedMeals.includes(meal);
+              const isSelected = formData.selectedMeals && formData.selectedMeals.includes(meal);
               return (
                 <motion.button
                   key={meal}

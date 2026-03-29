@@ -16,9 +16,9 @@ const UserSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['restaurant', 'requester', 'admin'],
+    enum: ['restaurant', 'requester_person', 'requester_org', 'admin', 'requester'],
     required: true,
-    default: 'requester',
+    default: 'requester_person',
   },
   isVerified: {
     type: Boolean,

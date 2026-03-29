@@ -3,12 +3,15 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/authRoutes');
+const { setupDefaultAdmin } = require('./controllers/adminController');
 
 // Load env vars
 dotenv.config();
 
 // Connect to database
-connectDB();
+connectDB().then(() => {
+  setupDefaultAdmin();
+});
 
 const app = express();
 

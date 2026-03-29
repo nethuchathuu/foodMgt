@@ -29,10 +29,12 @@ const Form = () => {
         
         if (data.user.role === 'restaurant') {
           navigate('/restaurant-dashboard');
-        } else if (data.user.role === 'requester') {
-          navigate('/receiver/home');
         } else if (data.user.role === 'admin') {
           navigate('/admin');
+        } else if (data.user.role?.startsWith('requester')) {
+          navigate('/receiver/home');
+        } else {
+          navigate('/receiver/home');
         }
       } else {
         setError(data.message || 'Invalid email or password.');

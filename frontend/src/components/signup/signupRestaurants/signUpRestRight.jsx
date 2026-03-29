@@ -7,6 +7,58 @@ import { useNavigate } from 'react-router-dom';
 const SignupRestRight = () => {
   const navigate = useNavigate();
 
+  const [formData, setFormData] = useState({
+    restaurantName: '',
+    registeredId: '',
+    address: '',
+    restaurantEmail: '',
+    phoneNumber: '',
+    description: '',
+    documents: [],
+    selectedMeals: []
+  });
+
+  const handleInputChange = (field, value) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleFileUpload = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const newFiles = Array.from(e.target.files);
+      setFormData(prev => ({
+        ...prev,
+        documents: [...prev.documents, ...newFiles]
+      }));
+    }
+  };
+
+  const removeFile = (indexToRemove) => {
+    setFormData(prev => ({
+      ...prev,
+      documents: prev.documents.filter((_, index) => index !== indexToRemove)
+    }));
+  };
+
+  const handleMealToggle = (meal) => {
+    setFormData(prev => ({
+      ...prev,
+      selectedMeals: prev.selectedMeals.includes(meal)
+        ? prev.selectedMeals.filter(m => m !== meal)
+        : [...prev.selectedMeals, meal]
+    }));
+  };
+
+  const handleNext = () => {
+    navigate('/signup/restaurant/owner', { 
+      state: { 
+        restaurantData: formData 
+      } 
+    });
+  };
+
   return (
     <div className="flex flex-col bg-white overflow-y-auto w-full h-full relative z-10 p-8 md:p-12 shadow-inner">
       <motion.div 
@@ -29,13 +81,19 @@ const SignupRestRight = () => {
           Fill in your details to start sharing food
         </p>
 
-        <SignupForm />
+        <SignupForm 
+          formData={formData}
+          handleInputChange={handleInputChange}
+          handleFileUpload={handleFileUpload}
+          handleMealToggle={handleMealToggle}
+          removeFile={removeFile}
+        />
 
         <div className="mt-8 pt-6 border-t border-[#D8C3A5]/30 flex justify-end">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            onClick={() => navigate('/signup/restaurant/owner')}
+            onClick={handleNext}
             className="flex items-center bg-[#A7D63B] hover:bg-[#D67A5C] text-[#1F5E2A] hover:text-white px-8 py-4 rounded-xl font-bold shadow-md hover:shadow-lg transition-all duration-300"
           >
             Next Step <ArrowRight className="ml-2" size={20} />
