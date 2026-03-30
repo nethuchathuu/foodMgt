@@ -40,6 +40,10 @@ const FoodListingSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  acceptableForDonation: {
+    type: Boolean,
+    default: false,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

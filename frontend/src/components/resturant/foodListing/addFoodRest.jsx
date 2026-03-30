@@ -13,14 +13,17 @@ const AddFoodRest = ({ onClose, onSuccess }) => {
     discountPrice: '',
     quantity: '',
     expiryTime: '',
-    foodImage: null
+    foodImage: null,
+    acceptableForDonation: false
   });
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value, files } = e.target;
+    const { name, value, files, type, checked } = e.target;
     if (name === 'foodImage') {
       setFormData(prev => ({ ...prev, foodImage: files[0] }));
+    } else if (type === 'checkbox') {
+      setFormData(prev => ({ ...prev, [name]: checked }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -122,6 +125,17 @@ const AddFoodRest = ({ onClose, onSuccess }) => {
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-700">Expiry Time</label>
                 <input name="expiryTime" value={formData.expiryTime} onChange={handleChange} type="time" className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition text-gray-600" />
+              </div>
+
+              <div className="md:col-span-2 flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
+                <div>
+                  <p className="font-semibold text-gray-800">Acceptable for Donation</p>
+                  <p className="text-sm text-gray-500">Allow charity organizations to request this food item.</p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" name="acceptableForDonation" checked={formData.acceptableForDonation} onChange={handleChange} className="sr-only peer" />
+                  <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#A7D63B]"></div>
+                </label>
               </div>
             </div>
 

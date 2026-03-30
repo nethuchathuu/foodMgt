@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Search, Plus, Filter, LayoutGrid, List, Edit, Trash2, Settings, Tag } from 'lucide-react';
+import { Search, Plus, Filter, LayoutGrid, List, Edit, Trash2, Settings, Tag, Heart } from 'lucide-react';
 import AddFoodRest from './addFoodRest';
 import EditFoodRest from './editFoodRest';
 import DeleteFoodRest from './deleteFoodRest';
@@ -163,6 +163,11 @@ const FoodListing = () => {
                     Near Expiry
                   </div>
                 )}
+                {food.acceptableForDonation && (
+                  <div className="bg-pink-100 text-pink-600 p-1.5 rounded-full absolute bottom-2 right-2 shadow-sm" title="Acceptable for Donation">
+                    <Heart size={16} fill="currentColor" />
+                  </div>
+                )}
               </div>
               <div>
                 <h3 className="font-bold text-lg text-gray-800 mb-2">{food.foodName}</h3>
@@ -210,6 +215,7 @@ const FoodListing = () => {
                 <th className="px-6 py-4">Price</th>
                 <th className="px-6 py-4">Quantity</th>
                 <th className="px-6 py-4">Status</th>
+                <th className="px-6 py-4">Type</th>
                 <th className="px-6 py-4">Actions</th>
               </tr>
             </thead>
@@ -232,6 +238,17 @@ const FoodListing = () => {
                     <span className={`px-3 py-1 text-xs font-bold rounded-full ${food.status === 'Available' ? 'bg-[#A7D63B]/20 text-[#1F5E2A]' : 'bg-[#D67A5C]/20 text-[#D67A5C]'}`}>
                       {food.status}
                     </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    {food.acceptableForDonation ? (
+                      <span className="flex items-center gap-1 text-xs font-semibold text-pink-600 bg-pink-50 px-2 py-1 rounded-lg w-max">
+                        <Heart size={14} fill="currentColor" /> Donatable
+                      </span>
+                    ) : (
+                      <span className="text-xs font-semibold text-gray-500 bg-gray-100 px-2 py-1 rounded-lg w-max">
+                        Sale Only
+                      </span>
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex gap-2">

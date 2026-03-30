@@ -2,7 +2,7 @@ const FoodListing = require('../../models/FoodListing');
 
 exports.addFood = async (req, res) => {
   try {
-    const { foodName, quantity, unit, price, discountPrice, expiryTime, status } = req.body;
+    const { foodName, quantity, unit, price, discountPrice, expiryTime, status, acceptableForDonation } = req.body;
     let { image } = req.body; // Allow passing image url just in case
     const restaurantId = req.user._id;
 
@@ -36,6 +36,7 @@ exports.addFood = async (req, res) => {
       discountPrice: discountPrice ? Number(discountPrice) : undefined,
       expiryTime: finalExpiryTime,
       image,
+      acceptableForDonation: acceptableForDonation === 'true' || acceptableForDonation === true,
       status: Number(quantity) === 0 ? 'SoldOut' : (normalizedStatus || 'Available')
     });
 
@@ -86,8 +87,10 @@ exports.updateFood = async (req, res) => {
       } else if (updateData.status === 'SoldOut') {
         updateData.status = 'Available';
       }
+    }    
+    if (updateData.acceptableForDonation !== undefined) {
+      updateData.acceptableForDonation = updateData.acceptableForDonation === 'true' || updateData.acceptableForDonation === true;
     }
-
     const updatedFood = await FoodListing.findOneAndUpdate(
       { _id: id, restaurantId },
       updateData,

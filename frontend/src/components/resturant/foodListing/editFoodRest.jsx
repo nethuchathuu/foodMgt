@@ -1,8 +1,53 @@
-import React, { useState } from 'react';
-import { X } from 'lucide-react';
-import UploadFoodRest from './uploadFoodRest';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { X, UploadCloud } from 'lucide-react';
 
-const EditFoodRest = ({ food, onClose }) => {
+const EditFoodRest = ({ food, onClose, onSuccess }) => {
+  const [formData, setFormData] = useState({
+    foodName: food?.foodName || '',
+    description: food?.description || '',
+    price: food?.price || '',
+    discountPrice: food?.discountPrice || '',
+    quantity: food?.quantity || '',
+    expiryTime: food?.expiryTime ? new Date(food.expiryTime).toTimeString().slice(0,5) : '',
+    acceptableForDonation: food?.acceptableForDonation || false,
+    foodImage: null
+  });
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value, files, type, checked } = e.target;
+    if (name === 'foodImage') {
+      setFormData(prev => ({ ...prev, foodImage: files[0] }));
+    } else if (type === 'checkbox') {
+      setFormData(prev => ({ ...prev, [name]: checked }));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      // In a real app we'd use formData if updating image, but for now we put JSON or FormData.
+      // If no new image, we just send other fields
+      await axios.put(`http://localhost:5000/api/food-listings/${food._id}`, {
+        ...formData,
+        foodImage: undefined // skip image logic for now or handle appropriately
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (onSuccess) onSuccess();
+    } catch (error) {
+      console.error('Error updating food:', error);
+      alert('Failed to update food');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto m-4 animate-in slide-in-from-bottom-4 duration-300">
@@ -14,47 +59,51 @@ const EditFoodRest = ({ food, onClose }) => {
         </div>
 
         <div className="p-8">
-          <form className="space-y-6">
-            <UploadFoodRest />
-
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2 md:col-span-2">
                 <label className="text-sm font-semibold text-gray-700">Food Name</label>
-                <input type="text" defaultValue={food?.name} className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition" />
-              </div>
-
-              <div className="space-y-2 md:col-span-2">
-                <label className="text-sm font-semibold text-gray-700">Description</label>
-                <textarea rows="3" defaultValue="Delicious surplus food ready to be shared!" className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition resize-none"></textarea>
+                <input required name="foodName" value={formData.foodName} onChange={handleChange} type="text" className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition" />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Original Price ($)</label>
-                <input type="number" defaultValue={food?.originalPrice} className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition" />
+                <label className="text-sm font-semibold text-gray-700">Original Price (Rs.)</label>
+                <input required name="price" value={formData.price} onChange={handleChange} type="number" className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition" />
               </div>
 
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700">Discount Price ($)</label>
-                <input type="number" defaultValue={food?.discountPrice} className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition" />
+                <label className="text-sm font-semibold text-gray-700">Discount Price (Rs.)</label>
+                <input name="discountPrice" value={formData.discountPrice} onChange={handleChange} type="number" className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition" />
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-700">Quantity</label>
-                <input type="number" defaultValue={food?.quantity} className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition" />
+                <input required name="quantity" value={formData.quantity} onChange={handleChange} type="number" className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition" />
               </div>
 
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-700">Expiry Time</label>
-                <input type="text" defaultValue={food?.expiryTime} className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition text-gray-600" />
+                <input name="expiryTime" value={formData.expiryTime} onChange={handleChange} type="time" className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition" />
+              </div>
+
+              <div className="md:col-span-2 flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
+                <div>
+                  <p className="font-semibold text-gray-800">Acceptable for Donation</p>
+                  <p className="text-sm text-gray-500">Allow charity organizations to request this food item.</p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" name="acceptableForDonation" checked={formData.acceptableForDonation} onChange={handleChange} className="sr-only peer" />
+                  <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#A7D63B]"></div>
+                </label>
               </div>
             </div>
 
             <div className="pt-6 mt-6 border-t border-gray-100 flex gap-4">
-              <button type="button" onClick={onClose} className="px-6 py-3 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors w-full">
+              <button type="button" onClick={onClose} disabled={loading} className="px-6 py-3 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors w-full">
                 Cancel
               </button>
-              <button type="submit" className="bg-[#A7D63B] text-[#1F5E2A] w-full py-3 rounded-xl font-bold shadow-md hover:bg-[#C8E66A] transition-colors focus:ring-4 focus:ring-[#A7D63B]/30">
-                Update Food
+              <button type="submit" disabled={loading} className="bg-[#A7D63B] text-[#1F5E2A] w-full py-3 rounded-xl font-bold shadow-md hover:bg-[#C8E66A] transition-colors focus:ring-4 focus:ring-[#A7D63B]/30">
+                {loading ? 'Updating...' : 'Update Food'}
               </button>
             </div>
           </form>
