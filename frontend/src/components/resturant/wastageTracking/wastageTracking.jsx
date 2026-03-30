@@ -1,6 +1,7 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PlusCircle, Leaf, Trash2 } from 'lucide-react';
+import { PlusCircle, Leaf } from 'lucide-react';
+import axios from 'axios';
 import AddWasted from './addWasted';
 
 const getEmoji = (name) => {
@@ -15,19 +16,25 @@ const getEmoji = (name) => {
 
 const WastageTracking = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [logs, setLogs] = useState([
-    { id: 1, foodName: "Rice", quantity: 3, unit: "kg", reason: "Overcooked" },
-    { id: 2, foodName: "Rice", quantity: 2, unit: "kg", reason: "Expired" },
-    { id: 3, foodName: "Bread", quantity: 6, unit: "units", reason: "Expired" },
-    { id: 4, foodName: "Bread", quantity: 4, unit: "units", reason: "Customer leftovers" },
-  ]);
+  const [logs, setLogs] = useState([]);
+
+  useEffect(() => {
+    const fetchTodayWastage = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get('http://localhost:5000/api/wastage/today', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setLogs(res.data || []);
+      } catch (err) {
+        console.error('Failed to fetch today wastage:', err);
+      }
+    };
+    fetchTodayWastage();
+  }, []);
 
   const handleAddLog = (newLog) => {
-    setLogs([{ ...newLog, id: Date.now() }, ...logs]);
-  };
-
-  const handleDelete = (id) => {
-    setLogs(logs.filter(log => log.id !== id));
+    setLogs([{ ...newLog }, ...logs]);
   };
 
   const groupedLogs = logs.reduce((acc, log) => {
@@ -102,9 +109,9 @@ const WastageTracking = () => {
                   </div>
 
                   <div className="mt-3 space-y-2">
-                    {group.items.map((item) => (
+                    {group.items.map((item, idx) => (
                       <motion.div 
-                        key={item.id}
+                        key={item._id || idx}
                         whileHover={{ x: 4 }}
                         className="flex justify-between items-center bg-[#F8F8F6] px-4 py-3 rounded-xl group/item"
                       >
@@ -116,12 +123,6 @@ const WastageTracking = () => {
                           <span className="text-sm font-bold text-[#1F5E2A]">
                             {item.quantity} {item.unit}
                           </span>
-                          <button 
-                            onClick={() => handleDelete(item.id)}
-                            className="text-gray-400 hover:text-red-500 transition opacity-0 group-hover/item:opacity-100"
-                          >
-                            <Trash2 size={16} />
-                          </button>
                         </div>
                       </motion.div>
                     ))}

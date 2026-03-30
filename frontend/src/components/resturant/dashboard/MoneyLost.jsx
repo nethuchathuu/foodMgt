@@ -13,12 +13,8 @@ const MoneyLost = ({ data }) => {
       <div>
         <p className="text-sm font-medium text-gray-500 mb-1">Financial Loss</p>
         <div className="flex items-baseline gap-1">
-          <h4 className="text-3xl font-bold text-gray-800">Rs. {Number(data || 0).toFixed(2)}</h4>
+          <h4 className="text-3xl font-bold text-[#D67A5C]">Rs. {Number(data || 0).toLocaleString()}</h4>
         </div>
-        <p className="text-xs text-red-500 font-medium mt-2 flex items-center gap-1">
-          <span>+8%</span>
-          <span className="text-gray-400 font-normal">from yesterday</span>
-        </p>
       </div>
     </div>
   );

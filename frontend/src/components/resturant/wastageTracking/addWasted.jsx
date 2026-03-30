@@ -1,30 +1,58 @@
-﻿import React, { useState } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import axios from 'axios';
 
 const AddWasted = ({ isOpen, onClose, onSave }) => {
   const [formData, setFormData] = useState({
-    foodName: '',
+    inventoryId: '',
     quantity: '',
-    unit: 'kg',
-    reason: ''
+    unit: '',
+    reason: '',
+    otherReason: ''
   });
+  const [inventory, setInventory] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    const fetchInventory = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get('http://localhost:5000/api/inventory', { headers: { Authorization: `Bearer ${token}` } });
+        setInventory(res.data || []);
+      } catch (err) {
+        console.error('Failed to fetch inventory', err);
+      }
+    };
+    fetchInventory();
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.foodName.trim() || !formData.quantity || !formData.reason) return;
-    
-    onSave({
-      foodName: formData.foodName.trim(),
-      quantity: Number(formData.quantity),
-      unit: formData.unit,
-      reason: formData.reason
-    });
-    onClose();
+    if (!formData.inventoryId || !formData.quantity || !formData.reason) return;
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const payload = {
+        inventoryId: formData.inventoryId,
+        quantity: Number(formData.quantity),
+        reason: formData.reason,
+        otherReason: formData.otherReason
+      };
+      const res = await axios.post('http://localhost:5000/api/wastage', payload, { headers: { Authorization: `Bearer ${token}` } });
+      const w = res.data.wastage;
+      // Normalize returned object for parent
+      onSave({ id: w._id, foodName: w.foodName, quantity: w.quantity, unit: w.unit, reason: w.reason });
+      onClose();
+    } catch (err) {
+      console.error('Failed to save wastage', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -40,21 +68,25 @@ const AddWasted = ({ isOpen, onClose, onSave }) => {
         <h2 className="text-2xl font-bold text-[#1F5E2A] mb-6">Add Wastage</h2>
 
         <form onSubmit={handleSubmit} className="grid gap-5">
-          {/* Food Name */}
+          {/* Food Name (from inventory) */}
           <div>
-            <label className="block text-sm font-semibold text-[#1F5E2A] mb-1">Food Name</label>
-            <input 
-              type="text" 
-              name="foodName"
-              value={formData.foodName}
-              onChange={handleChange}
-              placeholder="e.g. Rice, Bread, Curry" 
-              className="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-[#D67A5C] outline-none transition bg-[#F8F8F6]/50"
+            <label className="block text-sm font-semibold text-[#1F5E2A] mb-1">Food Item</label>
+            <select
+              name="inventoryId"
+              value={formData.inventoryId}
+              onChange={(e) => {
+                const id = e.target.value;
+                const item = inventory.find(i => i._id === id);
+                setFormData(prev => ({ ...prev, inventoryId: id, unit: item?.unit || '', otherReason: '' }));
+              }}
+              className="w-full border rounded-xl p-3 focus:ring-[#D67A5C] outline-none transition"
               required
-            />
-            <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
-               🍛 Rice | 🍞 Bread | 🥗 Salad
-            </p>
+            >
+              <option value="">Select food from inventory...</option>
+              {inventory.map(it => (
+                <option key={it._id} value={it._id}>{it.name} — {it.unit}</option>
+              ))}
+            </select>
           </div>
 
           {/* Quantity & Unit Row */}
@@ -75,16 +107,7 @@ const AddWasted = ({ isOpen, onClose, onSave }) => {
             </div>
             <div className="flex-1">
               <label className="block text-sm font-semibold text-[#1F5E2A] mb-1">Unit</label>
-              <select 
-                name="unit"
-                value={formData.unit}
-                onChange={handleChange}
-                className="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-[#D67A5C] outline-none transition bg-[#F8F8F6]/50 appearance-none"
-              >
-                <option value="kg">kg</option>
-                <option value="g">g</option>
-                <option value="units">units</option>
-              </select>
+              <input type="text" name="unit" value={formData.unit} disabled className="w-full border rounded-xl p-3 bg-gray-50" />
             </div>
           </div>
 
@@ -95,7 +118,7 @@ const AddWasted = ({ isOpen, onClose, onSave }) => {
               name="reason"
               value={formData.reason}
               onChange={handleChange}
-              className="w-full border border-gray-200 rounded-xl p-3 focus:ring-2 focus:ring-[#D67A5C] outline-none transition bg-[#F8F8F6]/50 appearance-none"
+              className="w-full border rounded-xl p-3 focus:ring-[#D67A5C] outline-none transition"
               required
             >
               <option value="" disabled>Select a reason...</option>
@@ -105,15 +128,25 @@ const AddWasted = ({ isOpen, onClose, onSave }) => {
               <option value="Storage issue">Storage issue</option>
               <option value="Other">Other</option>
             </select>
+            {formData.reason === 'Other' && (
+              <input
+                name="otherReason"
+                value={formData.otherReason}
+                onChange={handleChange}
+                placeholder="Please specify"
+                className="mt-3 w-full border rounded-xl p-3 focus:ring-[#D67A5C] outline-none transition"
+              />
+            )}
           </div>
 
           {/* Buttons */}
           <div className="mt-4 flex flex-col gap-2">
             <button 
               type="submit"
-              className="bg-[#D67A5C] text-white w-full py-3.5 rounded-xl font-bold shadow-md hover:scale-[1.02] hover:bg-[#E9A38E] transition-all"
+              disabled={loading}
+              className="bg-[#D67A5C] text-white w-full py-3.5 rounded-xl font-bold shadow-md hover:scale-[1.02] transition-all disabled:opacity-50"
             >
-              Save Wastage
+              {loading ? 'Saving...' : 'Save Wastage'}
             </button>
             <button 
               type="button"

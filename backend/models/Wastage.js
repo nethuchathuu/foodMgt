@@ -21,6 +21,14 @@ const WastageSchema = new mongoose.Schema({
   reason: {
     type: String,
   },
+  lossPricePerUnit: {
+    type: Number,
+    default: 0,
+  },
+  totalLoss: {
+    type: Number,
+    default: 0,
+  },
   date: {
     type: Date,
     default: Date.now,

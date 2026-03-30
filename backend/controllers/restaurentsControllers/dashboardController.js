@@ -30,14 +30,8 @@ exports.getDashboardSummary = async (req, res) => {
       }
     });
 
-    const unsoldRecords = await FoodListing.find({ restaurantId, status: 'Unsold' });
+    // Unsold logic removed - system uses wastage-based financials only
     let totalUnsoldLoss = 0;
-    unsoldRecords.forEach(u => {
-      if (u.foodName) {
-        const price = lossPriceMap[u.foodName.toLowerCase().trim()] || 0;
-        totalUnsoldLoss += price * u.quantity;
-      }
-    });
 
     // Today's orders
     const startOfDay = new Date();
@@ -50,7 +44,7 @@ exports.getDashboardSummary = async (req, res) => {
       createdAt: { $gte: startOfDay, $lte: endOfDay }
     });
 
-    const loss = totalWastageLoss + totalUnsoldLoss;
+    const loss = totalWastageLoss; // only wastage-based loss
 
     res.status(200).json({
       totalFood,
@@ -97,29 +91,9 @@ exports.getFinancialLoss = async (req, res) => {
       };
     });
 
-    // 2. Get Unsold Foods Loss
-    const unsoldRecords = await FoodListing.find({ restaurantId, status: 'Unsold' });
-    const unsoldData = unsoldRecords.map(u => {
-      let lossPrice = 0;
-      if (u.foodName) {
-        const nameKey = u.foodName.toLowerCase().trim();
-        lossPrice = lossPriceMap[nameKey] || 0;
-      }
-      const totalLoss = lossPrice * u.quantity;
-      return {
-        _id: u._id,
-        foodName: u.foodName || 'Unknown',
-        quantity: u.quantity,
-        unit: u.unit,
-        originalPrice: u.price,
-        lostRevenue: totalLoss,
-        date: u.createdAt
-      };
-    });
-
     res.status(200).json({
       wastedData,
-      unsoldData
+      unsoldData: []
     });
 
   } catch (error) {

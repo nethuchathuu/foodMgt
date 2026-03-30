@@ -16,10 +16,6 @@ const TodayOrders = ({ data }) => {
           <h4 className="text-3xl font-bold text-gray-800">{data || 0}</h4>
           <span className="text-sm text-gray-500">orders</span>
         </div>
-        <div className="mt-2 flex gap-3 text-xs font-medium">
-          <span className="text-green-600 bg-green-50 px-2 py-0.5 rounded">32 Accepted</span>
-          <span className="text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded">13 Pending</span>
-        </div>
       </div>
     </div>
   );

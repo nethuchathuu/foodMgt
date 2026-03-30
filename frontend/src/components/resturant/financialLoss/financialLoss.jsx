@@ -1,40 +1,31 @@
 ﻿import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import WastedLoss from './wastedLoss';
-import UnsoldLoss from './unsoldLoss';
-import DailyLoss from './dailyLoss';
 
 const FinancialLoss = () => {
-  const [activeTab, setActiveTab] = useState('wasted');
   const [wastedData, setWastedData] = useState([]);
-  const [unsoldData, setUnsoldData] = useState([]);
+  const [todayTotals, setTodayTotals] = useState({ wastedLoss: 0, totalLoss: 0 });
 
   useEffect(() => {
-    const fetchLossData = async () => {
+    const fetchData = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('http://localhost:5000/api/restaurants/financial-loss', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setWastedData(res.data.wastedData || []);
-        setUnsoldData(res.data.unsoldData || []);
+        const [listRes, totalsRes] = await Promise.all([
+          axios.get('http://localhost:5000/api/restaurants/financial-loss', { headers: { Authorization: `Bearer ${token}` } }),
+          axios.get('http://localhost:5000/api/financial-loss/today', { headers: { Authorization: `Bearer ${token}` } })
+        ]);
+        setWastedData(listRes.data.wastedData || []);
+        setTodayTotals(totalsRes.data || { wastedLoss: 0, totalLoss: 0 });
       } catch (err) {
         console.error('Error fetching financial loss data:', err);
       }
     };
-    fetchLossData();
+    fetchData();
   }, []);
 
   const totalWasted = wastedData.reduce((sum, item) => sum + item.loss, 0);
-  const totalUnsold = unsoldData.reduce((sum, item) => sum + item.lostRevenue, 0);
-  const totalLoss = totalWasted + totalUnsold;
-
-  const tabs = [
-    { id: 'wasted', label: 'Wasted Food Loss' },
-    { id: 'unsold', label: 'Unsold Food Loss' },
-    { id: 'daily', label: 'Daily Breakdown' }
-  ];
+  const totalLoss = todayTotals.totalLoss || totalWasted;
 
   return (
     <div className="bg-[#F8F8F6] min-h-screen p-4 sm:p-8 font-sans pb-24 relative">
@@ -52,68 +43,19 @@ const FinancialLoss = () => {
             </h1>
             <p className="text-gray-500 mt-2 text-lg">Track where your money is being lost due to food left behind.</p>
           </div>
-
           <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gradient-to-r from-white to-[#F8F8F6]">
             <div>
-              <p className="text-sm font-bold text-gray-500 tracking-wider uppercase mb-2">Total Loss Today</p>
-              {totalLoss > 2000 && (
-                <span className="text-xs text-[#D67A5C] font-bold bg-[#D67A5C]/10 px-3 py-1.5 rounded-lg flex items-center gap-2 w-max border border-[#D67A5C]/20">
-                  <span className="w-2 h-2 rounded-full bg-[#D67A5C] animate-pulse"></span>
-                  High Loss Warning
-                </span>
-              )}
+              <p className="text-sm font-bold text-gray-500 tracking-wider uppercase mb-2">Total Wasted Loss</p>
+              <p className="text-2xl font-extrabold text-[#D67A5C]">Rs. {totalWasted.toLocaleString()}</p>
             </div>
-            <div className="text-4xl sm:text-5xl font-black text-[#D67A5C] tracking-tight drop-shadow-sm">
-              Rs. {totalLoss.toLocaleString()}
+            <div className="text-right">
+              <p className="text-sm font-bold text-gray-500 tracking-wider uppercase">Today Total Loss</p>
+              <p className="text-4xl sm:text-5xl font-black text-[#D67A5C] tracking-tight">Rs. {totalLoss.toLocaleString()}</p>
             </div>
           </div>
         </motion.div>
-
-        {/* Tab Navigation */}
-        <div className="flex flex-wrap gap-3 mb-8 bg-white p-2 rounded-2xl shadow-sm border border-gray-100 w-max max-w-full overflow-x-auto">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`
-                relative px-6 py-3 rounded-xl font-bold transition-all duration-300 whitespace-nowrap
-                ${activeTab === tab.id 
-                  ? 'text-[#1F5E2A]' 
-                  : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
-                }
-              `}
-            >
-              {activeTab === tab.id && (
-                <motion.div
-                  layoutId="lossTabIndicator"
-                  className="absolute inset-0 bg-[#A7D63B] rounded-xl -z-10 shadow-sm"
-                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                />
-              )}
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Dynamic Content */}
-        <div className="relative">
-          <AnimatePresence mode="wait">
-            {activeTab === 'wasted' && (
-              <motion.div key="wasted" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
-                <WastedLoss data={wastedData} />
-              </motion.div>
-            )}
-            {activeTab === 'unsold' && (
-              <motion.div key="unsold" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
-                <UnsoldLoss data={unsoldData} />
-              </motion.div>
-            )}
-            {activeTab === 'daily' && (
-              <motion.div key="daily" initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.2 }}>
-                <DailyLoss wasted={wastedData} unsold={unsoldData} />
-              </motion.div>
-            )}
-          </AnimatePresence>
+        <div className="mt-6">
+          <WastedLoss data={wastedData} />
         </div>
 
       </div>

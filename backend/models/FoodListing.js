@@ -26,15 +26,19 @@ const FoodListingSchema = new mongoose.Schema({
     type: Number,
   },
   expiryTime: {
-    type: String,
+    type: Date,
   },
   image: {
     type: String,
   },
   status: {
     type: String,
-    enum: ['Available', 'Sold Out', 'Unsold'],
+    enum: ['Available', 'SoldOut', 'Expired'],
     default: 'Available',
+  },
+  isExpired: {
+    type: Boolean,
+    default: false,
   },
   createdAt: {
     type: Date,

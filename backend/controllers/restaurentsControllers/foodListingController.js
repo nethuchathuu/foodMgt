@@ -10,6 +10,8 @@ exports.addFood = async (req, res) => {
       image = `http://localhost:5000/uploads/food/${req.file.filename}`;
     }
 
+    const normalizedStatus = status === 'Sold Out' ? 'SoldOut' : status;
+
     const newFood = new FoodListing({
       restaurantId,
       foodName,
@@ -17,9 +19,9 @@ exports.addFood = async (req, res) => {
       unit: unit || 'item',
       price,
       discountPrice,
-      expiryTime,
+      expiryTime: expiryTime ? new Date(expiryTime) : undefined,
       image,
-      status: Number(quantity) === 0 ? 'Sold Out' : (status || 'Available')
+      status: Number(quantity) === 0 ? 'SoldOut' : (normalizedStatus || 'Available')
     });
 
     await newFood.save();
@@ -60,10 +62,13 @@ exports.updateFood = async (req, res) => {
     
     // Auto status update on quantity
     let updateData = { ...req.body };
+    // Normalize incoming status values (accept 'Sold Out')
+    if (updateData.status === 'Sold Out') updateData.status = 'SoldOut';
     if (updateData.quantity !== undefined) {
       if (Number(updateData.quantity) <= 0) {
-        updateData.status = 'Sold Out';
-      } else if (updateData.status === 'Sold Out') {
+        updateData.status = 'SoldOut';
+        updateData.quantity = 0;
+      } else if (updateData.status === 'SoldOut') {
         updateData.status = 'Available';
       }
     }

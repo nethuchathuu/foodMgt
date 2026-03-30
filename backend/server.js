@@ -7,6 +7,8 @@ const adminRoutes = require('./routes/adminRoutes');
 const inventoryRoutes = require('./routes/restaurentsRoutes/inventoryRoutes');
 const dashboardRoutes = require('./routes/restaurentsRoutes/dashboardRoutes');
 const foodListingRoutes = require('./routes/restaurentsRoutes/foodListingRoutes');
+const wastageRoutes = require('./routes/restaurentsRoutes/wastageRoutes');
+const financialLossRoutes = require('./routes/restaurentsRoutes/financialLossRoutes');
 const { setupDefaultAdmin } = require('./controllers/adminController');
 
 const path = require('path');
@@ -17,6 +19,12 @@ dotenv.config();
 // Connect to database
 connectDB().then(() => {
   setupDefaultAdmin();
+  // Start cron jobs after DB connect
+  try {
+    require('./cron/expiryJob');
+  } catch (err) {
+    console.error('Failed to start cron jobs', err.message);
+  }
 });
 
 const app = express();
@@ -33,6 +41,8 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/inventory', inventoryRoutes);
 app.use('/api/restaurants', dashboardRoutes);
 app.use('/api/food-listings', foodListingRoutes);
+app.use('/api/wastage', wastageRoutes);
+app.use('/api/financial-loss', financialLossRoutes);
 
 const PORT = process.env.PORT || 5000;
 
