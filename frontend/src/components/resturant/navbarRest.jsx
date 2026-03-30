@@ -5,16 +5,7 @@ const NavbarRest = () => {
   return (
     <nav className="fixed top-0 left-64 right-0 h-16 bg-white shadow-sm z-10 px-6 flex justify-between items-center transition-all duration-300">
       <div className="flex items-center gap-4 flex-1">
-        <h2 className="text-xl font-bold text-[#1F5E2A]">Dashboard</h2>
         
-        <div className="hidden md:flex relative max-w-md w-full ml-6">
-          <input 
-            type="text" 
-            placeholder="Search..." 
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#A7D63B] text-sm bg-gray-50 focus:bg-white transition-colors"
-          />
-          <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-        </div>
       </div>
 
       <div className="flex items-center gap-5">

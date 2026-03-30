@@ -12,14 +12,29 @@ exports.addFood = async (req, res) => {
 
     const normalizedStatus = status === 'Sold Out' ? 'SoldOut' : status;
 
+    let finalExpiryTime = undefined;
+    if (expiryTime && expiryTime.trim() !== '') {
+      if (String(expiryTime).includes(':')) {
+        const [hours, minutes] = String(expiryTime).split(':');
+        const today = new Date();
+        today.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+        finalExpiryTime = today;
+      } else {
+        const parsed = new Date(expiryTime);
+        if (!isNaN(parsed.valueOf())) {
+          finalExpiryTime = parsed;
+        }
+      }
+    }
+
     const newFood = new FoodListing({
       restaurantId,
       foodName,
       quantity,
       unit: unit || 'item',
       price,
-      discountPrice,
-      expiryTime: expiryTime ? new Date(expiryTime) : undefined,
+      discountPrice: discountPrice ? Number(discountPrice) : undefined,
+      expiryTime: finalExpiryTime,
       image,
       status: Number(quantity) === 0 ? 'SoldOut' : (normalizedStatus || 'Available')
     });

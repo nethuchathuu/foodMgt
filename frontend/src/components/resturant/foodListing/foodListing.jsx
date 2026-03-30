@@ -19,6 +19,8 @@ const FoodListing = () => {
   const [settingFood, setSettingFood] = useState(null);
   const [markingFood, setMarkingFood] = useState(null);
 
+  const [currentTime, setCurrentTime] = useState(new Date());
+
   const fetchFoods = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -35,6 +37,34 @@ const FoodListing = () => {
     fetchFoods();
   }, []);
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date();
+      setCurrentTime(now);
+      
+      // Auto move expired to wastage logic (handled by backend cron, but we can sync local state or call update here)
+      foods.forEach(async (food) => {
+        if (food.expiryTime && food.status !== 'Expired' && food.status !== 'SoldOut') {
+          const expiry = new Date(food.expiryTime).getTime();
+          if (expiry <= now.getTime()) {
+            try {
+              const token = localStorage.getItem('token');
+              await axios.put(`http://localhost:5000/api/food-listings/${food._id}`, { status: 'Expired' }, {
+                headers: { Authorization: `Bearer ${token}` }
+              });
+              // Fetch to get updated list
+              fetchFoods();
+            } catch (err) {
+              console.error('Error auto-updating expired food:', err);
+            }
+          }
+        }
+      });
+    }, 60000); // 1 minute
+    
+    return () => clearInterval(timer);
+  }, [foods]);
+
   const handleSuccess = () => {
     fetchFoods();
     setIsAddOpen(false);
@@ -42,6 +72,21 @@ const FoodListing = () => {
     setDeletingFood(null);
     setSettingFood(null);
     setMarkingFood(null);
+  };
+
+  const formatTime = (isoString) => {
+    if (!isoString) return '';
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return isoString;
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true });
+  };
+
+  const isNearExpiry = (isoString) => {
+    if (!isoString) return false;
+    const expiry = new Date(isoString).getTime();
+    const now = currentTime.getTime();
+    const oneHour = 60 * 60 * 1000;
+    return (expiry - now > 0) && (expiry - now <= oneHour);
   };
 
   const filteredFoods = foods.filter(food => 
@@ -78,10 +123,7 @@ const FoodListing = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl hover:bg-gray-50 text-gray-600 transition">
-            <Filter size={18} />
-            Filters
-          </button>
+          
         </div>
 
         <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-xl">
@@ -103,33 +145,41 @@ const FoodListing = () => {
       {/* Food Grid / Table */}
       {viewMode === 'card' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredFoods.map(food => (
-            <div key={food._id} className="bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group">
-              <div className="relative h-48 overflow-hidden">
+          {filteredFoods.map(food => {
+            const isExpiringSoon = food.status === 'Available' && isNearExpiry(food.expiryTime);
+            return (
+            <div key={food._id} className="bg-white rounded-3xl shadow-xl p-5 hover:scale-105 transition group">
+              <div className="relative h-48 overflow-hidden rounded-2xl mb-4">
                 <img 
                   src={food.image || "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&q=80"} 
                   alt={food.foodName} 
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
-                <div className={`absolute top-3 right-3 px-3 py-1 text-xs font-bold rounded-full ${food.status === 'Available' ? 'bg-[#A7D63B] text-[#1F5E2A]' : 'bg-[#D67A5C] text-white'}`}>
+                <div className={`absolute top-3 left-3 px-3 py-1 text-xs font-bold rounded-full shadow ${food.status === 'Available' ? 'bg-[#A7D63B] text-[#1F5E2A]' : 'bg-[#D67A5C] text-white'}`}>
                   {food.status}
                 </div>
-                {food.status === 'Available' && (
-                  <div className="absolute top-3 left-3 bg-[#E9A38E] text-white px-2 py-1 text-xs font-bold rounded-lg shadow">
+                {isExpiringSoon && (
+                  <div className="bg-yellow-300 text-[#1F5E2A] text-xs px-2 py-1 font-bold rounded-full absolute top-2 right-2 shadow-md">
                     Near Expiry
                   </div>
                 )}
               </div>
-              <div className="p-5">
-                <h3 className="font-bold text-lg text-gray-800 mb-1">{food.foodName}</h3>
-                <div className="flex justify-between items-end mb-4">
-                  <div>
-                    <span className="text-xl font-black text-[#1F5E2A]">Rs. {food.discountPrice || food.price}</span>
-                    {food.discountPrice && <span className="text-sm text-gray-400 line-through ml-2">Rs. {food.price}</span>}
+              <div>
+                <h3 className="font-bold text-lg text-gray-800 mb-2">{food.foodName}</h3>
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex flex-col">
+                    {food.discountPrice ? (
+                      <>
+                        <span className="text-xl font-semibold text-[#D67A5C]">Rs. {food.discountPrice}</span>
+                        <span className="text-sm text-gray-400 line-through">Rs. {food.price}</span>
+                      </>
+                    ) : (
+                      <span className="text-xl font-semibold text-[#D67A5C]">Rs. {food.price}</span>
+                    )}
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-gray-500">Qty: <span className="font-bold text-gray-700">{food.quantity}</span></p>
-                    <p className="text-xs text-[#d67a5c] font-medium">{food.expiryTime}</p>
+                    <p className="text-xs text-gray-500 font-medium">Qty: <span className="font-bold text-gray-700">{food.quantity} {food.unit}</span></p>
+                    <p className="text-sm text-gray-500 mt-1">{formatTime(food.expiryTime)}</p>
                   </div>
                 </div>
                 
@@ -149,7 +199,7 @@ const FoodListing = () => {
                 </div>
               </div>
             </div>
-          ))}
+          )})}
         </div>
       ) : (
         <div className="bg-white rounded-2xl shadow-sm overflow-hidden">

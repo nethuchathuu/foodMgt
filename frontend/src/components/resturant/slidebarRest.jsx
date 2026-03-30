@@ -6,9 +6,9 @@ import {
   Heart,
   Trash2,
   DollarSign,
-  Package,
-  Leaf
+  Package
 } from 'lucide-react';
+import logo from '../../assets/foodMgtLogo.png';
 
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -26,14 +26,12 @@ const SidebarRest = ({ activeItem, setActiveItem }) => {
 
   return (
     <aside className="fixed left-0 top-0 h-full w-64 bg-[#1F5E2A] rounded-r-3xl shadow-xl flex flex-col z-20 transition-all duration-300">
-      <div className="p-6 pb-8 border-b border-white/10">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="p-2 bg-[#A7D63B]/20 rounded-lg">
-            <Leaf className="w-6 h-6 text-[#A7D63B]" />
-          </div>
-          <h1 className="text-2xl font-bold text-[#A7D63B]">FoodShare</h1>
+      <div className="pt-1 pb-6 px-6 border-b border-white/10">
+        <div className="flex flex-col items-center text-center gap-0 mb-1">
+          <img src={logo} alt="FoodMgt Logo" className="w-30 h-30 object-contain" />
+          {/* <h1 className="text-2xl font-bold text-[#FFDD59] mt-0">SecondServer</h1> */}
+          <h1 className="text-2xl font-bold text-[#FFDD59] mt-0">{user?.name || "Hotel Name"}</h1>
         </div>
-        <p className="text-[#A7D63B] text-lg font-bold truncate ml-11">{user?.name || "Hotel Name"}</p>
       </div>
 
       <div className="flex-1 overflow-y-auto py-6 px-4 flex flex-col gap-2">
@@ -58,12 +56,6 @@ const SidebarRest = ({ activeItem, setActiveItem }) => {
         })}
       </div>
 
-      <div className="p-4 mt-auto">
-        <button className="w-full bg-white/10 hover:bg-[#A7D63B] hover:text-[#1F5E2A] text-white py-3 rounded-xl transition-colors font-medium text-sm flex items-center justify-center gap-2">
-          <Utensils className="w-4 h-4" />
-          Quick Post Food
-        </button>
-      </div>
     </aside>
   );
 };
