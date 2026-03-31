@@ -38,7 +38,7 @@ const Hero = () => {
             Help Communities.
           </h1>
           <p className="text-lg md:text-xl text-gray-700">
-            Discover amazing deals on surplus food from local restaurants. Enjoy delicious meals at a fraction of the cost, or request food donations for your community.
+            Available across <span className="font-bold text-[#1F5E2A]">Colombo District</span>, discover amazing deals on surplus food from local restaurants. Enjoy delicious meals at a fraction of the cost, or request food donations for your community.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
             <motion.button 
