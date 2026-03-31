@@ -1,61 +1,75 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Search, Heart } from 'lucide-react';
+import Fuse from 'fuse.js';
 import SidebarUser from '../slidebarUser';
 import NavbarUser from '../navbarUser';
 import AvailableFood from './availableFood';
 
-const mockFoods = [
-  {
-    id: 1,
-    name: 'Vegetable Rice Pack',
-    restaurant: 'Green Cafe',
-    category: 'Rice',
-    location: 'Colombo',
-    quantity: 5,
-    expiresIn: '2 hours',
-    donationEnabled: true,
-    image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 2,
-    name: 'Assorted Bakery Items',
-    restaurant: 'Fresh Bakes',
-    category: 'Bakery',
-    location: 'Nearby',
-    quantity: 12,
-    expiresIn: '4 hours',
-    donationEnabled: false,
-    image: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80',
-  },
-  {
-    id: 3,
-    name: 'Fruit Juices',
-    restaurant: 'Juice Bar',
-    category: 'Drinks',
-    location: 'Colombo',
-    quantity: 8,
-    expiresIn: '1 day',
-    donationEnabled: true,
-    image: 'https://images.unsplash.com/photo-1600271886742-f049cd451bba?ixlib=rb-1.2.1&auto=format&fit=crop&w=400&q=80',
-  },
-];
-
-const categories = ["All", "Rice", "Bakery", "Drinks", "Snacks"];
+const categories = ["All", "Rice", "Bakery", "Drinks", "Snacks"]; // We can keep categories, but FoodListing doesn't currently strictly enforce them unless added later
 
 export default function BrowseFood() {
+  const [foods, setFoods] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
   const [donationOnly, setDonationOnly] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  const fetchAvailableFoods = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get('http://localhost:5000/api/food-listings/available', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setFoods(res.data);
+    } catch (error) {
+      console.error('Failed to fetch available foods:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAvailableFoods();
+    
+    // Poll for updates and expiry evaluation every minute
+    const interval = setInterval(() => {
+      setCurrentTime(new Date());
+      fetchAvailableFoods();
+    }, 60000);
+    
+    return () => clearInterval(interval);
+  }, []);
 
   // Filter functionality
-  const filteredFoods = mockFoods.filter(food => {
-    const matchesSearch = food.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          food.restaurant.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = activeCategory === 'All' || food.category === activeCategory;
-    const matchesDonation = donationOnly ? food.donationEnabled : true;
+  let filteredFoods = foods.filter(food => {
+    // Check if truly not expired right now
+    if (food.expiryTime) {
+      const expiry = new Date(food.expiryTime).getTime();
+      if (expiry <= currentTime.getTime()) {
+        return false;
+      }
+    }
     
-    return matchesSearch && matchesCategory && matchesDonation;
+    const matchesDonation = donationOnly ? food.acceptableForDonation : true;
+    return matchesDonation;
   });
+
+  // Apply Fuzzy Search for Search Term
+  if (searchTerm.trim() !== '') {
+    const fuseSearch = new Fuse(filteredFoods, {
+      keys: ['foodName', 'restaurantId.name'],
+      threshold: 0.4,
+    });
+    filteredFoods = fuseSearch.search(searchTerm).map(result => result.item);
+  }
+
+  // Apply Fuzzy Search for Categories
+  if (activeCategory !== 'All') {
+    const fuseCategory = new Fuse(filteredFoods, {
+      keys: ['foodName', 'description'],
+      threshold: 0.4,
+    });
+    filteredFoods = fuseCategory.search(activeCategory).map(result => result.item);
+  }
 
   return (
     <div className="flex h-screen overflow-hidden font-sans" style={{ backgroundColor: '#F8F8F6' }}>
@@ -134,7 +148,7 @@ export default function BrowseFood() {
             </div>
 
             {/* Food Grid */}
-            <AvailableFood foods={filteredFoods} />
+            <AvailableFood foods={filteredFoods} currentTime={currentTime} />
 
           </div>
         </main>

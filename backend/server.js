@@ -10,6 +10,7 @@ const foodListingRoutes = require('./routes/restaurentsRoutes/foodListingRoutes'
 const wastageRoutes = require('./routes/restaurentsRoutes/wastageRoutes');
 const financialLossRoutes = require('./routes/restaurentsRoutes/financialLossRoutes');
 const organizationRoutes = require('./routes/organizationRoutes');
+const browseFoodRoutes = require('./routes/receiverRoutes/browseFoodRoutes');
 const { setupDefaultAdmin } = require('./controllers/adminController');
 
 const path = require('path');
@@ -45,6 +46,7 @@ app.use('/api/food-listings', foodListingRoutes);
 app.use('/api/wastage', wastageRoutes);
 app.use('/api/financial-loss', financialLossRoutes);
 app.use('/api/organization', organizationRoutes);
+app.use('/api/browse-food', browseFoodRoutes);
 
 const PORT = process.env.PORT || 5000;
 

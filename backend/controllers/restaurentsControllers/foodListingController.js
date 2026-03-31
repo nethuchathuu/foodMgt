@@ -61,6 +61,40 @@ exports.getFoods = async (req, res) => {
   }
 };
 
+exports.getAvailableFoodListings = async (req, res) => {
+  try {
+    const foods = await FoodListing.find({ status: 'Available', isExpired: false })
+      .populate('restaurantId')
+      .sort({ createdAt: -1 });
+
+    const Restaurant = require('../../models/Restaurant');
+    
+    // Process items and filter out any bad data from non-restaurants
+    const processedFoods = [];
+    for (const f of foods) {
+      if (!f.restaurantId) continue;
+      
+      const foodObj = f.toObject();
+      const profile = await Restaurant.findOne({ userId: f.restaurantId._id });
+      
+      if (profile) {
+        // Enforce pulling the details exclusively from the Restaurant Profile
+        foodObj.restaurantId = {
+          _id: f.restaurantId._id,
+          name: profile.restaurantName || 'Unknown Restaurant',
+          location: profile.address || 'Not Provided'
+        };
+        processedFoods.push(foodObj);
+      }
+    }
+      
+    res.status(200).json(processedFoods);
+  } catch (error) {
+    console.error('Fetch available foods error:', error);
+    res.status(500).json({ message: 'Failed to fetch available food listings', error: error.message });
+  }
+};
+
 exports.getFoodCount = async (req, res) => {
   try {
     const restaurantId = req.user._id;
@@ -120,5 +154,15 @@ exports.deleteFood = async (req, res) => {
     res.status(200).json({ message: 'Food item deleted successfully.' });
   } catch (error) {
     res.status(500).json({ message: 'Failed to delete food item', error: error.message });
+  }
+};
+
+exports.deleteAllFoods = async (req, res) => {
+  try {
+    const restaurantId = req.user._id;
+    await FoodListing.deleteMany({ restaurantId });
+    res.status(200).json({ message: 'All food items deleted successfully.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to delete all food items', error: error.message });
   }
 };
