@@ -1,28 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ShoppingBag, ArrowLeft, Info, Package, MapPin, MessageSquare, Truck, Store } from 'lucide-react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import SidebarUser from '../slidebarUser';
 import NavbarUser from '../navbarUser';
 
-const mockFoods = {
-  1: {
-    id: 1,
-    name: 'Vegetable Rice Pack',
-    restaurant: 'Green Cafe',
-    category: 'Rice',
-    contact: '0771234567',
-    quantity: 5,
-    expiresIn: '2 hours',
-    description: 'Freshly packed vegetable rice with soya meat curry and beans.',
-    image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-  }
-};
+// Order page fetches real food listing data by id
 
 export default function OrderFood() {
   const { id } = useParams();
   const navigate = useNavigate();
-  // Using ID 1 as default mock if route param isn't perfectly mapped in this demo
-  const food = mockFoods[id] || mockFoods[1]; 
+  const [food, setFood] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const [quantity, setQuantity] = useState('');
   const [deliveryType, setDeliveryType] = useState('pickup');
@@ -31,10 +21,34 @@ export default function OrderFood() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Simulate order placement
-    console.log({ foodId: food.id, quantity, deliveryType, location, notes });
-    navigate('/receiver/dashboard'); // Or wherever success routes to
+    (async () => {
+      try {
+        const token = localStorage.getItem('token');
+        await axios.post('http://localhost:5000/api/food-orders', { foodId: id, quantity: Number(quantity) }, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        navigate('/receiver/orders');
+      } catch (err) {
+        console.error('Failed to create order:', err);
+        alert('Failed to place order. Please try again.');
+      }
+    })();
   };
+
+  useEffect(() => {
+    const fetchFood = async () => {
+      try {
+        const res = await axios.get(`http://localhost:5000/api/browse-food/${id}`);
+        setFood(res.data);
+      } catch (err) {
+        console.error('Failed to fetch food details:', err);
+        setError('Failed to load food details');
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (id) fetchFood();
+  }, [id]);
 
   return (
     <div className="flex h-screen overflow-hidden font-sans" style={{ backgroundColor: '#F8F8F6' }}>
@@ -73,26 +87,28 @@ export default function OrderFood() {
                   </h3>
                   
                   <div className="mb-4 rounded-xl overflow-hidden h-32 w-full">
-                    <img src={food.image} alt={food.name} className="w-full h-full object-cover" />
+                    <img src={food?.image || ''} alt={food?.name || 'Food'} className="w-full h-full object-cover" />
                   </div>
                   
-                  <h4 className="font-bold mb-1" style={{ color: '#1F5E2A' }}>{food.name}</h4>
-                  <p className="text-sm text-gray-600 mb-3">{food.restaurant}</p>
+                  <h4 className="font-bold mb-1" style={{ color: '#1F5E2A' }}>{food?.name || ''}</h4>
+                  <p className="text-sm text-gray-600 mb-3">{food?.restaurant || ''}</p>
                   
                   <div className="space-y-2 text-sm pt-4 border-t border-gray-200">
                     <div className="flex justify-between">
                       <span className="text-gray-500">Available:</span>
-                      <span className="font-bold" style={{ color: '#D67A5C' }}>{food.quantity} packs</span>
+                      <span className="font-bold" style={{ color: '#D67A5C' }}>{food?.quantity || 0} packs</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-500">Expires:</span>
-                      <span className="font-bold" style={{ color: '#E9A38E' }}>in {food.expiresIn}</span>
+                      <span className="font-bold" style={{ color: '#E9A38E' }}>in {food?.expiresIn || ''}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Right side - Form inputs */}
                 <div className="p-6 md:w-2/3">
+                  {loading && <div className="py-8 text-center">Loading food details...</div>}
+                  {error && <div className="py-8 text-center text-red-500">{error}</div>}
                   <form onSubmit={handleSubmit} className="space-y-5">
                     
                     {/* Fixed Food Name Field */}
@@ -107,7 +123,7 @@ export default function OrderFood() {
                         <input
                           type="text"
                           disabled
-                          value={food.name}
+                          value={food?.name || ''}
                           className="block w-full pl-10 pr-3 py-3 border rounded-xl bg-gray-100 text-gray-600 cursor-not-allowed border-gray-200"
                         />
                       </div>
@@ -126,8 +142,8 @@ export default function OrderFood() {
                           type="number"
                           required
                           min="1"
-                          max={food.quantity}
-                          placeholder={`Enter quantity (max ${food.quantity})`}
+                          max={food ? food.quantity : undefined}
+                          placeholder={food ? `Enter quantity (max ${food.quantity})` : 'Enter quantity'}
                           value={quantity}
                           onChange={(e) => setQuantity(e.target.value)}
                           className="block w-full pl-10 pr-3 py-3 border rounded-xl bg-white focus:outline-none focus:ring-2 transition-all"
@@ -225,7 +241,8 @@ export default function OrderFood() {
                       </Link>
                       <button 
                         type="submit"
-                        className="flex-1 py-3 px-4 rounded-xl font-bold text-white shadow-md hover:opacity-90 transition-opacity"
+                        disabled={!food || loading}
+                        className="flex-1 py-3 px-4 rounded-xl font-bold text-white shadow-md hover:opacity-90 transition-opacity disabled:opacity-60"
                         style={{ backgroundColor: '#E9A38E' }}
                       >
                         Confirm Order

@@ -1,4 +1,37 @@
 ﻿const FoodOrder = require('../../models/foodOrders');
+const FoodListing = require('../../models/FoodListing');
+
+// Create a new order (receiver)
+exports.createOrder = async (req, res) => {
+  try {
+    const receiverId = req.user._id;
+    const { foodId, quantity } = req.body;
+
+    if (!foodId || !quantity) {
+      return res.status(400).json({ message: 'foodId and quantity are required' });
+    }
+
+    const food = await FoodListing.findById(foodId).populate('restaurantId');
+    if (!food) return res.status(404).json({ message: 'Food listing not found' });
+
+    const restaurantId = food.restaurantId ? food.restaurantId._id : null;
+
+    const newOrder = new FoodOrder({
+      receiverId,
+      restaurantId,
+      foodId,
+      foodName: food.foodName || '',
+      quantity: Number(quantity)
+    });
+
+    await newOrder.save();
+
+    res.status(201).json({ message: 'Order created successfully', order: newOrder });
+  } catch (error) {
+    console.error('Error creating order:', error);
+    res.status(500).json({ message: 'Failed to create order', error: error.message });
+  }
+};
 
 // Get all orders for the current receiver
 exports.getMyOrders = async (req, res) => {
@@ -6,7 +39,7 @@ exports.getMyOrders = async (req, res) => {
     const receiverId = req.user._id;
     const orders = await FoodOrder.find({ receiverId })
       .populate('foodId')
-      .populate('restaurantId', 'restaurantName address phoneNumber restaurantEmail')
+      .populate('restaurantId')
       .sort({ createdAt: -1 });
 
     const processedOrders = orders.map(o => {
@@ -14,7 +47,7 @@ exports.getMyOrders = async (req, res) => {
       if (order.restaurantId) {
         order.restaurantId = {
           _id: order.restaurantId._id,
-          name: order.restaurantId.restaurantName || 'Unknown Provider',
+          name: order.restaurantId.restaurantName || order.restaurantId.restaurantName || 'Unknown Provider',
           address: order.restaurantId.address || 'Not Provided',
           phone: order.restaurantId.phoneNumber || 'Not Provided',
           email: order.restaurantId.restaurantEmail || 'Not Provided'
@@ -38,7 +71,7 @@ exports.getOrderDetails = async (req, res) => {
 
     const order = await FoodOrder.findOne({ _id: id, receiverId })
       .populate('foodId')
-      .populate('restaurantId', 'restaurantName address phoneNumber restaurantEmail');
+      .populate('restaurantId');
 
     if (!order) return res.status(404).json({ message: 'Order not found' });
 
@@ -47,14 +80,15 @@ exports.getOrderDetails = async (req, res) => {
       orderObj.restaurantId = {
         _id: orderObj.restaurantId._id,
         name: orderObj.restaurantId.restaurantName || 'Unknown Provider',
-        address: order.restaurantId.address || 'Not Provided',
-        phone: order.restaurantId.phoneNumber || 'Not Provided',
-        email: order.restaurantId.restaurantEmail || 'Not Provided'
+        address: orderObj.restaurantId.address || 'Not Provided',
+        phone: orderObj.restaurantId.phoneNumber || 'Not Provided',
+        email: orderObj.restaurantId.restaurantEmail || 'Not Provided'
       };
     }
 
     res.status(200).json(orderObj);
   } catch (error) {
+    console.error('Error fetching order details:', error);
     res.status(500).json({ message: 'Failed to fetch order', error: error.message });
   }
 };

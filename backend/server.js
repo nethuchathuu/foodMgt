@@ -12,6 +12,7 @@ const financialLossRoutes = require('./routes/restaurentsRoutes/financialLossRou
 const organizationRoutes = require('./routes/organizationRoutes');
 const browseFoodRoutes = require('./routes/receiverRoutes/browseFoodRoutes');
 const foodOrdersRoutes = require('./routes/receiverRoutes/foodOrdersRoute');
+const restFoodOrdersRoutes = require('./routes/restaurentsRoutes/foodOrdersRoutes');
 const foodRequestsRoutes = require('./routes/receiverRoutes/foodRequestsRoutes');
 const { setupDefaultAdmin } = require('./controllers/adminController');
 const path = require('path');
@@ -50,6 +51,8 @@ app.use('/api/organization', organizationRoutes);
 app.use('/api/browse-food', browseFoodRoutes);
 app.use('/api/food-orders', foodOrdersRoutes);
 app.use('/api/food-requests', foodRequestsRoutes);
+// Restaurant-side orders (list + status updates)
+app.use('/api/restaurants/food-orders', restFoodOrdersRoutes);
 
 const PORT = process.env.PORT || 5000;
 
