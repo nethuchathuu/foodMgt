@@ -3,10 +3,15 @@ const FoodListing = require('../../models/FoodListing');
 const Wastage = require('../../models/Wastage');
 const Order = require('../../models/Order');
 const FinancialLoss = require('../../models/FinancialLoss');
+const Restaurant = require('../../models/Restaurant');
 
 exports.clearFinancialLoss = async (req, res) => {
   try {
-    const restaurantId = req.user._id;
+    const userId = req.user._id;
+    const restaurant = await Restaurant.findOne({ userId });
+    if (!restaurant) return res.status(404).json({ message: 'Restaurant profile not found.' });
+    const restaurantId = restaurant._id;
+
     await Wastage.deleteMany({ restaurantId });
     await FinancialLoss.deleteMany({ restaurantId });
     res.status(200).json({ message: 'Financial loss data cleared successfully.' });
@@ -17,7 +22,10 @@ exports.clearFinancialLoss = async (req, res) => {
 
 exports.getDashboardSummary = async (req, res) => {
   try {
-    const restaurantId = req.user._id;
+    const userId = req.user._id;
+    const restaurant = await Restaurant.findOne({ userId });
+    if (!restaurant) return res.status(404).json({ message: 'Restaurant profile not found.' });
+    const restaurantId = restaurant._id;
 
     const inventoryItems = await Inventory.find({ restaurantId });
     
@@ -73,7 +81,10 @@ exports.getDashboardSummary = async (req, res) => {
 
 exports.getFinancialLoss = async (req, res) => {
   try {
-    const restaurantId = req.user._id;
+    const userId = req.user._id;
+    const restaurant = await Restaurant.findOne({ userId });
+    if (!restaurant) return res.status(404).json({ message: 'Restaurant profile not found.' });
+    const restaurantId = restaurant._id;
 
     // Get inventory to map foodName to lossPrice
     const inventoryItems = await Inventory.find({ restaurantId });
@@ -117,7 +128,10 @@ exports.getFinancialLoss = async (req, res) => {
 
 exports.getTodayChart = async (req, res) => {
   try {
-    const restaurantId = req.user._id;
+    const userId = req.user._id;
+    const restaurant = await Restaurant.findOne({ userId });
+    if (!restaurant) return res.status(404).json({ message: 'Restaurant profile not found.' });
+    const restaurantId = restaurant._id;
 
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
