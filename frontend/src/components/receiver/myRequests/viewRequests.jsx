@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Eye, Edit2, XCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
-export default function ViewRequests({ requests }) {
+export default function ViewRequests({ requests = [], loading = false }) {
   const [activeModal, setActiveModal] = useState(null);
   const [selectedRequest, setSelectedRequest] = useState(null);
 
@@ -39,9 +39,14 @@ export default function ViewRequests({ requests }) {
   return (
     <>
       <div className="grid grid-cols-1 gap-4">
-        {requests.map(req => (
+        {loading ? (
+          <div className="py-12 text-center text-gray-500 bg-white rounded-2xl border border-dashed" style={{ borderColor: '#D8C3A5' }}>
+            <p>Loading requests...</p>
+          </div>
+        ) : (
+          requests.map(req => (
           <div 
-            key={req.id} 
+            key={req._id || req.id} 
             className="bg-white border rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
             style={{ borderColor: '#D8C3A5' }}
           >
@@ -64,7 +69,7 @@ export default function ViewRequests({ requests }) {
             {/* Actions Section */}
             <div className="flex flex-wrap gap-2 w-full md:w-auto">
               <Link
-                to={`/receiver/requests/${req.id}`}
+                to={`/receiver/requests/${req._id || req.id}`}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-white transition-transform hover:scale-105 shadow-sm text-sm"
                 style={{ backgroundColor: '#9BC7D8' }}
               >
@@ -91,9 +96,10 @@ export default function ViewRequests({ requests }) {
               )}
             </div>
           </div>
-        ))}
-        
-        {requests.length === 0 && (
+          ))
+        )}
+
+        {!loading && requests.length === 0 && (
           <div className="py-12 text-center text-gray-500 bg-white rounded-2xl border border-dashed" style={{ borderColor: '#D8C3A5' }}>
             <p>No donation requests found.</p>
           </div>

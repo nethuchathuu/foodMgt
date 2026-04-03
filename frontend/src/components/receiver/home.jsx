@@ -21,7 +21,7 @@ export default function ReceiverDashboard() {
               </div>
               <div className="relative z-10 max-w-3xl">
                 <h1 className="text-3xl md:text-4xl font-bold mb-4" style={{ color: '#1F5E2A' }}>
-                  Welcome back, Nethmi! ??
+                  Welcome back, 
                 </h1>
                 <p className="text-lg opacity-90" style={{ color: '#D67A5C' }}>
                   Together, we can make a difference. Let's find food and reduce waste today.

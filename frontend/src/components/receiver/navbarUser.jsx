@@ -8,10 +8,7 @@ export default function NavbarUser() {
         <button className="lg:hidden text-gray-600 hover:text-gray-900">
           <Menu className="w-6 h-6" />
         </button>
-        <div className="flex items-center gap-2">
-          <Leaf className="w-8 h-8" style={{ color: '#1F5E2A' }} />
-          <h1 className="text-2xl font-bold tracking-tight" style={{ color: '#1F5E2A' }}>SecondServe</h1>
-        </div>
+        
       </div>
       
       <div className="flex items-center gap-4">

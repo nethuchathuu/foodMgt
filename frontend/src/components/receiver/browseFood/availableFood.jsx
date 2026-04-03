@@ -118,7 +118,7 @@ export default function AvailableFood({ foods, currentTime }) {
                 {isDonatable && (
                   <div className="flex items-center gap-2 pt-2 mt-2 border-t border-gray-100">
                     <Sparkles className="w-4 h-4 text-[#1F5E2A]" />
-                    <span className="text-xs italic text-gray-500">Available for free to charities</span>
+                    <span className="text-xs italic text-gray-500">Available for free</span>
                   </div>
                 )}
               </div>

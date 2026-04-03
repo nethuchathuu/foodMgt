@@ -11,8 +11,9 @@ const wastageRoutes = require('./routes/restaurentsRoutes/wastageRoutes');
 const financialLossRoutes = require('./routes/restaurentsRoutes/financialLossRoutes');
 const organizationRoutes = require('./routes/organizationRoutes');
 const browseFoodRoutes = require('./routes/receiverRoutes/browseFoodRoutes');
+const foodOrdersRoutes = require('./routes/receiverRoutes/foodOrdersRoute');
+const foodRequestsRoutes = require('./routes/receiverRoutes/foodRequestsRoutes');
 const { setupDefaultAdmin } = require('./controllers/adminController');
-
 const path = require('path');
 
 // Load env vars
@@ -47,6 +48,8 @@ app.use('/api/wastage', wastageRoutes);
 app.use('/api/financial-loss', financialLossRoutes);
 app.use('/api/organization', organizationRoutes);
 app.use('/api/browse-food', browseFoodRoutes);
+app.use('/api/food-orders', foodOrdersRoutes);
+app.use('/api/food-requests', foodRequestsRoutes);
 
 const PORT = process.env.PORT || 5000;
 

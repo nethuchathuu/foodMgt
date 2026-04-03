@@ -1,39 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Clock, CheckCircle, XCircle } from 'lucide-react';
 import SidebarUser from '../slidebarUser';
 import NavbarUser from '../navbarUser';
 import ViewRequests from './viewRequests';
 
-// Mock Data
-const mockRequests = [
-  {
-    id: 1,
-    foodType: 'Rice Packets',
-    quantity: 50,
-    description: 'Needed for a community shelter weekend drive.',
-    status: 'Pending',
-    date: '2023-11-01'
-  },
-  {
-    id: 2,
-    foodType: 'Assorted Bakery Items',
-    quantity: 20,
-    description: 'For local orphanage afternoon tea.',
-    status: 'Approved',
-    date: '2023-10-28'
-  },
-  {
-    id: 3,
-    foodType: 'Vegetable Curries',
-    quantity: 15,
-    description: 'Lunch meals for elder care home.',
-    status: 'Rejected',
-    date: '2023-10-25'
-  }
-];
-
 export default function MyRequests() {
-  const [requests] = useState(mockRequests);
+  const [requests, setRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRequests = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        const res = await axios.get('http://localhost:5000/api/food-requests/my-requests', config);
+        setRequests(res.data || []);
+      } catch (err) {
+        console.error('Failed to fetch requests:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRequests();
+  }, []);
 
   // Calculate metrics
   const pendingCount = requests.filter(r => r.status === 'Pending').length;
@@ -96,6 +86,9 @@ export default function MyRequests() {
             <div className="pt-4">
               <h2 className="text-xl font-bold mb-4" style={{ color: '#1F5E2A' }}>Request History</h2>
               <ViewRequests requests={requests} />
+              { loading && (
+                <div className="py-6 text-center text-gray-500">Loading requests...</div>
+              )}
             </div>
 
           </div>

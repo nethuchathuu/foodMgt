@@ -1,6 +1,6 @@
 ﻿const mongoose = require('mongoose');
 
-const FoodOrderSchema = new mongoose.Schema({
+const FoodRequestSchema = new mongoose.Schema({
   receiverId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -9,22 +9,21 @@ const FoodOrderSchema = new mongoose.Schema({
   restaurantId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
   },
-  foodId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'FoodListing',
-  },
-  foodName: {
+  foodType: {
     type: String,
+    required: true,
   },
   quantity: {
     type: Number,
     required: true,
   },
+  description: {
+    type: String,
+  },
   status: {
     type: String,
-    enum: ['Pending', 'Accepted', 'Completed', 'Cancelled'],
+    enum: ['Pending', 'Approved', 'Rejected'],
     default: 'Pending',
   },
   createdAt: {
@@ -33,4 +32,4 @@ const FoodOrderSchema = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.model('FoodOrder', FoodOrderSchema);
+module.exports = mongoose.model('FoodRequest', FoodRequestSchema);

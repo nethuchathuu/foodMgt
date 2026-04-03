@@ -1,26 +1,56 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { ShoppingBag, HandHeart, CheckCircle } from 'lucide-react';
 
 export default function ReceiverDashboardContent() {
+  const [totalOrders, setTotalOrders] = useState(0);
+  const [totalRequests, setTotalRequests] = useState(0);
+  const [approvedRequests, setApprovedRequests] = useState(0);
+
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        
+        // Fetch Orders
+        const ordersRes = await axios.get('http://localhost:5000/api/food-orders/my-orders', config);
+        setTotalOrders(ordersRes.data.length);
+
+        // Fetch Requests
+        const requestsRes = await axios.get('http://localhost:5000/api/food-requests/my-requests', config);
+        setTotalRequests(requestsRes.data.length);
+        
+        // Filter Approved Requests
+        const approvedCount = requestsRes.data.filter(req => req.status === 'Approved').length;
+        setApprovedRequests(approvedCount);
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+      }
+    };
+
+    fetchDashboardStats();
+  }, []);
+
   const summaryCards = [
     {
       id: 'totalOrders',
       label: 'Total Orders',
-      value: 12,
+      value: totalOrders,
       icon: ShoppingBag,
       accentColor: '#9BC7D8'
     },
     {
       id: 'totalRequests',
       label: 'Requests Made',
-      value: 5,
+      value: totalRequests,
       icon: HandHeart,
       accentColor: '#E9A38E'
     },
     {
       id: 'approvedRequests',
       label: 'Approved Requests',
-      value: 3,
+      value: approvedRequests,
       icon: CheckCircle,
       accentColor: '#D67A5C'
     }

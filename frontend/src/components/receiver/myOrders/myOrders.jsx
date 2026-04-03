@@ -1,38 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Clock, CheckCircle, Star } from 'lucide-react';
 import SidebarUser from '../slidebarUser';
 import NavbarUser from '../navbarUser';
 import ViewOrders from './viewOrders';
 
 export default function MyOrders() {
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        const res = await axios.get('http://localhost:5000/api/food-orders/my-orders', config);
+        setOrders(res.data || []);
+      } catch (err) {
+        console.error('Failed to fetch orders:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, []);
+
+  const pendingCount = orders.filter(o => o.status === 'Pending').length;
+  const acceptedCount = orders.filter(o => o.status === 'Accepted').length;
+  const completedCount = orders.filter(o => o.status === 'Completed').length;
+
   const stats = [
-    { 
-      id: "pending", 
-      label: "Pending Orders", 
-      count: 2, 
-      icon: Clock, 
-      bgAccent: "#E9A38E", 
-      textColor: "#1F5E2A",
-      animationClass: "animate-pulse" // Mocking pulseGlow
-    },
-    { 
-      id: "accepted", 
-      label: "Accepted Orders", 
-      count: 1, 
-      icon: CheckCircle, 
-      bgAccent: "#9BC7D8", 
-      textColor: "#1F5E2A",
-      animationClass: "animate-bounce" // Mocking bounceSoft
-    },
-    { 
-      id: "completed", 
-      label: "Completed Orders", 
-      count: 5, 
-      icon: Star, 
-      bgAccent: "#D67A5C", 
-      textColor: "#1F5E2A",
-      animationClass: "" // Shine effect handled via CSS hover instead
-    }
+    { id: 'pending', label: 'Pending Orders', count: pendingCount, icon: Clock, bgAccent: '#E9A38E', textColor: '#1F5E2A', animationClass: 'animate-pulse' },
+    { id: 'accepted', label: 'Accepted Orders', count: acceptedCount, icon: CheckCircle, bgAccent: '#9BC7D8', textColor: '#1F5E2A', animationClass: 'animate-bounce' },
+    { id: 'completed', label: 'Completed Orders', count: completedCount, icon: Star, bgAccent: '#D67A5C', textColor: '#1F5E2A', animationClass: '' }
   ];
 
   return (
@@ -80,7 +80,7 @@ export default function MyOrders() {
 
             {/* View Orders List */}
             <div className="mt-8">
-              <ViewOrders />
+              <ViewOrders orders={orders} loading={loading} />
             </div>
 
           </div>

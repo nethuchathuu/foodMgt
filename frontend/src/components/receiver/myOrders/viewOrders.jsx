@@ -1,32 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Clock, Info, CheckCircle, XCircle } from 'lucide-react';
 
 const mockOrders = [
-  {
-    id: 1,
-    foodName: 'Vegetable Rice Pack',
-    restaurant: 'Green Cafe',
-    quantity: 2,
-    status: 'Pending',
-    date: '2023-11-20',
-  },
-  {
-    id: 2,
-    foodName: 'Assorted Bakery Items',
-    restaurant: 'Fresh Bakes',
-    quantity: 1,
-    status: 'Accepted',
-    date: '2023-11-21',
-  },
-  {
-    id: 3,
-    foodName: 'Fruit Juices',
-    restaurant: 'Juice Bar',
-    quantity: 3,
-    status: 'Completed',
-    date: '2023-11-19',
-  },
+  // kept as fallback only
 ];
 
 const statusStyles = {
@@ -35,22 +12,26 @@ const statusStyles = {
   Completed: { bg: '#D67A5C', text: '#FFFFFF', icon: CheckCircle },
 };
 
-export default function ViewOrders() {
-  const [orders, setOrders] = useState(mockOrders);
+export default function ViewOrders({ orders: initialOrders = mockOrders, loading = false }) {
+  const [orders, setOrders] = useState(initialOrders);
   const [activeModal, setActiveModal] = useState(null); // { type: 'cancel' | 'confirm', orderId: number } | null
+
+  useEffect(() => {
+    setOrders(initialOrders || []);
+  }, [initialOrders]);
 
   const handleCancelClick = (id) => setActiveModal({ type: 'cancel', orderId: id });
   const handleConfirmClick = (id) => setActiveModal({ type: 'confirm', orderId: id });
 
   const executeCancel = () => {
     console.log("Canceled order", activeModal.orderId);
-    setOrders(orders.map(o => o.id === activeModal.orderId ? { ...o, status: 'Completed' } : o)); // Just a mock UI update
+    setOrders(prev => prev.map(o => o.id === activeModal.orderId ? { ...o, status: 'Completed' } : o));
     setActiveModal(null);
   };
 
   const executeConfirm = () => {
     console.log("Confirmed order", activeModal.orderId);
-    setOrders(orders.map(o => o.id === activeModal.orderId ? { ...o, status: 'Completed' } : o));
+    setOrders(prev => prev.map(o => o.id === activeModal.orderId ? { ...o, status: 'Completed' } : o));
     setActiveModal(null);
   };
 
@@ -131,10 +112,15 @@ export default function ViewOrders() {
           );
         })}
 
-        {orders.length === 0 && (
+        { !loading && orders.length === 0 && (
           <div className="py-12 text-center text-gray-500 bg-white rounded-2xl border" style={{ borderColor: '#D8C3A5' }}>
             <h3 className="text-lg font-bold mb-1" style={{ color: '#1F5E2A' }}>No orders found</h3>
             <p>You haven't placed any orders yet.</p>
+          </div>
+        )}
+        { loading && (
+          <div className="py-12 text-center text-gray-500 bg-white rounded-2xl border" style={{ borderColor: '#D8C3A5' }}>
+            <p>Loading orders...</p>
           </div>
         )}
       </div>
