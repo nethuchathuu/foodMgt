@@ -13,9 +13,9 @@ export default function ReceiverDashboardContent() {
         const token = localStorage.getItem('token');
         const config = { headers: { Authorization: `Bearer ${token}` } };
         
-        // Fetch Orders
-        const ordersRes = await axios.get('http://localhost:5000/api/food-orders/my-orders', config);
-        setTotalOrders(ordersRes.data.length);
+        // Fetch Orders (all statuses)
+        const ordersRes = await axios.get('http://localhost:5000/api/orders/my-orders', config);
+        setTotalOrders(Array.isArray(ordersRes.data) ? ordersRes.data.length : 0);
 
         // Fetch Requests
         const requestsRes = await axios.get('http://localhost:5000/api/food-requests/my-requests', config);
