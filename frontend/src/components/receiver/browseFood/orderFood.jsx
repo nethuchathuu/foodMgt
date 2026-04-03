@@ -24,9 +24,10 @@ export default function OrderFood() {
     (async () => {
       try {
         const token = localStorage.getItem('token');
-        await axios.post('http://localhost:5000/api/food-orders', { foodId: id, quantity: Number(quantity) }, {
+        await axios.post('http://localhost:5000/api/orders', { foodId: id, quantity: Number(quantity) }, {
           headers: { Authorization: `Bearer ${token}` }
         });
+        alert('Order placed successfully!');
         navigate('/receiver/orders');
       } catch (err) {
         console.error('Failed to create order:', err);
@@ -86,8 +87,8 @@ export default function OrderFood() {
                     Selected Item
                   </h3>
                   
-                  <div className="mb-4 rounded-xl overflow-hidden h-32 w-full">
-                    <img src={food?.image || ''} alt={food?.name || 'Food'} className="w-full h-full object-cover" />
+                  <div className="mb-4 rounded-xl overflow-hidden h-32 w-full bg-gray-200">
+                    <img src={food?.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80'} alt={food?.name || 'Food'} className="w-full h-full object-cover" />
                   </div>
                   
                   <h4 className="font-bold mb-1" style={{ color: '#1F5E2A' }}>{food?.name || ''}</h4>

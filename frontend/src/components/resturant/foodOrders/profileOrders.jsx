@@ -46,7 +46,7 @@ const ProfileOrders = ({ isOpen, onClose, customer }) => {
               <div className="flex justify-between items-end -mt-12 mb-6">
                 <div className="relative">
                   <img 
-                    src={customer.avatar} 
+                    src={customer.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(customer.name)}&background=random`} 
                     alt={customer.name} 
                     className="w-24 h-24 rounded-2xl border-4 border-white shadow-lg object-cover bg-white"
                   />

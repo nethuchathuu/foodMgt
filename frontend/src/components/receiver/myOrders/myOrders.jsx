@@ -14,7 +14,7 @@ export default function MyOrders() {
       try {
         const token = localStorage.getItem('token');
         const config = { headers: { Authorization: `Bearer ${token}` } };
-        const res = await axios.get('http://localhost:5000/api/food-orders/my-orders', config);
+        const res = await axios.get('http://localhost:5000/api/orders/my-orders', config);
         setOrders(res.data || []);
       } catch (err) {
         console.error('Failed to fetch orders:', err);

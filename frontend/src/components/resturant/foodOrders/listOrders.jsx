@@ -116,7 +116,7 @@ const ListOrders = ({ orders, selectedOrderId, onSelectOrder }) => {
                         </span>
                       </div>
                       <span className="font-bold text-[#1F5E2A] bg-[#C8E66A]/20 px-2 py-1 rounded-lg">
-                        ${order.totalPrice.toFixed(2)}
+                        Rs.{order.totalPrice.toFixed(2)}
                       </span>
                     </div>
                   </div>

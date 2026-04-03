@@ -25,7 +25,7 @@ export default function DetailsOrder() {
     const fetchOrder = async () => {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get(`http://localhost:5000/api/food-orders/${id}`, {
+        const res = await axios.get(`http://localhost:5000/api/orders/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         setOrder(res.data);

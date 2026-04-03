@@ -9,7 +9,9 @@ const mockOrders = [
 const statusStyles = {
   Pending: { bg: '#E9A38E', text: '#FFFFFF', icon: Clock },
   Accepted: { bg: '#9BC7D8', text: '#FFFFFF', icon: CheckCircle },
-  Completed: { bg: '#D67A5C', text: '#FFFFFF', icon: CheckCircle },
+  Completed: { bg: '#1F5E2A', text: '#FFFFFF', icon: CheckCircle },
+  Rejected: { bg: '#D67A5C', text: '#FFFFFF', icon: XCircle },
+  Cancelled: { bg: '#D67A5C', text: '#FFFFFF', icon: XCircle },
 };
 
 export default function ViewOrders({ orders: initialOrders = mockOrders, loading = false }) {
@@ -39,7 +41,8 @@ export default function ViewOrders({ orders: initialOrders = mockOrders, loading
     <>
       <div className="grid grid-cols-1 gap-4">
         {orders.map((order, index) => {
-          const StatusIcon = statusStyles[order.status].icon;
+          const currentStyle = statusStyles[order.status] || { bg: '#D8C3A5', text: '#FFFFFF', icon: Info };
+          const StatusIcon = currentStyle.icon;
 
           return (
             <div 
@@ -56,8 +59,8 @@ export default function ViewOrders({ orders: initialOrders = mockOrders, loading
                   <span 
                     className="px-3 py-1 text-xs font-bold rounded-full flex items-center gap-1 shadow-sm"
                     style={{ 
-                      backgroundColor: statusStyles[order.status].bg, 
-                      color: statusStyles[order.status].text 
+                      backgroundColor: currentStyle.bg, 
+                      color: currentStyle.text 
                     }}
                   >
                     <StatusIcon className="w-3 h-3" />

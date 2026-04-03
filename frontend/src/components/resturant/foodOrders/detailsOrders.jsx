@@ -36,7 +36,7 @@ const DetailsOrders = ({ order, onStatusChange, onViewProfile }) => {
         </div>
         <div className="text-right">
           <span className="block text-sm text-gray-500 mb-1">Total Amount</span>
-          <span className="text-3xl font-black text-[#A7D63B]">${order.totalPrice.toFixed(2)}</span>
+          <span className="text-3xl font-black text-[#A7D63B]">Rs.{order.totalPrice.toFixed(2)}</span>
         </div>
       </div>
 
@@ -89,7 +89,7 @@ const DetailsOrders = ({ order, onStatusChange, onViewProfile }) => {
             isOrganization ? 'bg-[#E9A38E]/5 border-[#E9A38E]/20' : 'bg-[#9BC7D8]/5 border-[#9BC7D8]/20'
           }`}>
             <div className="flex items-center gap-4 mb-4 pb-4 border-b border-black/5">
-              <img src={order.customer.avatar} alt="Avatar" className="w-14 h-14 rounded-full border-2 border-white shadow-sm" />
+              <img src={order.customer.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(order.customer.name)}&background=random`} alt="Avatar" className="w-14 h-14 rounded-full border-2 border-white shadow-sm" />
               <div>
                 <h4 className="font-bold text-gray-800 text-lg">{order.customer.name}</h4>
                 <span className={`text-xs px-2 py-0.5 rounded-full text-white inline-block mt-1 ${

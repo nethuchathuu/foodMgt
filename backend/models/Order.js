@@ -1,34 +1,28 @@
 const mongoose = require('mongoose');
 
 const OrderSchema = new mongoose.Schema({
-  restaurantId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true,
-  },
   foodId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'FoodListing',
+    ref: 'FoodListing'
   },
-  foodName: {
-    type: String,
+  restaurantId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Restaurant'
   },
-  quantity: {
-    type: Number,
-    required: true,
+  receiverId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
   },
-  totalPrice: {
-    type: Number,
-    required: true,
-  },
+  quantity: Number,
+  totalPrice: Number,
   status: {
     type: String,
-    enum: ['Pending', 'Accepted', 'Completed', 'Cancelled'],
-    default: 'Pending',
+    enum: ['Pending', 'Accepted', 'Rejected', 'Completed'],
+    default: 'Pending'
   },
   createdAt: {
     type: Date,
-    default: Date.now,
+    default: Date.now
   }
 });
 
