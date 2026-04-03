@@ -18,6 +18,12 @@ exports.addFood = async (req, res) => {
         const [hours, minutes] = String(expiryTime).split(':');
         const today = new Date();
         today.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+        
+        // If the parsed time is already in the past today, assume it's meant for tomorrow.
+        if (today < new Date()) {
+          today.setDate(today.getDate() + 1);
+        }
+        
         finalExpiryTime = today;
       } else {
         const parsed = new Date(expiryTime);
@@ -37,7 +43,8 @@ exports.addFood = async (req, res) => {
       expiryTime: finalExpiryTime,
       image,
       acceptableForDonation: acceptableForDonation === 'true' || acceptableForDonation === true,
-      status: Number(quantity) === 0 ? 'SoldOut' : (normalizedStatus || 'Available')
+      status: Number(quantity) === 0 ? 'SoldOut' : (normalizedStatus || 'Available'),
+      isExpired: false
     });
 
     await newFood.save();
@@ -50,11 +57,22 @@ exports.addFood = async (req, res) => {
 exports.getFoods = async (req, res) => {
   try {
     const restaurantId = req.user._id;
-    const foods = await FoodListing.find({ restaurantId }).sort({ createdAt: -1 });
 
-    // Auto-update expired items or sold-out items? Example functionality:
-    // If you want logic, place it here. For now, just return them.
-    
+    // Auto-update expired items
+    const currentTime = new Date();
+    await FoodListing.updateMany(
+      {
+        restaurantId,
+        status: 'Available',
+        isExpired: false,
+        expiryTime: { $exists: true, $ne: null, $lte: currentTime }
+      },
+      {
+        $set: { status: 'Expired', isExpired: true, quantity: 0 }
+      }
+    );
+
+    const foods = await FoodListing.find({ restaurantId }).sort({ createdAt: -1 });
     res.status(200).json(foods);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch food listings', error: error.message });
@@ -63,31 +81,63 @@ exports.getFoods = async (req, res) => {
 
 exports.getAvailableFoodListings = async (req, res) => {
   try {
-    const foods = await FoodListing.find({ status: 'Available', isExpired: false })
+    const currentTime = new Date();
+    const foods = await FoodListing.find({ 
+      status: 'Available', 
+      isExpired: false,
+      $or: [
+        { expiryTime: null },
+        { expiryTime: { $exists: false } },
+        { expiryTime: { $gt: currentTime } }
+      ]
+    })
       .populate('restaurantId')
       .sort({ createdAt: -1 });
 
     const Restaurant = require('../../models/Restaurant');
-    
+    const Organization = require('../../models/Organization');
+    const Person = require('../../models/Person');
+
     // Process items and filter out any bad data from non-restaurants
     const processedFoods = [];
     for (const f of foods) {
       if (!f.restaurantId) continue;
-      
+
       const foodObj = f.toObject();
-      const profile = await Restaurant.findOne({ userId: f.restaurantId._id });
-      
-      if (profile) {
-        // Enforce pulling the details exclusively from the Restaurant Profile
-        foodObj.restaurantId = {
-          _id: f.restaurantId._id,
-          name: profile.restaurantName || 'Unknown Restaurant',
-          location: profile.address || 'Not Provided'
-        };
-        processedFoods.push(foodObj);
+      const userId = f.restaurantId._id;
+      const role = f.restaurantId.role;
+
+      let providerName = f.restaurantId.name || 'Unknown Provider';
+      let providerLocation = 'Not Provided';
+
+      if (role === 'restaurant' || !role) {
+        const profile = await Restaurant.findOne({ userId });
+        if (profile) {
+          providerName = profile.restaurantName || providerName;
+          providerLocation = profile.address || providerLocation;
+        }
+      } else if (role === 'requester_org') {
+        const profile = await Organization.findOne({ userId });
+        if (profile) {
+          providerName = profile.orgName || providerName;
+          providerLocation = profile.orgAddress || providerLocation;
+        }
+      } else if (role === 'requester_person') {
+        const profile = await Person.findOne({ userId });
+        if (profile) {
+          providerName = profile.fullName || providerName;
+          providerLocation = profile.homeAddress || providerLocation;
+        }
       }
+
+      foodObj.restaurantId = {
+        _id: f.restaurantId._id,
+        name: providerName,
+        location: providerLocation
+      };
+      processedFoods.push(foodObj);
     }
-      
+
     res.status(200).json(processedFoods);
   } catch (error) {
     console.error('Fetch available foods error:', error);
@@ -125,6 +175,28 @@ exports.updateFood = async (req, res) => {
     if (updateData.acceptableForDonation !== undefined) {
       updateData.acceptableForDonation = updateData.acceptableForDonation === 'true' || updateData.acceptableForDonation === true;
     }
+
+    // Auto reset isExpired flag if someone updates expiryTime to the future
+    if (updateData.expiryTime) {
+       if (String(updateData.expiryTime).includes(':') && !String(updateData.expiryTime).includes('T')) {
+         const [hours, minutes] = String(updateData.expiryTime).split(':');
+         const target = new Date();
+         target.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+         if (target < new Date()) target.setDate(target.getDate() + 1);
+         updateData.expiryTime = target;
+       } else {
+         updateData.expiryTime = new Date(updateData.expiryTime);
+       }
+       if (new Date(updateData.expiryTime) > new Date()) {
+          updateData.isExpired = false;
+          if (updateData.status === 'Expired' && Number(updateData.quantity || req.body.quantity) > 0) {
+             updateData.status = 'Available';
+          }
+       }
+    } else if (updateData.status === 'Available') {
+       updateData.isExpired = false;
+    }
+
     const updatedFood = await FoodListing.findOneAndUpdate(
       { _id: id, restaurantId },
       updateData,

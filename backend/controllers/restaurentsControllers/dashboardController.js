@@ -2,13 +2,27 @@ const Inventory = require('../../models/Inventory');
 const FoodListing = require('../../models/FoodListing');
 const Wastage = require('../../models/Wastage');
 const Order = require('../../models/Order');
+const FinancialLoss = require('../../models/FinancialLoss');
+
+exports.clearFinancialLoss = async (req, res) => {
+  try {
+    const restaurantId = req.user._id;
+    await Wastage.deleteMany({ restaurantId });
+    await FinancialLoss.deleteMany({ restaurantId });
+    res.status(200).json({ message: 'Financial loss data cleared successfully.' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error clearing financial loss data', error: error.message });
+  }
+};
 
 exports.getDashboardSummary = async (req, res) => {
   try {
     const restaurantId = req.user._id;
 
     const inventoryItems = await Inventory.find({ restaurantId });
-    const totalFood = inventoryItems.length;
+    
+    // Total food count based on food listings, not inventory
+    const totalFood = await FoodListing.countDocuments({ restaurantId });
     
     // Create a map for loss prices from inventory
     const lossPriceMap = {};

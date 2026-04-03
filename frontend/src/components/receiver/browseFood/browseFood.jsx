@@ -30,11 +30,11 @@ export default function BrowseFood() {
   useEffect(() => {
     fetchAvailableFoods();
     
-    // Poll for updates and expiry evaluation every minute
+    // Poll for updates and expiry evaluation every 30 seconds
     const interval = setInterval(() => {
       setCurrentTime(new Date());
       fetchAvailableFoods();
-    }, 60000);
+    }, 30000);
     
     return () => clearInterval(interval);
   }, []);

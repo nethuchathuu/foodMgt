@@ -1,15 +1,6 @@
 ﻿import React from 'react';
 import { motion } from 'framer-motion';
 
-const getEmoji = (name) => {
-  const lowerName = (name || '').toLowerCase();
-  if (lowerName.includes('rice')) return "🍛";
-  if (lowerName.includes('bread')) return "🍞";
-  if (lowerName.includes('salad')) return "🥗";
-  if (lowerName.includes('curry')) return "🍲";
-  return "🍽️";
-};
-
 const WastedLoss = ({ data }) => {
   const total = data.reduce((acc, item) => acc + item.loss, 0);
 
@@ -28,7 +19,6 @@ const WastedLoss = ({ data }) => {
           className="flex justify-between items-center bg-white p-5 rounded-2xl shadow-sm hover:shadow-md transition-all border border-gray-100"
         >
           <div className="flex items-center gap-4">
-            <span className="text-3xl">{getEmoji(item.foodName)}</span>
             <div>
               <h3 className="text-lg font-bold text-[#1F5E2A]">{item.foodName}</h3>
               <p className="text-sm font-medium text-gray-500 mt-1">Qty: {item.quantity} {item.unit}</p>
