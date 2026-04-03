@@ -156,7 +156,7 @@ export default function DisplayFoodPage() {
                         Details
                       </h3>
                       <p className="text-gray-600 leading-relaxed text-lg">
-                        This item is offered by <strong className="text-[#1F5E2A]">{food.providerInfo?.name || 'the restaurant'}</strong>. 
+                        This item is offered by <strong className="text-[#1F5E2A]">{food.restaurantId?.name || 'the restaurant'}</strong>. 
                         Ensure pick-up or delivery is arranged before the expiry time to maintain food safety and quality standards.
                         {isDonatable && (
                           <span className="block mt-2 italic text-[#D67A5C]">
@@ -177,24 +177,24 @@ export default function DisplayFoodPage() {
                       <div className="space-y-4">
                         <div>
                           <p className="text-sm text-gray-500 font-medium mb-1">Restaurant</p>
-                          <p className="font-bold text-lg" style={{ color: '#1F5E2A' }}>{food.providerInfo?.name || 'Unknown'}</p>
+                          <p className="font-bold text-lg" style={{ color: '#1F5E2A' }}>{food.restaurantId?.name || 'Unknown'}</p>
                         </div>
                         
                         <div className="flex items-start gap-3">
                           <MapPin className="w-5 h-5 mt-0.5 text-gray-400" />
                           <div>
                             <p className="text-sm text-gray-500 font-medium">Location</p>
-                            <p className="font-medium" style={{ color: '#1F5E2A' }}>{food.providerInfo?.location || 'Not provided'}</p>
+                            <p className="font-medium" style={{ color: '#1F5E2A' }}>{food.restaurantId?.address || 'Not provided'}</p>
                           </div>
                         </div>
                         
-                        {(food.providerInfo?.contact !== 'Not provided' || food.providerInfo?.email !== 'Not provided') && (
+                        {(food.restaurantId?.phone !== 'Not provided' || food.restaurantId?.email !== 'Not provided') && (
                           <div className="flex items-start gap-3">
                             <Phone className="w-5 h-5 mt-0.5 text-gray-400" />
                             <div>
                               <p className="text-sm text-gray-500 font-medium">Contact</p>
-                              {food.providerInfo?.contact !== 'Not provided' && <p className="font-medium" style={{ color: '#1F5E2A' }}>{food.providerInfo.contact}</p>}
-                              {food.providerInfo?.email !== 'Not provided' && <p className="text-sm mt-1 text-gray-600 truncate">{food.providerInfo.email}</p>}
+                              {food.restaurantId?.phone !== 'Not provided' && <p className="font-medium" style={{ color: '#1F5E2A' }}>{food.restaurantId?.phone}</p>}
+                              {food.restaurantId?.email !== 'Not provided' && <p className="text-sm mt-1 text-gray-600 truncate">{food.restaurantId?.email}</p>}
                             </div>
                           </div>
                         )}
@@ -239,7 +239,7 @@ export default function DisplayFoodPage() {
             <div className="bg-[#1F5E2A] p-6 text-white text-center">
               <Heart className="w-12 h-12 mx-auto mb-3 text-white fill-[#1F5E2A] drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
               <h2 className="text-2xl font-bold">Request Donation</h2>
-              <p className="text-white/80 text-sm mt-1">From {food.providerInfo?.name}</p>
+              <p className="text-white/80 text-sm mt-1">From {food.restaurantId?.name}</p>
             </div>
 
             <div className="p-6">

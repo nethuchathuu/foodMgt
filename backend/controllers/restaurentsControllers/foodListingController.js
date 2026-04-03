@@ -4,7 +4,17 @@ exports.addFood = async (req, res) => {
   try {
     const { foodName, quantity, unit, price, discountPrice, expiryTime, status, acceptableForDonation } = req.body;
     let { image } = req.body; // Allow passing image url just in case
-    const restaurantId = req.user._id;
+    const userId = req.user._id;
+
+    // Get the restaurant _id
+    const Restaurant = require('../../models/Restaurant');
+    const restaurant = await Restaurant.findOne({ userId });
+    
+    if (!restaurant) {
+      return res.status(404).json({ message: 'Restaurant profile not found for this user.' });
+    }
+    
+    const restaurantId = restaurant._id;
 
     if (req.file) {
       image = `http://localhost:5000/uploads/food/${req.file.filename}`;
@@ -56,23 +66,31 @@ exports.addFood = async (req, res) => {
 
 exports.getFoods = async (req, res) => {
   try {
-    const restaurantId = req.user._id;
+    const userId = req.user._id;
+    const Restaurant = require('../../models/Restaurant');
+    const restaurant = await Restaurant.findOne({ userId });
+    
+    console.log('getFoods -> userId:', userId);
+    console.log('getFoods -> restaurant:', restaurant ? restaurant._id : 'NOT FOUND');
+    
+    if (!restaurant) return res.status(404).json({ message: 'Restaurant profile not found.' });
+    
+    const restaurantId = restaurant._id;
 
-    // Auto-update expired items
+    const foodsDb = await FoodListing.find({ restaurantId }).sort({ createdAt: -1 });
     const currentTime = new Date();
-    await FoodListing.updateMany(
-      {
-        restaurantId,
-        status: 'Available',
-        isExpired: false,
-        expiryTime: { $exists: true, $ne: null, $lte: currentTime }
-      },
-      {
-        $set: { status: 'Expired', isExpired: true, quantity: 0 }
-      }
-    );
 
-    const foods = await FoodListing.find({ restaurantId }).sort({ createdAt: -1 });
+    const foods = foodsDb.map(f => {
+      const food = f.toObject();
+      // Present visually as expired if time has passed, until cron job kicks in and formally processes wastage
+      if (!food.isExpired && food.expiryTime && new Date(food.expiryTime) <= currentTime && food.status === 'Available') {
+        food.status = 'Expired';
+        food.isExpired = true;
+        food.quantity = 0;
+      }
+      return food;
+    });
+
     res.status(200).json(foods);
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch food listings', error: error.message });
@@ -147,7 +165,12 @@ exports.getAvailableFoodListings = async (req, res) => {
 
 exports.getFoodCount = async (req, res) => {
   try {
-    const restaurantId = req.user._id;
+    const userId = req.user._id;
+    const Restaurant = require('../../models/Restaurant');
+    const restaurant = await Restaurant.findOne({ userId });
+    if (!restaurant) return res.status(404).json({ message: 'Restaurant not found' });
+    
+    const restaurantId = restaurant._id;
     const count = await FoodListing.countDocuments({ restaurantId });
     res.status(200).json({ count });
   } catch (error) {
@@ -158,7 +181,12 @@ exports.getFoodCount = async (req, res) => {
 exports.updateFood = async (req, res) => {
   try {
     const { id } = req.params;
-    const restaurantId = req.user._id;
+    const userId = req.user._id;
+    const Restaurant = require('../../models/Restaurant');
+    const restaurant = await Restaurant.findOne({ userId });
+    if (!restaurant) return res.status(404).json({ message: 'Restaurant not found' });
+    
+    const restaurantId = restaurant._id;
     
     // Auto status update on quantity
     let updateData = { ...req.body };
@@ -216,7 +244,12 @@ exports.updateFood = async (req, res) => {
 exports.deleteFood = async (req, res) => {
   try {
     const { id } = req.params;
-    const restaurantId = req.user._id;
+    const userId = req.user._id;
+    const Restaurant = require('../../models/Restaurant');
+    const restaurant = await Restaurant.findOne({ userId });
+    if (!restaurant) return res.status(404).json({ message: 'Restaurant not found' });
+    
+    const restaurantId = restaurant._id;
 
     const deletedFood = await FoodListing.findOneAndDelete({ _id: id, restaurantId });
     if (!deletedFood) {
@@ -231,7 +264,13 @@ exports.deleteFood = async (req, res) => {
 
 exports.deleteAllFoods = async (req, res) => {
   try {
-    const restaurantId = req.user._id;
+    const userId = req.user._id;
+    const Restaurant = require('../../models/Restaurant');
+    const restaurant = await Restaurant.findOne({ userId });
+    if (!restaurant) return res.status(404).json({ message: 'Restaurant not found' });
+    
+    const restaurantId = restaurant._id;
+    
     await FoodListing.deleteMany({ restaurantId });
     res.status(200).json({ message: 'All food items deleted successfully.' });
   } catch (error) {

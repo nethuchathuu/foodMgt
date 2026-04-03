@@ -25,60 +25,65 @@ cron.schedule('*/5 * * * *', async () => {
 
     for (const food of foods) {
       try {
+        // Atomically update the food listing so only ONE process proceeds with Wastage.
+        const updatedFood = await FoodListing.findOneAndUpdate({
+          _id: food._id,
+          status: 'Available',
+          isExpired: { $ne: true }
+        }, {
+          $set: { status: 'Expired', isExpired: true, quantity: 0 }
+        }, { new: false });
+
+        if (!updatedFood) {
+          // Another thread or process already marked it expired
+          continue;
+        }
+
+        const remainingQty = Number(updatedFood.quantity || 0);
+
+        if (remainingQty <= 0) {
+          // Only expired without needing wastage
+          continue;
+        }
+
         // Avoid duplicate wastage entries for the same food today
         const existing = await Wastage.findOne({
-          restaurantId: food.restaurantId,
-          foodName: food.foodName,
+          restaurantId: updatedFood.restaurantId,
+          foodName: updatedFood.foodName,
           reason: 'Expired',
           date: { $gte: start, $lt: end }
         });
+
         if (existing) {
-          // still mark food as expired if not already
-          food.status = 'Expired';
-          food.isExpired = true;
-          food.quantity = 0;
-          await food.save();
-          continue;
+          // If a duplicate got recorded today somehow, we can just update its quantity
+          existing.quantity += remainingQty;
+          existing.totalLoss += remainingQty * existing.lossPricePerUnit;
+          await existing.save();
+        } else {
+          const inventory = await Inventory.findOne({ name: updatedFood.foodName, restaurantId: updatedFood.restaurantId });
+          const lossPrice = inventory ? inventory.lossPrice : (updatedFood.price || 0);
+          const totalLoss = remainingQty * Number(lossPrice || 0);
+
+          const wastage = new Wastage({
+            restaurantId: updatedFood.restaurantId,
+            foodName: updatedFood.foodName,
+            quantity: remainingQty,
+            unit: updatedFood.unit || (inventory ? inventory.unit : 'units'),
+            reason: 'Expired',
+            lossPricePerUnit: lossPrice,
+            totalLoss,
+            date: new Date()
+          });
+
+          await wastage.save();
+
+          // Update financial loss (wastedLoss)
+          try {
+            await financialLossController.updateWastedLoss(updatedFood.restaurantId, totalLoss);
+          } catch (err) {
+            console.error('Expiry job: failed to update financial loss', err.message);
+          }
         }
-
-        const inventory = await Inventory.findOne({ name: food.foodName, restaurantId: food.restaurantId });
-        const lossPrice = inventory ? inventory.lossPrice : (food.price || 0);
-        const remainingQty = Number(food.quantity || 0);
-        if (remainingQty <= 0) {
-          // nothing to do
-          food.isExpired = true;
-          food.status = 'Expired';
-          await food.save();
-          continue;
-        }
-
-        const totalLoss = remainingQty * Number(lossPrice || 0);
-
-        const wastage = new Wastage({
-          restaurantId: food.restaurantId,
-          foodName: food.foodName,
-          quantity: remainingQty,
-          unit: food.unit || (inventory ? inventory.unit : 'units'),
-          reason: 'Expired',
-          lossPricePerUnit: lossPrice,
-          totalLoss,
-          date: new Date()
-        });
-
-        await wastage.save();
-
-        // Update financial loss (wastedLoss)
-        try {
-          await financialLossController.updateWastedLoss(food.restaurantId, totalLoss);
-        } catch (err) {
-          console.error('Expiry job: failed to update financial loss', err.message);
-        }
-
-        // Update food listing
-        food.status = 'Expired';
-        food.isExpired = true;
-        food.quantity = 0;
-        await food.save();
       } catch (err) {
         console.error('Error processing expired food', food._id, err.message);
       }
