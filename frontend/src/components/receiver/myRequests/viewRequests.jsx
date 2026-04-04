@@ -16,14 +16,41 @@ export default function ViewRequests({ requests = [], loading = false }) {
     setSelectedRequest(null);
   };
 
-  const handleEditSubmit = (e) => {
-    e.preventDefault();
-    // Edit logic here
+  const handleEditSubmit = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    try {
+      const foodTypeVal = document.getElementById('editFoodType')?.value;
+      const quantityVal = document.getElementById('editQuantity')?.value;
+      const descVal = document.getElementById('editDescription')?.value;
+
+      const token = localStorage.getItem('token');
+      await axios.patch(`http://localhost:5000/api/food-requests/${selectedRequest._id || selectedRequest.id}`, {
+        foodType: foodTypeVal,
+        quantity: quantityVal,
+        description: descVal
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      // reload the page to fetch the newly updated list
+      window.location.reload();
+    } catch (error) {
+      console.error('Failed to update request:', error);
+      alert('Failed to update request.');
+    }
     closeModal();
   };
 
-  const handleCancelSubmit = () => {
-    // Cancel logic here
+  const handleCancelSubmit = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`http://localhost:5000/api/food-requests/${selectedRequest._id || selectedRequest.id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      window.location.reload();
+    } catch (error) {
+      console.error('Failed to cancel request:', error);
+      alert('Failed to cancel request.');
+    }
     closeModal();
   };
 
@@ -114,24 +141,24 @@ export default function ViewRequests({ requests = [], loading = false }) {
               <h2 className="text-xl font-bold" style={{ color: '#1F5E2A' }}>Edit Request</h2>
             </div>
             <div className="p-6">
-              <form onSubmit={handleEditSubmit} className="space-y-4">
+              <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">Food Type Needed</label>
-                  <input type="text" defaultValue={selectedRequest.foodType} className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#9BC7D8]" required />
+                  <input type="text" id="editFoodType" defaultValue={selectedRequest.foodType} className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#9BC7D8]" required />
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">Quantity</label>
-                  <input type="number" defaultValue={selectedRequest.quantity} className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#9BC7D8]" required />
+                  <input type="number" id="editQuantity" defaultValue={selectedRequest.quantity} className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#9BC7D8]" required />
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">Description</label>
-                  <textarea defaultValue={selectedRequest.description} rows="3" className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#9BC7D8] resize-none" required></textarea>
+                  <textarea id="editDescription" defaultValue={selectedRequest.description} rows="3" className="w-full px-4 py-3 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-[#9BC7D8] resize-none" required></textarea>
                 </div>
                 <div className="pt-4 flex gap-3">
                   <button type="button" onClick={closeModal} className="flex-1 py-3 rounded-xl font-bold" style={{ backgroundColor: '#D8C3A5', color: '#1F5E2A' }}>Cancel</button>
-                  <button type="submit" className="flex-[2] py-3 rounded-xl font-bold text-white shadow-md hover:shadow-lg transition-transform hover:-translate-y-0.5" style={{ backgroundColor: '#9BC7D8' }}>Save Changes</button>
+                  <button type="button" onClick={handleEditSubmit} className="flex-[2] py-3 rounded-xl font-bold text-white shadow-md hover:shadow-lg transition-transform hover:-translate-y-0.5" style={{ backgroundColor: '#9BC7D8' }}>Save Changes</button>
                 </div>
-              </form>
+              </div>
             </div>
           </div>
         </div>

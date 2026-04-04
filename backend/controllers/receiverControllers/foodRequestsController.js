@@ -1,14 +1,138 @@
-﻿const FoodRequest = require('../../models/foodRequests');
+﻿const DonationRequest = require('../../models/DonationRequest');
+const FoodListing = require('../../models/FoodListing');
+const Restaurant = require('../../models/Restaurant');
 
-// Get all requests for the current receiver
-exports.getMyRequests = async (req, res) => {
+// Create food request (receiver) 
+exports.createFoodRequest = async (req, res) => {
   try {
     const receiverId = req.user._id;
-    const requests = await FoodRequest.find({ receiverId }).sort({ createdAt: -1 });
+    const { foodId, quantity, purpose } = req.body;
 
-    res.status(200).json(requests);
+    const food = await FoodListing.findById(foodId);
+    if (!food) {
+      return res.status(404).json({ message: 'Food not found' });
+    }
+
+    const restaurantId = food.restaurantId || food.restaurant;
+    if (!restaurantId) {
+      return res.status(400).json({ message: 'Food item has no associated restaurant' });
+    }
+
+    // Save as DonationRequest to seamlessly tie the single request between Rest and Rec
+    const donationRequest = new DonationRequest({
+      receiverId,
+      restaurantId,
+      foodId,
+      quantity,
+      purpose
+    });
+
+    await donationRequest.save();
+
+    res.status(201).json({ message: 'Request created successfully', request: donationRequest });
+  } catch (error) {
+    console.error('Error creating food request:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// Get all requests for the current receiver
+exports.getReceiverRequests = async (req, res) => {
+  try {
+    const receiverId = req.user._id;
+    // Query DonationRequest which acts as the single source of truth
+    const requests = await DonationRequest.find({ receiverId })
+      .populate('foodId', 'foodName name image price unit discountPrice')
+      .populate('restaurantId', 'name restaurantName address phoneNumber phone email')
+      .sort({ createdAt: -1 });
+
+    const formattedRequests = requests.map(req => {
+      const food = req.foodId || {};
+      const rest = req.restaurantId || {};
+      return {
+        id: req._id, // Fallback ID if needed by frontend
+        _id: req._id,
+        foodType: food.foodName || food.name || 'Unknown Food',
+        quantity: req.quantity || 0,
+        description: req.purpose || '',
+        status: req.status || 'Pending',
+        date: (req.createdAt ? req.createdAt : new Date()).toISOString().split('T')[0],
+        restaurantName: rest.restaurantName || rest.name || 'Unknown Restaurant',
+        restaurantLocation: rest.address || 'Unknown Location',
+        restaurantContact: rest.phoneNumber || rest.phone || 'N/A'
+      };
+    });
+
+    res.status(200).json(formattedRequests);
   } catch (error) {
     console.error('Error fetching requests:', error);
     res.status(500).json({ message: 'Failed to fetch requests', error: error.message });
+  }
+};
+
+// Get a specific request by ID for receiver
+exports.getReceiverRequestById = async (req, res) => {
+  try {
+    const receiverId = req.user._id;
+    const requestId = req.params.id;
+
+    const request = await DonationRequest.findOne({ _id: requestId, receiverId })
+      .populate('foodId', 'foodName name image price unit discountPrice')
+      .populate('restaurantId', 'name restaurantName address phoneNumber phone email');
+
+    if (!request) {
+      return res.status(404).json({ message: 'Request not found' });
+    }
+
+    const food = request.foodId || {};
+    const rest = request.restaurantId || {};
+
+    const formattedRequest = {
+      id: request._id,
+      _id: request._id,
+      foodType: food.foodName || food.name || 'Unknown Food',
+      quantity: request.quantity,
+      description: request.purpose || '',
+      status: request.status || 'Pending',
+      date: (request.createdAt ? request.createdAt : new Date()).toISOString().split('T')[0],
+      restaurantName: rest.restaurantName || rest.name || 'Unknown Restaurant',
+      restaurantLocation: rest.address || 'Unknown Location',
+      restaurantContact: rest.phoneNumber || rest.phone || 'N/A',
+      responses: [] // To be updated if response arrays exist
+    };
+
+    res.status(200).json(formattedRequest);
+  } catch (error) {
+    console.error('Error fetching request details:', error);
+    res.status(500).json({ message: 'Failed to fetch request details', error: error.message });
+  }
+};
+
+// Update food request
+exports.updateFoodRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { quantity, description, foodType } = req.body;
+    const request = await DonationRequest.findOneAndUpdate(
+      { _id: id, receiverId: req.user._id, status: 'Pending' },
+      { quantity, purpose: description },
+      { new: true }
+    );
+    if (!request) return res.status(404).json({ message: 'Pending request not found' });
+    res.status(200).json({ message: 'Request updated', request });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// Cancel/Delete food request
+exports.deleteFoodRequest = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const request = await DonationRequest.findOneAndDelete({ _id: id, receiverId: req.user._id, status: 'Pending' });
+    if (!request) return res.status(404).json({ message: 'Pending request not found' });
+    res.status(200).json({ message: 'Request deleted' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };

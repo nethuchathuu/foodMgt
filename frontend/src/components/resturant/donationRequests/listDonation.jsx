@@ -4,9 +4,9 @@ import { Search, Building2, User, Clock, AlertTriangle } from 'lucide-react';
 
 const statusColors = {
   "Pending": "bg-yellow-100 text-yellow-700 border-yellow-200",
-  "Approved": "bg-[#C8E66A]/30 text-[#1F5E2A] border-[#A7D63B]",
+  "Accepted": "bg-[#C8E66A]/30 text-[#1F5E2A] border-[#A7D63B]",
   "Rejected": "bg-red-100 text-red-600 border-red-200",
-  "Scheduled": "bg-blue-100 text-blue-700 border-blue-200"
+  "Completed": "bg-blue-100 text-blue-700 border-blue-200"
 };
 
 const typeStyles = {
@@ -42,7 +42,7 @@ const ListDonation = ({ requests, selectedRequestId, onSelectRequest }) => {
           />
         </div>
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-          {['All', 'Pending', 'Approved', 'Scheduled'].map(status => (
+          {['All', 'Pending', 'Accepted', 'Completed'].map(status => (
             <button
               key={status}
               onClick={() => setStatusFilter(status)}

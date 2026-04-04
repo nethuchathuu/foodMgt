@@ -70,38 +70,44 @@ const DetailsDonation = ({ request, onStatusChange, onViewProfile }) => {
                   <p className="font-bold text-gray-800">{request.preferredPickup}</p>
                </div>
             </div>
-          </div>
-        </section>
-
-        {/* Requester Info Section */}
-        <section>
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-              {isOrganization ? <Building2 size={20} className="text-[#E9A38E]" /> : <User size={20} className="text-[#9BC7D8]" />}
-              Requester Info
-            </h3>
-            <button 
-              onClick={onViewProfile}
-              className="text-sm text-[#1F5E2A] hover:text-[#A7D63B] font-medium flex items-center gap-1 transition-colors group"
-            >
-              View Profile <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
-            </button>
-          </div>
-
-          <div className={`rounded-xl p-5 border ${
-            isOrganization ? 'bg-[#E9A38E]/5 border-[#E9A38E]/20' : 'bg-[#9BC7D8]/5 border-[#9BC7D8]/20'
-          }`}>
-            <div className="flex items-center gap-4 mb-4 pb-4 border-b border-black/5">
-              <img src={request.requester.avatar} alt="Avatar" className="w-14 h-14 rounded-full border-2 border-white shadow-sm" />
-              <div>
-                <h4 className="font-bold text-gray-800 text-lg">{request.requester.name}</h4>
-                <span className={`text-xs px-2 py-0.5 rounded-full text-white inline-block mt-1 ${
-                  isOrganization ? 'bg-[#E9A38E]' : 'bg-[#9BC7D8]'
-                }`}>
-                  {request.requester.type}
-                </span>
-              </div>
+              {request.purpose && (
+                <div className="relative z-10 bg-white p-4 rounded-lg border border-gray-200 shadow-sm col-span-2 mt-2">
+                   <p className="text-xs text-gray-500 font-medium mb-1">Purpose of Request</p>
+                   <p className="font-medium text-gray-800 text-sm whitespace-pre-wrap">{request.purpose}</p>
+                </div>
+              )}
             </div>
+          </section>
+
+          {/* Requester Info Section */}
+          <section>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                {isOrganization ? <Building2 size={20} className="text-[#E9A38E]" /> : <User size={20} className="text-[#9BC7D8]" />}
+                Requester Info
+              </h3>
+              <button
+                onClick={onViewProfile}
+                className="text-sm text-[#1F5E2A] hover:text-[#A7D63B] font-medium flex items-center gap-1 transition-colors group"
+              >
+                View Profile <ChevronRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+
+            <div className={`rounded-xl p-5 border ${
+              isOrganization ? 'bg-[#E9A38E]/5 border-[#E9A38E]/20' : 'bg-[#9BC7D8]/5 border-[#9BC7D8]/20'
+            }`}>
+              <div className="flex items-center gap-4 mb-4 pb-4 border-b border-black/5">
+                <img src={request.requester.avatar} alt="Avatar" className="w-14 h-14 rounded-full border-2 border-white shadow-sm" />
+                <div>
+                  <h4 className="font-bold text-gray-800 text-lg">{request.requester.name}</h4>
+                  <span className={`text-xs px-2 py-0.5 rounded-full text-white inline-block mt-1 ${
+                    isOrganization ? 'bg-[#E9A38E]' : 'bg-[#9BC7D8]'
+                  }`}>
+                    {request.requester.type}
+                  </span>
+                </div>
+              </div>
 
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-sm text-gray-600">
@@ -129,12 +135,12 @@ const DetailsDonation = ({ request, onStatusChange, onViewProfile }) => {
             <motion.button 
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => onStatusChange(request.id, 'Approved')}
+              onClick={() => onStatusChange(request.id, 'Accepted')}
               className="flex-1 bg-[#A7D63B] text-[#1F5E2A] py-3 rounded-xl font-bold shadow-sm hover:shadow-md transition-all flex justify-center items-center gap-2"
             >
-              <CheckCircle size={20} /> Approve
+              <CheckCircle size={20} /> Accept
             </motion.button>
-            <motion.button 
+            <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => onStatusChange(request.id, 'Rejected')}
@@ -143,21 +149,21 @@ const DetailsDonation = ({ request, onStatusChange, onViewProfile }) => {
               <XCircle size={20} /> Reject
             </motion.button>
           </>
-        ) : request.status === 'Approved' ? (
-          <motion.button 
+        ) : request.status === 'Accepted' ? (
+          <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => onStatusChange(request.id, 'Scheduled')}
+              onClick={() => onStatusChange(request.id, 'Completed')}
               className="flex-1 bg-[#9BC7D8] text-white py-3 rounded-xl font-bold shadow-sm hover:shadow-md transition-all flex justify-center items-center gap-2"
             >
-              <Calendar size={20} /> Schedule Pickup
+              <Calendar size={20} /> Mark as Completed
           </motion.button>
         ) : (
           <div className={`flex-1 text-center py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2
-            ${request.status === 'Scheduled' ? 'bg-[#C8E66A]/20 text-[#1F5E2A]' : 'bg-red-50 text-red-600'}
+            ${request.status === 'Completed' ? 'bg-[#C8E66A]/20 text-[#1F5E2A]' : 'bg-red-50 text-red-600'}
           `}>
-            Status: {request.status} 
-            {request.status === 'Scheduled' && <CheckCircle size={18} className="text-[#A7D63B]" />}
+            Status: {request.status}
+            {request.status === 'Completed' && <CheckCircle size={18} className="text-[#A7D63B]" />}
           </div>
         )}
       </div>

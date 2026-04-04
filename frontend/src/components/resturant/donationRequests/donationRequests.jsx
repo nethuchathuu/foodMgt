@@ -1,100 +1,76 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import ListDonation from './listDonation';
 import DetailsDonation from './detailsDonation';
 import ProfileDonation from './profileDonation';
 
-// Dummy Data
-const initialRequests = [
-  {
-    id: "REQ-2001",
-    items: "Rice & Curry Packs",
-    quantity: 50,
-    urgency: "High",
-    preferredPickup: "Today, 5:00 PM",
-    status: "Pending",
-    time: "2 hours ago",
-    requester: {
-      id: "ORG-102",
-      type: "Organization",
-      name: "Hope Charity Foundation",
-      orgName: "Hope Charity Foundation",
-      email: "contact@hopecharity.org",
-      phone: "+1 987 654 321",
-      address: "456 Charity Lane, Downtown",
-      avatar: "https://i.pravatar.cc/150?u=a042581f4e29026704e"
-    }
-  },
-  {
-    id: "REQ-2002",
-    items: "Bakery Surplus",
-    quantity: 15,
-    urgency: "Medium",
-    preferredPickup: "Tomorrow, 10:00 AM",
-    status: "Approved",
-    time: "4 hours ago",
-    requester: {
-      id: "ORG-105",
-      type: "Organization",
-      name: "Community Food Bank",
-      orgName: "Community Food Bank",
-      email: "hello@foodbank.org",
-      phone: "+1 222 333 444",
-      address: "789 Relief Ave",
-      avatar: "https://i.pravatar.cc/150?u=a042581f4e29026704c"
-    }
-  },
-  {
-    id: "REQ-2003",
-    items: "Assorted Vegetables",
-    quantity: 5,
-    urgency: "Low",
-    preferredPickup: "Today, 8:00 PM",
-    status: "Pending",
-    time: "5 hours ago",
-    requester: {
-      id: "CUST-005",
-      type: "Individual",
-      name: "Sarah Williams",
-      email: "sarah.w@example.com",
-      phone: "+1 555 987 654",
-      address: "12 Maple St, Suburbs",
-      avatar: "https://i.pravatar.cc/150?u=a042581f4e29026704a"
-    }
-  },
-  {
-    id: "REQ-2004",
-    items: "Fruits & Bread",
-    quantity: 10,
-    urgency: "High",
-    preferredPickup: "Today, 4:00 PM",
-    status: "Scheduled",
-    time: "1 day ago",
-    requester: {
-      id: "CUST-008",
-      type: "Individual",
-      name: "Michael Chen",
-      email: "m.chen@example.com",
-      phone: "+1 444 555 666",
-      address: "88 Pine Rd",
-      avatar: "https://i.pravatar.cc/150?u=a042581f4e29026704b"
-    }
-  }
-];
-
 const DonationRequests = () => {
-  const [requests, setRequests] = useState(initialRequests);
+  const [requests, setRequests] = useState([]);
   const [selectedRequestId, setSelectedRequestId] = useState(null);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch Requests on load
+  const fetchRequests = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get('http://localhost:5000/api/donation-requests/restaurant', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      // Map backend fields to frontend expected fields
+      const formattedRequests = res.data.map(req => ({
+        id: req._id,
+        items: req.foodId?.name || 'Unknown Item',
+        quantity: req.quantity,
+        purpose: req.purpose || '',
+        urgency: 'Normal', // Optional mock as it's not in DB
+        preferredPickup: req.foodId?.expiresIn || 'Not specified',
+        status: req.status,
+        time: new Date(req.createdAt).toLocaleString(),
+        requester: {
+          id: req.receiverId?._id,
+          type: req.receiverId?.organizationName ? 'Organization' : 'Individual',
+          name: req.receiverId?.name || 'Unknown',
+          orgName: req.receiverId?.organizationName || '',
+          email: req.receiverId?.email || '',
+          phone: req.receiverId?.phoneNumber || '',
+          address: req.receiverId?.address || 'Not Provided',
+          avatar: 'https://i.pravatar.cc/150?u=' + (req.receiverId?._id || 'default')
+        },
+        foodDetails: req.foodId // keep food details around for details panel
+      }));
+      setRequests(formattedRequests);
+    } catch (err) {
+      console.error('Error fetching donation requests:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRequests();
+  }, []);
 
   const selectedRequest = requests.find(r => r.id === selectedRequestId);
 
-  const handleStatusChange = (requestId, newStatus) => {
-    setRequests(requests.map(req => 
-      req.id === requestId ? { ...req, status: newStatus } : req
-    ));
+  const handleStatusChange = async (requestId, newStatus) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.patch(`http://localhost:5000/api/donation-requests/${requestId}`, 
+        { status: newStatus },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      // Update state locally
+      setRequests(requests.map(req =>
+        req.id === requestId ? { ...req, status: newStatus } : req
+      ));
+    } catch (err) {
+      console.error('Failed to update status:', err);
+      alert('Failed to update status');
+    }
   };
 
   const openProfile = (requester) => {

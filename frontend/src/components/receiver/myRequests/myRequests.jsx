@@ -14,7 +14,7 @@ export default function MyRequests() {
       try {
         const token = localStorage.getItem('token');
         const config = { headers: { Authorization: `Bearer ${token}` } };
-        const res = await axios.get('http://localhost:5000/api/food-requests/my-requests', config);
+        const res = await axios.get('http://localhost:5000/api/food-requests/receiver', config);
         setRequests(res.data || []);
       } catch (err) {
         console.error('Failed to fetch requests:', err);
@@ -27,9 +27,8 @@ export default function MyRequests() {
 
   // Calculate metrics
   const pendingCount = requests.filter(r => r.status === 'Pending').length;
-  const approvedCount = requests.filter(r => r.status === 'Approved').length;
+  const acceptedCount = requests.filter(r => r.status === 'Approved' || r.status === 'Accepted' || r.status === 'Completed').length;
   const rejectedCount = requests.filter(r => r.status === 'Rejected').length;
-
   return (
     <div className="flex h-screen overflow-hidden font-sans" style={{ backgroundColor: '#F8F8F6' }}>
       <SidebarUser />
@@ -65,8 +64,8 @@ export default function MyRequests() {
                   <CheckCircle className="w-8 h-8" style={{ color: '#9BC7D8' }} />
                 </div>
                 <div>
-                  <h3 className="text-gray-500 font-bold mb-1">Approved Requests</h3>
-                  <p className="text-3xl font-black" style={{ color: '#1F5E2A' }}>{approvedCount}</p>
+                  <h3 className="text-gray-500 font-bold mb-1">Accepted Requests</h3>
+                  <p className="text-3xl font-black" style={{ color: '#1F5E2A' }}>{acceptedCount}</p>
                 </div>
               </div>
 
@@ -85,10 +84,7 @@ export default function MyRequests() {
             {/* Request List component */}
             <div className="pt-4">
               <h2 className="text-xl font-bold mb-4" style={{ color: '#1F5E2A' }}>Request History</h2>
-              <ViewRequests requests={requests} />
-              { loading && (
-                <div className="py-6 text-center text-gray-500">Loading requests...</div>
-              )}
+              <ViewRequests requests={requests} loading={loading} />
             </div>
 
           </div>

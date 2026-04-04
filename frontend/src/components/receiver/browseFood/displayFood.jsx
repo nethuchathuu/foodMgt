@@ -15,6 +15,7 @@ export default function DisplayFoodPage() {
   // Donation Modal State
   const [showDonationModal, setShowDonationModal] = useState(false);
   const [requestQty, setRequestQty] = useState(1);
+  const [purpose, setPurpose] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
@@ -32,14 +33,27 @@ export default function DisplayFoodPage() {
     fetchFoodDetails();
   }, [id]);
 
-  const handleRequestConfirm = () => {
-    // Donation Request Logic
-    setShowSuccess(true);
-    setTimeout(() => {
-      setShowDonationModal(false);
-      setShowSuccess(false);
-      navigate('/receiver/foods');
-    }, 2000);
+  const handleRequestConfirm = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post('http://localhost:5000/api/food-requests', 
+        { foodId: food._id || food.id || id, quantity: requestQty, purpose },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setShowSuccess(true);
+      setTimeout(() => {
+        setShowDonationModal(false);
+        setShowSuccess(false);
+        if (response.data && response.data.request && response.data.request._id) {
+          navigate(`/receiver/requests/${response.data.request._id}`);
+        } else {
+          navigate('/receiver/requests');
+        }
+      }, 2000);
+    } catch (err) {
+      console.error('Failed to submit donation request:', err);
+      alert('Failed to submit donation request. Please try again.');
+    }
   };
 
   if (loading) {
@@ -286,6 +300,8 @@ export default function DisplayFoodPage() {
                     <label className="block text-sm font-bold text-gray-700 mb-2">Purpose for request</label>
                     <textarea 
                       rows="3"
+                      value={purpose}
+                      onChange={(e) => setPurpose(e.target.value)}
                       className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition"
                       placeholder="Why do you need this donation today?"
                     ></textarea>

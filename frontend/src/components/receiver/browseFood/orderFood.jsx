@@ -24,7 +24,13 @@ export default function OrderFood() {
     (async () => {
       try {
         const token = localStorage.getItem('token');
-        await axios.post('http://localhost:5000/api/orders', { foodId: id, quantity: Number(quantity) }, {
+        await axios.post('http://localhost:5000/api/orders', { 
+            foodId: id, 
+            quantity: Number(quantity),
+            deliveryType,
+            location,
+            notes 
+        }, {
           headers: { Authorization: `Bearer ${token}` }
         });
         alert('Order placed successfully!');

@@ -3,7 +3,19 @@ const router = express.Router();
 const foodRequestsController = require('../../controllers/receiverControllers/foodRequestsController');
 const { protect } = require('../../middleware/verifyUser');
 
-// Route to get all requests for the current receiver
-router.get('/my-requests', protect, foodRequestsController.getMyRequests);
+// POST /api/food-requests
+router.post('/', protect, foodRequestsController.createFoodRequest);
+
+// GET /api/food-requests/receiver
+router.get('/receiver', protect, foodRequestsController.getReceiverRequests);
+
+// GET /api/food-requests/:id
+router.get('/:id', protect, foodRequestsController.getReceiverRequestById);
+
+// PATCH /api/food-requests/:id
+router.patch('/:id', protect, foodRequestsController.updateFoodRequest);
+
+// DELETE /api/food-requests/:id
+router.delete('/:id', protect, foodRequestsController.deleteFoodRequest);
 
 module.exports = router;

@@ -1,65 +1,67 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Clock, Calendar, Hash, FileText, CheckCircle, Store, XCircle, MapPin, Phone } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
+import axios from 'axios';
 import SidebarUser from '../slidebarUser';
 import NavbarUser from '../navbarUser';
 
-// Reusing Mock Data here for simplicity across views
-const mockRequests = {
-  1: {
-    id: 1,
-    foodType: 'Rice Packets',
-    quantity: 50,
-    description: 'Needed for a community shelter weekend drive.',
-    status: 'Pending',
-    date: '2023-11-01',
-    restaurantName: 'Green Cafe',
-    restaurantLocation: 'Colombo',
-    restaurantContact: '0771234567',
-    responses: []
-  },
-  2: {
-    id: 2,
-    foodType: 'Assorted Bakery Items',
-    quantity: 20,
-    description: 'For local orphanage afternoon tea.',
-    status: 'Approved',
-    date: '2023-10-28',
-    restaurantName: 'Fresh Bakes',
-    restaurantLocation: 'Nearby',
-    restaurantContact: '0719876543',
-    responses: [
-      { id: 101, restaurantName: 'Fresh Bakes', message: 'We can provide 20 items. Please pick up by 4 PM.', status: 'Approved' }
-    ]
-  },
-  3: {
-    id: 3,
-    foodType: 'Vegetable Curries',
-    quantity: 15,
-    description: 'Lunch meals for elder care home.',
-    status: 'Rejected',
-    date: '2023-10-25',
-    restaurantName: 'Curry Pot',
-    restaurantLocation: 'Kandy',
-    restaurantContact: '0774567890',
-    responses: [
-      { id: 102, restaurantName: 'Curry Pot', message: 'Unfortunately, we do not have enough portions left to fulfill this request today.', status: 'Rejected' }
-    ]
-  }
-};
-
 export default function DetailsRequest() {
   const { id } = useParams();
-  const req = mockRequests[id] || mockRequests[1]; // Fallback mock
+  const [req, setReq] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRequest = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const config = { headers: { Authorization: `Bearer ${token}` } };
+        const res = await axios.get(`http://localhost:5000/api/food-requests/${id}`, config);
+        setReq(res.data);
+      } catch (err) {
+        console.error('Failed to fetch request details:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRequest();
+  }, [id]);
 
   const getStatusBadge = (status) => {
     switch (status) {
       case 'Pending': return { bg: '#E9A38E', icon: <Clock className="w-4 h-4" /> };
-      case 'Approved': return { bg: '#9BC7D8', icon: <CheckCircle className="w-4 h-4" /> };
+      case 'Approved': case 'Accepted': return { bg: '#9BC7D8', icon: <CheckCircle className="w-4 h-4" /> };
       case 'Rejected': return { bg: '#D67A5C', icon: <XCircle className="w-4 h-4" /> };
       default: return { bg: '#D8C3A5', icon: null };
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex h-screen overflow-hidden font-sans" style={{ backgroundColor: '#F8F8F6' }}>
+        <SidebarUser />
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          <NavbarUser />
+          <main className="flex-1 overflow-y-auto p-6 lg:p-8 flex items-center justify-center text-gray-500">
+            <div>Loading details...</div>
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  if (!req) {
+    return (
+      <div className="flex h-screen overflow-hidden font-sans" style={{ backgroundColor: '#F8F8F6' }}>
+        <SidebarUser />
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+          <NavbarUser />
+          <main className="flex-1 overflow-y-auto p-6 lg:p-8 flex items-center justify-center text-gray-500">
+            <div>Request not found.</div>
+          </main>
+        </div>
+      </div>
+    );
+  }
 
   const badge = getStatusBadge(req.status);
 
