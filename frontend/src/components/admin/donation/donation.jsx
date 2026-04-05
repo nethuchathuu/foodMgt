@@ -1,18 +1,35 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Eye, AlertCircle, CheckCircle2, XCircle, HeartHandshake, Zap, RefreshCw } from 'lucide-react';
+import axios from 'axios';
 
-const mockDonations = [
-  { id: 'REQ-5021', organization: 'City Orphanage', requestedFood: 'Mixed Vegetables & Bread', quantity: 50, status: 'Pending', time: '08:30 AM', date: 'Today', isUrgent: true },
-  { id: 'REQ-5022', organization: 'Hope Shelter', requestedFood: 'Grilled Chicken & Rice', quantity: 120, status: 'Approved', time: '09:15 AM', date: 'Today', isUrgent: false },
-  { id: 'REQ-5024', organization: 'Downtown Mission', requestedFood: 'Canned Soups', quantity: 200, status: 'Rejected', time: '11:20 AM', date: 'Today', isUrgent: false },
-  { id: 'REQ-5025', organization: 'Elderly Care Home', requestedFood: 'Oatmeal & Milk', quantity: 45, status: 'Pending', time: '11:45 AM', date: 'Today', isUrgent: true },
-  { id: 'REQ-5026', organization: 'Local Food Bank', requestedFood: 'Assorted Sandwiches', quantity: 80, status: 'Approved', time: '12:10 PM', date: 'Today', isUrgent: false },
-  { id: 'REQ-5019', organization: 'City Orphanage', requestedFood: 'Pasta', quantity: 40, status: 'Pending', time: '03:15 PM', date: 'Yesterday', isUrgent: false } // Should be filtered out
-];
+import { Search, Eye, AlertCircle, CheckCircle2, XCircle, HeartHandshake, Zap, RefreshCw } from 'lucide-react';
 
 const DonationMonitoring = () => {
   const navigate = useNavigate();
+  const [donations, setDonations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchDonations();
+  }, []);
+
+  const fetchDonations = async () => {
+    try {
+      setLoading(true);
+      setIsRefreshing(true);
+      const token = localStorage.getItem('token');
+      const res = await axios.get('http://localhost:5000/api/admin/donations', { headers: { Authorization: '\u0042earer ' + token } });
+      setDonations(res.data);
+      setLastRefreshed(new Date().toLocaleTimeString());
+    } catch(err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
   const [sortBy, setSortBy] = useState('Newest');
@@ -50,7 +67,7 @@ const DonationMonitoring = () => {
   };
 
   // Filter out any requests that aren't from "Today" based on functional behavior spec
-  const todayDonations = mockDonations.filter(req => req.date === 'Today');
+  const todayDonations = donations.filter(req => new Date(req.createdAt).toDateString() === new Date().toDateString());
 
   const stats = [
     { label: "Today's Requests", value: todayDonations.length, color: "#9BC7D8", bg: "#EAF6FB", icon: <HeartHandshake size={24}/> },
@@ -60,11 +77,11 @@ const DonationMonitoring = () => {
   ];
 
   const filteredDonations = useMemo(() => {
-    let result = todayDonations.filter(item => {
+    let result = donations.filter(item => {
       const matchSearch = 
         item.organization.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.requestedFood.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.id.toLowerCase().includes(searchTerm.toLowerCase());
+        (item._id || '').toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchFilter = activeFilter === 'All' || item.status === activeFilter;
       return matchSearch && matchFilter;
@@ -79,7 +96,7 @@ const DonationMonitoring = () => {
       result.sort((a, b) => a.status.localeCompare(b.status));
     }
     return result;
-  }, [searchTerm, activeFilter, sortBy, todayDonations]);
+  }, [searchTerm, activeFilter, sortBy, donations]);
 
   return (
     <div className="p-6 font-['Poppins'] min-h-screen" style={{ backgroundColor: '#F8FAFC' }}>

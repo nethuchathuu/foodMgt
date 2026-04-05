@@ -197,20 +197,42 @@ exports.rejectRestaurant = async (req, res) => {
 // GET Users
 exports.getUsers = async (req, res) => {
   try {
-    const personUsers = await User.find({ role: 'requester_person' });
-    const userIds = personUsers.map(u => u._id);
-    const persons = await Person.find({ userId: { $in: userIds } });
+    const allUsers = await User.find({ role: { $ne: 'admin' } });
+    const userIds = allUsers.map(u => u._id);
 
-    const users = personUsers.map(user => {
-      const p = persons.find(pr => pr.userId.toString() === user._id.toString());
+    const persons = await Person.find({ userId: { $in: userIds } });
+    const orgs = await Organization.find({ userId: { $in: userIds } });
+    const rests = await Restaurant.find({ userId: { $in: userIds } });
+
+    const users = allUsers.map(user => {
+      let name = user.name || 'Unknown';
+      let avatar = '';
+      let roleLabel = 'User';
+
+      if (user.role === 'requester_person') {
+        const p = persons.find(pr => pr.userId.toString() === user._id.toString());
+        if (p) { name = p.fullName || name; avatar = p.profilePicture || avatar; }
+        roleLabel = 'User';
+      } else if (user.role === 'requester_org') {
+        const o = orgs.find(or => or.userId.toString() === user._id.toString());
+        if (o) { name = o.orgName || name; avatar = o.representative?.profileImage?.fileUrl || avatar; }
+        roleLabel = 'Organization';
+      } else if (user.role === 'restaurant') {
+        const r = rests.find(re => re.userId.toString() === user._id.toString());
+        if (r) { name = r.restaurantName || name; avatar = r.restaurantImage || avatar; }
+        roleLabel = 'Restaurant';
+      }
+
       return {
         id: user._id,
-        name: p?.fullName || user.name || 'Unknown',
-        email: p?.email || user.email,
-        role: 'User',
+        name,
+        email: user.email,
+        role: roleLabel,
         status: user.status || (user.isVerified ? 'Active' : 'Pending'),
-        avatar: p?.profilePicture || ''      };
+        avatar
+      };
     });
+
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });

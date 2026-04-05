@@ -32,6 +32,8 @@ router.delete('/notifications/:id', protect, adminController.deleteNotification)
 // Food Listings
 router.use('/food-listings', protect, require('./adminRoutes/foodListingRoutes'));
 router.use('/orders', protect, require('./adminRoutes/orderMonitoringRoutes'));
+router.use('/donations', protect, require('./adminRoutes/donationRoutes'));
 
 module.exports = router;
+
 

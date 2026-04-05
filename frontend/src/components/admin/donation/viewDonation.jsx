@@ -1,53 +1,70 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { useEffect, useState } from 'react';
 import { ArrowLeft, Building, Utensils, Package, Clock, Zap, CheckCircle2, XCircle, FileText, Activity } from 'lucide-react';
 
 const ViewDonationDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [request, setRequest] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock specific donation data based on parameter
-  const request = {
-    id: id ? `#${id}` : '#REQ-5021',
-    status: 'Pending',
-    date: 'Today',
-    time: '08:30 AM',
-    isUrgent: true,
-    
+  useEffect(() => {
+    const fetchDonation = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.get(`http://localhost:5000/api/admin/donations/${id}`, { headers: { Authorization: '\u0042earer ' + token }});
+        setRequest(res.data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDonation();
+  }, [id]);
+
+  if (loading) return <div className="p-10">Loading donation...</div>;
+  if (!request) return <div className="p-10 text-red-500">Donation not found!</div>;
+
+  // Adapt backend data to frontend mock shape
+  const requestFormatted = {
+    id: request._id,
+    status: request.status,
+    dateRaw: request.createdAt,
+    date: new Date(request.createdAt).toLocaleDateString(),
+    time: new Date(request.createdAt).toLocaleTimeString(),
+    isUrgent: request.isUrgent,
     organization: {
-      name: 'City Orphanage',
-      type: 'NPO / Child Care',
-      contact: 'contact@cityorphanage.org',
-      phone: '+1 (555) 112-2233'
+      name: request.organization,
+      type: 'NPO',
+      contact: 'Unknown Admin Data',
+      phone: ''
     },
-
     requestDetails: {
-      food: 'Mixed Vegetables & Bread',
-      quantity: 50,
-      reason: 'Urgent shortage for lunch service today due to delayed supplier delivery.',
-      dietaryMatches: ['Vegetarian', 'Nut-Free']
+      food: request.requestedFood,
+      quantity: request.quantity,
+      reason: request.reason || 'No reason provided',
+      dietaryMatches: request.dietaryDetails || []
     },
-
     statusDetails: {
       approvalTime: '--:--',
-      notes: 'Awaiting admin review. Organization has received 3 donations this week.',
+      notes: request.adminNotes || 'Awaiting admin review.',
       reviewer: 'Pending Review'
     },
-
     timeline: [
-      { time: '08:30 AM', title: 'Request Submitted', desc: 'Organization created the donation request.', completed: true },
-      { time: '08:35 AM', title: 'Automated Checks', desc: 'Verified organization status and limits. No red flags.', completed: true },
-      { time: '--:--', title: 'Admin Review', desc: 'Pending administrator decision.', completed: false },
-      { time: '--:--', title: 'Action Taken', desc: 'Request will be formally approved or rejected.', completed: false }
+      { time: new Date(request.createdAt).toLocaleTimeString(), title: 'Request Submitted', desc: 'Organization created the donation request.', completed: true },
+      { time: '--:--', title: 'Admin Review', desc: 'Pending administrator decision.', completed: request.status !== 'Pending' }
     ]
   };
-
-  const statusColors = {
+const statusColors = {
     Pending: { bg: '#FFF4F0', text: '#E9A38E' },
     Approved: { bg: '#EAF6FB', text: '#9BC7D8' },
     Rejected: { bg: '#FDECEA', text: '#D67A5C' }
   };
-  const currentStatusStyle = statusColors[request.status] || { bg: '#f1f5f9', text: '#475569' };
+  const currentStatusStyle = statusColors[adaptedrequestFormatted.status] || { bg: '#f1f5f9', text: '#475569' };
 
   return (
     <div className="p-6 font-['Poppins'] min-h-screen" style={{ backgroundColor: '#F8FAFC' }}>
@@ -68,20 +85,20 @@ const ViewDonationDetails = () => {
                 className="px-3 py-1 rounded-full text-xs font-bold shadow-sm"
                 style={{ backgroundColor: currentStatusStyle.bg, color: currentStatusStyle.text }}
               >
-                {request.status}
+                {requestFormatted.status}
               </span>
-              {request.isUrgent && (
+              {requestFormatted.isUrgent && (
                 <span className="flex items-center gap-1 px-3 py-1 bg-yellow-50 text-yellow-600 rounded-full text-xs font-bold shadow-sm border border-yellow-100">
                   <Zap size={12} className="fill-current" /> Urgent
                 </span>
               )}
             </div>
-            <p className="text-slate-500 text-sm mt-1">{request.id} • {request.date}, {request.time}</p>
+            <p className="text-slate-500 text-sm mt-1">{requestFormatted.id} • {requestFormatted.date}, {requestFormatted.time}</p>
           </div>
         </div>
 
         {/* Action Buttons for Admin */}
-        {request.status === 'Pending' && (
+        {requestFormatted.status === 'Pending' && (
           <div className="flex gap-3 ml-12 md:ml-0">
             <button className="px-5 py-2.5 bg-white border border-rose-200 text-rose-500 hover:bg-rose-50 rounded-xl font-semibold shadow-sm transition-colors flex items-center gap-2">
               <XCircle size={18} /> Reject
@@ -100,7 +117,7 @@ const ViewDonationDetails = () => {
           
           {/* Request Information Card */}
           <div className="bg-white rounded-2xl p-6 md:p-8 shadow-[0_4px_12px_rgba(0,0,0,0.03)] border border-slate-100 relative overflow-hidden">
-            {request.isUrgent && <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-300 to-yellow-500"></div>}
+            {requestFormatted.isUrgent && <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-yellow-300 to-yellow-500"></div>}
             
             <h2 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-4 mb-6 flex items-center gap-2">
               <Package className="text-[#9BC7D8]" size={20} />
@@ -110,9 +127,9 @@ const ViewDonationDetails = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
                 <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1 flex items-center gap-1.5"><Utensils size={14}/> Food Requested</p>
-                <p className="text-lg font-bold text-slate-800">{request.requestDetails.food}</p>
+                <p className="text-lg font-bold text-slate-800">{requestFormatted.requestDetails.food}</p>
                 <div className="flex gap-2 mt-2">
-                  {request.requestDetails.dietaryMatches.map((diet, i) => (
+                  {requestFormatted.requestDetails.dietaryMatches.map((diet, i) => (
                     <span key={i} className="px-2 py-0.5 bg-white border border-slate-200 rounded text-xs font-semibold text-slate-600">{diet}</span>
                   ))}
                 </div>
@@ -121,7 +138,7 @@ const ViewDonationDetails = () => {
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 flex flex-col justify-center">
                 <p className="text-xs text-slate-500 font-medium uppercase tracking-wider mb-1 flex items-center gap-1.5">Quantity Needed</p>
                 <div className="flex items-end gap-2">
-                  <span className="text-3xl font-black text-slate-800 leading-none">{request.requestDetails.quantity}</span>
+                  <span className="text-3xl font-black text-slate-800 leading-none">{requestFormatted.requestDetails.quantity}</span>
                   <span className="text-slate-500 font-medium mb-1">units</span>
                 </div>
               </div>
@@ -131,7 +148,7 @@ const ViewDonationDetails = () => {
               <p className="text-xs text-blue-600 font-bold uppercase tracking-wider mb-1 flex items-center gap-1.5">
                 <FileText size={14}/> Reason / Notes
               </p>
-              <p className="text-slate-700 text-sm leading-relaxed">{request.requestDetails.reason}</p>
+              <p className="text-slate-700 text-sm leading-relaxed">{requestFormatted.requestDetails.reason}</p>
             </div>
           </div>
 
@@ -146,20 +163,20 @@ const ViewDonationDetails = () => {
               <div className="flex-1 space-y-4">
                 <div>
                   <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Name</p>
-                  <p className="font-semibold text-slate-800 text-lg">{request.organization.name}</p>
+                  <p className="font-semibold text-slate-800 text-lg">{requestFormatted.organization.name}</p>
                   <span className="inline-block px-2.5 py-1 bg-slate-100 text-slate-600 text-xs font-bold rounded-md mt-1">
-                    {request.organization.type}
+                    {requestFormatted.organization.type}
                   </span>
                 </div>
               </div>
               <div className="flex-1 space-y-4">
                  <div>
                   <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Contact Email</p>
-                  <p className="font-medium text-slate-700">{request.organization.contact}</p>
+                  <p className="font-medium text-slate-700">{requestFormatted.organization.contact}</p>
                 </div>
                 <div>
                   <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Phone</p>
-                  <p className="font-medium text-slate-700">{request.organization.phone}</p>
+                  <p className="font-medium text-slate-700">{requestFormatted.organization.phone}</p>
                 </div>
               </div>
             </div>
@@ -179,17 +196,17 @@ const ViewDonationDetails = () => {
                <div>
                   <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Current Status</p>
                   <span className="px-3 py-1 rounded-full text-sm font-bold inline-block" style={{ backgroundColor: currentStatusStyle.bg, color: currentStatusStyle.text }}>
-                    {request.status}
+                    {requestFormatted.status}
                   </span>
                </div>
                <div>
                   <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Approval Time</p>
-                  <p className="font-medium text-slate-700">{request.statusDetails.approvalTime}</p>
+                  <p className="font-medium text-slate-700">{requestFormatted.statusDetails.approvalTime}</p>
                </div>
                <div>
                   <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Admin Notes</p>
                   <p className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100 leading-snug">
-                    {request.statusDetails.notes}
+                    {requestFormatted.statusDetails.notes}
                   </p>
                </div>
             </div>
@@ -201,7 +218,7 @@ const ViewDonationDetails = () => {
             <div className="relative pl-3">
               <div className="absolute left-4 top-2 bottom-6 w-0.5 bg-slate-200 rounded-full"></div>
               
-              {request.timeline.map((event, idx) => (
+              {requestFormatted.timeline.map((event, idx) => (
                 <div key={idx} className="relative mb-6 last:mb-0">
                   <div className={`absolute -left-1.5 p-1 rounded-full bg-white ${event.completed ? 'text-[#9BC7D8]' : 'text-slate-300'}`}>
                     {event.completed ? <CheckCircle2 size={18} className="fill-current text-white" /> : <Clock size={18} />}
