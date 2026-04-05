@@ -5,6 +5,8 @@ const wastageController = require('../../controllers/restaurentsControllers/wast
 
 router.post('/', protect, wastageController.addWastage);
 router.get('/today', protect, wastageController.getTodayWastage);
+router.delete('/today', protect, wastageController.clearTodayWastage);
+router.delete('/:id', protect, wastageController.deleteWastage);
 
 module.exports = router;
 

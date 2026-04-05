@@ -22,6 +22,11 @@ const WastedLoss = ({ data }) => {
             <div>
               <h3 className="text-lg font-bold text-[#1F5E2A]">{item.foodName}</h3>
               <p className="text-sm font-medium text-gray-500 mt-1">Qty: {item.quantity} {item.unit}</p>
+              {item.reason && (
+                <p className="text-xs font-semibold text-[#D67A5C] bg-[#D67A5C]/10 px-2 py-0.5 rounded-md inline-block mt-1">
+                  Reason: {item.reason}
+                </p>
+              )}
             </div>
           </div>
           <div className="text-right">

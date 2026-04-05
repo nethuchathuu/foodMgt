@@ -1,18 +1,10 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PlusCircle, Leaf } from 'lucide-react';
+import { PlusCircle, Leaf, Trash2, FileText } from 'lucide-react';
 import axios from 'axios';
 import AddWasted from './addWasted';
-
-const getEmoji = (name) => {
-  const lowerName = name.toLowerCase();
-  if (lowerName.includes('rice')) return "🍛";
-  if (lowerName.includes('chicken') || lowerName.includes('meat')) return "🍗";
-  if (lowerName.includes('salad') || lowerName.includes('veg')) return "🥗";
-  if (lowerName.includes('bread') || lowerName.includes('bun')) return "🍞";
-  if (lowerName.includes('curry')) return "🍲";
-  return "🍽️";
-};
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const WastageTracking = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -50,6 +42,80 @@ const WastageTracking = () => {
     return acc;
   }, {});
 
+  const handleClearAll = async () => {
+    if (!window.confirm('Are you sure you want to clear all wastage records for today?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete('http://localhost:5000/api/wastage/today', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setLogs([]);
+    } catch (err) {
+      console.error('Failed to clear today wastage:', err);
+      alert('Failed to clear wastage');
+    }
+  };
+
+  const handleDeleteItem = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this wastage record?')) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete(`http://localhost:5000/api/wastage/${id}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setLogs(logs.filter(log => log._id !== id));
+    } catch (err) {
+      console.error('Failed to delete wastage record:', err);
+      alert('Failed to delete record');
+    }
+  };
+
+  const generatePDF = () => {
+    const doc = new jsPDF();
+    
+    // Title
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.setTextColor(31, 94, 42); 
+    doc.text("Daily Wastage Report", 14, 22);
+
+    doc.setFontSize(11);
+    doc.setTextColor(100, 100, 100);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Generated on: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, 14, 30);
+
+    const tableColumn = ["Food Name", "Reason", "Quantity", "Loss Amount (Rs.)"];
+    const tableRows = [];
+
+    logs.forEach(item => {
+      tableRows.push([
+        item.foodName,
+        item.reason,
+        `${item.quantity} ${item.unit}`,
+        item.totalLoss ? item.totalLoss.toLocaleString() : '0'
+      ]);
+    });
+
+    autoTable(doc, {
+      startY: 40,
+      head: [tableColumn],
+      body: tableRows,
+      theme: 'grid',
+      headStyles: {
+        fillColor: [31, 94, 42],
+        textColor: 255,
+        fontStyle: 'bold'
+      },
+      styles: {
+        font: 'helvetica',
+        fontSize: 10,
+        cellPadding: 5
+      }
+    });
+
+    doc.save(`wastage-report-${new Date().toISOString().slice(0,10)}.pdf`);
+  };
+
   return (
     <div className="bg-[#F8F8F6] min-h-screen p-6 font-sans pb-24 relative overflow-hidden">
       <div className="max-w-3xl mx-auto relative z-10">
@@ -57,7 +123,7 @@ const WastageTracking = () => {
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex justify-between items-center mb-8 pt-4"
+          className="flex flex-col sm:flex-row justify-between sm:items-center mb-8 pt-4 gap-4"
         >
           <div>
             <h1 className="text-3xl font-extrabold text-[#1F5E2A] flex items-center gap-2">
@@ -66,14 +132,34 @@ const WastageTracking = () => {
             <p className="text-gray-500 mt-1">Track and reduce daily food waste</p>
           </div>
           
-          <motion.button 
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setIsAddModalOpen(true)}
-            className="bg-[#D67A5C] text-white px-6 py-3 rounded-2xl font-bold shadow-lg hover:bg-[#E9A38E] transition flex items-center gap-2"
-          >
-            <PlusCircle size={20} /> <span className="hidden sm:inline">Add Wastage</span>
-          </motion.button>
+          <div className="flex flex-wrap gap-2">
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={generatePDF}
+              disabled={logs.length === 0}
+              className="bg-white text-[#1F5E2A] border border-[#1F5E2A] px-4 py-3 rounded-2xl font-bold shadow-sm hover:bg-[#F0F8EC] transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <FileText size={18} /> <span className="hidden sm:inline">PDF Report</span>
+            </motion.button>
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleClearAll}
+              disabled={logs.length === 0}
+              className="bg-red-100 text-red-600 px-4 py-3 rounded-2xl font-bold shadow-sm hover:bg-red-200 transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Trash2 size={18} /> <span className="hidden sm:inline">Clear All</span>
+            </motion.button>
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setIsAddModalOpen(true)}
+              className="bg-[#D67A5C] text-white px-6 py-3 rounded-2xl font-bold shadow-lg hover:bg-[#E9A38E] transition flex items-center gap-2"
+            >
+              <PlusCircle size={20} /> <span className="hidden sm:inline">Add Wastage</span>
+            </motion.button>
+          </div>
         </motion.div>
 
         {/* List Content */}
@@ -101,7 +187,7 @@ const WastageTracking = () => {
                 >
                   <div className="flex justify-between items-center mb-4 border-b border-gray-50 pb-3">
                     <h2 className="text-xl font-bold text-[#1F5E2A] flex items-center gap-2">
-                      <span className="text-2xl">{getEmoji(foodName)}</span> {foodName}
+                       {foodName}
                     </h2>
                     <div className="text-sm font-semibold text-[#D67A5C] bg-[#D67A5C]/10 px-3 py-1 rounded-lg">
                       Total: {group.total} {group.unit}
@@ -123,6 +209,13 @@ const WastageTracking = () => {
                           <span className="text-sm font-bold text-[#1F5E2A]">
                             {item.quantity} {item.unit}
                           </span>
+                          <button 
+                            onClick={() => handleDeleteItem(item._id)}
+                            className="text-red-400 hover:text-red-600 p-1.5 bg-red-50 rounded-lg transition-colors hover:bg-red-100"
+                            title="Delete this wastage record"
+                          >
+                            <Trash2 size={16} />
+                          </button>
                         </div>
                       </motion.div>
                     ))}

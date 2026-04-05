@@ -23,7 +23,8 @@ const FinancialLoss = () => {
         foodName: item.foodName,
         quantity: item.quantity,
         unit: item.unit,
-        loss: item.totalLoss
+        loss: item.totalLoss,
+        reason: item.reason
       })) || [];
       setWastedData(data);
       
