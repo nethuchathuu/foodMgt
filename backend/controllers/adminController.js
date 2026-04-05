@@ -58,6 +58,7 @@ const Organization = require('../models/Organization');
 const Restaurant = require('../models/Restaurant');
 const Person = require('../models/Person');
 const Notification = require('../models/Notification');
+const FoodListing = require('../models/FoodListing');
 
 // GET Dashboard Stats
 exports.getDashboardStats = async (req, res) => {
@@ -75,7 +76,7 @@ exports.getDashboardStats = async (req, res) => {
       totalOrganizations,
       totalUsers,
       pendingApprovals,
-      todaysFoodListings: 0, // Placeholder
+      todaysFoodListings: await FoodListing.countDocuments({ createdAt: { $gte: new Date(new Date().setHours(0,0,0,0)) } }),
       todaysDonations: 0, // Placeholder
     });
   } catch (error) {
@@ -196,19 +197,20 @@ exports.rejectRestaurant = async (req, res) => {
 // GET Users
 exports.getUsers = async (req, res) => {
   try {
-    const allUsers = await User.find({ role: { $ne: 'admin' } });
-    
-    const users = allUsers.map(user => {
+    const personUsers = await User.find({ role: 'requester_person' });
+    const userIds = personUsers.map(u => u._id);
+    const persons = await Person.find({ userId: { $in: userIds } });
+
+    const users = personUsers.map(user => {
+      const p = persons.find(pr => pr.userId.toString() === user._id.toString());
       return {
         id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role === 'requester_person' ? 'User' : user.role === 'requester_org' ? 'Organization' : 'Restaurant',
+        name: p?.fullName || user.name || 'Unknown',
+        email: p?.email || user.email,
+        role: 'User',
         status: user.status || (user.isVerified ? 'Active' : 'Pending'),
-        avatar: '' // Placeholder
-      };
+        avatar: p?.profilePicture || ''      };
     });
-
     res.json(users);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
@@ -278,4 +280,5 @@ exports.deleteNotification = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
 

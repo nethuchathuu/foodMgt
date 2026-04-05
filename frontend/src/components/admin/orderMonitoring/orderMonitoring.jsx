@@ -1,16 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Download, Eye, AlertCircle, Clock, CheckCircle2, XCircle } from 'lucide-react';
 
-const mockOrders = [
-  { id: 'ORD-1023', customer: 'Alex Johnson', restaurant: 'Healthy Bites', foodItem: 'Grilled Chicken Salad', status: 'Pending', date: '2026-03-28T09:30:00', price: 12.50, isDelayed: true },
-  { id: 'ORD-1024', customer: 'Maria Garcia', restaurant: 'Pizza Plaza', foodItem: 'Large Pepperoni Pizza', status: 'Completed', date: '2026-03-27T19:45:00', price: 18.00, isDelayed: false },
-  { id: 'ORD-1025', customer: 'James Smith', restaurant: 'Zen Sushi', foodItem: 'Vegan Sushi Roll', status: 'Cancelled', date: '2026-03-27T18:20:00', price: 15.00, isDelayed: false },
-  { id: 'ORD-1026', customer: 'Linda Chen', restaurant: 'Mexican Fiesta', foodItem: 'Spicy Beef Tacos', status: 'Pending', date: '2026-03-28T10:15:00', price: 10.00, isDelayed: false },
-  { id: 'ORD-1027', customer: 'Robert Taylor', restaurant: 'Burger Joint', foodItem: 'Classic Cheeseburger', status: 'Completed', date: '2026-03-27T14:30:00', price: 9.50, isDelayed: false },
-  { id: 'ORD-1028', customer: 'Emma Davis', restaurant: 'Healthy Bites', foodItem: 'Quinoa Bowl', status: 'Pending', date: '2026-03-28T10:45:00', price: 14.00, isDelayed: false },
-  { id: 'ORD-1029', customer: 'William Brown', restaurant: 'Sweet Treats', foodItem: 'Chocolate Cake', status: 'Cancelled', date: '2026-03-26T16:00:00', price: 8.50, isDelayed: false }
-];
+
 
 const OrderMonitoring = () => {
   const navigate = useNavigate();
@@ -19,11 +11,36 @@ const OrderMonitoring = () => {
   const [sortBy, setSortBy] = useState('Newest');
 
   // Hardcoded Stats as per spec (or calculated. Let's use spec numbers for display, but dynamic arrays for table)
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  const fetchOrders = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/admin/orders', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (!response.ok) throw new Error('Failed to fetch orders');
+      const data = await response.json();
+      setOrders(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const stats = [
-    { label: "Total Orders", value: "320", color: "#9BC7D8", bg: "#EAF6FB", icon: <Clock size={24}/> },
-    { label: "Pending", value: "40", color: "#E9A38E", bg: "#FFF4F0", icon: <AlertCircle size={24}/> },
-    { label: "Completed", value: "240", color: "#6FAFC4", bg: "#EBF4F7", icon: <CheckCircle2 size={24}/> },
-    { label: "Cancelled", value: "40", color: "#D67A5C", bg: "#FDECEA", icon: <XCircle size={24}/> }
+    { label: "Total Orders", value: orders.length, color: "#9BC7D8", bg: "#EAF6FB", icon: <Clock size={24}/> },
+    { label: "Pending", value: orders.filter(o => o.status === 'Pending').length, color: "#E9A38E", bg: "#FFF4F0", icon: <AlertCircle size={24}/> },
+    { label: "Completed", value: orders.filter(o => o.status === 'Completed').length, color: "#6FAFC4", bg: "#EBF4F7", icon: <CheckCircle2 size={24}/> },
+    { label: "Cancelled", value: orders.filter(o => o.status === 'Cancelled').length, color: "#D67A5C", bg: "#FDECEA", icon: <XCircle size={24}/> }
   ];
 
   const getStatusStyle = (status) => {
@@ -36,13 +53,17 @@ const OrderMonitoring = () => {
   };
 
   const filteredOrders = useMemo(() => {
-    let result = mockOrders.filter(order => {
-      const matchSearch = 
-        order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.restaurant.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.foodItem.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        order.id.toLowerCase().includes(searchTerm.toLowerCase());
+    let result = orders.filter(order => {
+      const customerName = order.customerName || '';
+      const restaurantName = order.restaurantName || '';
+      const foodItem = order.foodName || '';
       
+      const matchSearch =
+        customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        restaurantName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        foodItem.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        String(order.id || '').toLowerCase().includes(searchTerm.toLowerCase());
+
       const matchFilter = activeFilter === 'All' || order.status === activeFilter;
       return matchSearch && matchFilter;
     });
@@ -50,12 +71,12 @@ const OrderMonitoring = () => {
     if (sortBy === 'Newest') {
       result.sort((a, b) => new Date(b.date) - new Date(a.date));
     } else if (sortBy === 'Customer Name') {
-      result.sort((a, b) => a.customer.localeCompare(b.customer));
+      result.sort((a, b) => (a.customerName || '').localeCompare(b.customerName || ''));
     } else if (sortBy === 'Status') {
-      result.sort((a, b) => a.status.localeCompare(b.status));
+      result.sort((a, b) => (a.status || '').localeCompare(b.status || ''));
     }
     return result;
-  }, [searchTerm, activeFilter, sortBy]);
+  }, [orders, searchTerm, activeFilter, sortBy]);
 
   const formatDate = (dateString) => {
     const options = { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' };
@@ -178,11 +199,11 @@ const OrderMonitoring = () => {
                         </div>
                         <p className="text-xs text-slate-500 mt-1">{formatDate(order.date)}</p>
                       </td>
-                      <td className="px-6 py-4 font-medium text-slate-700">{order.customer}</td>
-                      <td className="px-6 py-4 text-slate-600">{order.restaurant}</td>
+                      <td className="px-6 py-4 font-medium text-slate-700">{order.customerName || ""}</td>
+                      <td className="px-6 py-4 text-slate-600">{order.restaurantName || ""}</td>
                       <td className="px-6 py-4">
-                        <span className="text-slate-800">{order.foodItem}</span>
-                        <p className="text-xs font-semibold mt-1" style={{ color: '#9BC7D8' }}>${order.price.toFixed(2)}</p>
+                        <span className="text-slate-800">{order.foodName}</span>
+                        <p className="text-xs font-semibold mt-1" style={{ color: '#9BC7D8' }}>${(order.totalPrice || 0).toFixed(2)}</p>
                       </td>
                       <td className="px-6 py-4">
                         <span 

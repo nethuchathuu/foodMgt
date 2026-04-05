@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, User, MapPin, Phone, MessageSquare, Utensils, CreditCard, Hash, Package, Clock, CheckCircle2, History } from 'lucide-react';
 
@@ -6,50 +6,42 @@ const ViewOrderDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // Mock specific order data based on parameter
-  const order = {
-    id: id ? `#${id}` : '#ORD-1023',
-    status: 'Pending',
-    date: '2026-03-28T09:30:00',
-    deliveryMethod: 'Pickup',
-    
-    customer: {
-      name: 'Alex Johnson',
-      phone: '+1 (555) 987-6543',
-      notes: 'Please ensure extra napkins and no plastic cutlery.'
-    },
-
-    restaurant: {
-      name: 'Healthy Bites',
-      location: '123 Health Ave, Fitness District, NY',
-      contact: '+1 (555) 123-0000'
-    },
-
-    items: [
-      { name: 'Grilled Chicken Salad', quantity: 1, price: 12.50, dietary: 'High Protein' },
-      { name: 'Fresh Orange Juice', quantity: 2, price: 4.00, dietary: 'Vegan' }
-    ],
-
-    financials: {
-      subtotal: 20.50,
-      tax: 1.85,
-      total: 22.35
-    },
-
-    timeline: [
-      { time: '09:30 AM', status: 'Order Placed', desc: 'Customer placed order via app.', completed: true },
-      { time: '09:35 AM', status: 'Preparing Order', desc: 'Restaurant confirmed and started prep.', completed: true },
-      { time: '--:--', status: 'Ready for Pickup', desc: 'Waiting for restaurant update.', completed: false },
-      { time: '--:--', status: 'Completed', desc: 'Order handed to customer.', completed: false }
-    ]
-  };
-
   const statusColors = {
     Pending: { bg: '#FFF4F0', text: '#E9A38E' },
     Completed: { bg: '#EAF6FB', text: '#9BC7D8' },
     Cancelled: { bg: '#FDECEA', text: '#D67A5C' }
   };
+
+  const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetchOrderDetails();
+  }, [id]);
+
+  const fetchOrderDetails = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:5000/api/admin/orders/${id}`, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (!response.ok) throw new Error('Order not found');
+      const data = await response.json();
+      setOrder(data);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) return <div className="p-10 text-center font-['Poppins']">Loading order details...</div>;
+  if (error || !order) return <div className="p-10 text-center text-red-500 font-['Poppins']">Error: {error || 'Not found'}</div>;
+
   const currentStatusStyle = statusColors[order.status] || { bg: '#f1f5f9', text: '#475569' };
+
 
   return (
     <div className="p-6 font-['Poppins'] min-h-screen" style={{ backgroundColor: '#F8FAFC' }}>
