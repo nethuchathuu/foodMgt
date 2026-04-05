@@ -24,7 +24,7 @@ const FoodOffers = () => {
   }, []);
 
   const handleAction = () => {
-    navigate("/signup-before");
+    navigate("/signup");
   };
 
   const getCountdown = (expiryDate) => {
@@ -73,7 +73,7 @@ const FoodOffers = () => {
               <h2 className="text-4xl font-bold mb-4">🔥 Latest Food Offers</h2>
               <p className="text-xl text-gray-600">Grab delicious meals before they’re gone!</p>
             </div>
-            <button className="hidden md:block font-bold text-[#1F5E2A] hover:text-[#A7D63B] transition-colors">
+            <button onClick={handleAction} className="hidden md:block font-bold text-[#1F5E2A] hover:text-[#A7D63B] transition-colors">
               View All Offers &rarr;
             </button>
           </div>
