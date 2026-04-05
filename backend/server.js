@@ -10,6 +10,7 @@ const foodListingRoutes = require('./routes/restaurentsRoutes/foodListingRoutes'
 const wastageRoutes = require('./routes/restaurentsRoutes/wastageRoutes');
 const financialLossRoutes = require('./routes/restaurentsRoutes/financialLossRoutes');
 const organizationRoutes = require('./routes/organizationRoutes');
+const foodOffersRoutes = require('./routes/homeRoutes/foodOffersRoutes');
 const browseFoodRoutes = require('./routes/receiverRoutes/browseFoodRoutes');
 const foodOrdersRoutes = require('./routes/receiverRoutes/foodOrdersRoute');
 const restFoodOrdersRoutes = require('./routes/restaurentsRoutes/foodOrdersRoutes');
@@ -50,6 +51,7 @@ app.use('/api/food-listings', foodListingRoutes);
 app.use('/api/wastage', wastageRoutes);
 app.use('/api/financial-loss', financialLossRoutes);
 app.use('/api/organization', organizationRoutes);
+app.use('/api/food-offers', foodOffersRoutes);
 app.use('/api/browse-food', browseFoodRoutes);
 app.use('/api/food-orders', foodOrdersRoutes);
 app.use('/api/food-requests', foodRequestsRoutes);
