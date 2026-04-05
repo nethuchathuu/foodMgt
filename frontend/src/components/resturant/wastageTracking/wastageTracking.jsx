@@ -123,7 +123,7 @@ const WastageTracking = () => {
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex flex-col sm:flex-row justify-between sm:items-center mb-8 pt-4 gap-4"
+          className="flex flex-col gap-4 mb-8 pt-4"
         >
           <div>
             <h1 className="text-3xl font-extrabold text-[#1F5E2A] flex items-center gap-2">
@@ -132,7 +132,7 @@ const WastageTracking = () => {
             <p className="text-gray-500 mt-1">Track and reduce daily food waste</p>
           </div>
           
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-row overflow-x-auto gap-2 pb-2 scrollbar-hide">
             <motion.button 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}

@@ -16,7 +16,7 @@ const Navbar = () => {
   ];
 
   return (
-    <nav className="fixed w-full z-50 bg-[#F8F8F6]/80 backdrop-blur-md shadow-sm transition-all duration-300">
+    <nav className="fixed w-full z-50 bg-[#153E1E]/85 backdrop-blur-md shadow-md transition-all duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           <Link to="/" className="flex-shrink-0 flex items-center gap-0.5 cursor-pointer -ml-25">
@@ -27,7 +27,7 @@ const Navbar = () => {
               animate={{ scale: [1, 1.1, 1] }}
               transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
             />
-            <span className="font-bold text-3xl text-[#1F5E2A]">SecondServe</span>
+            <span className="font-bold text-3xl text-white">Second<span className="text-[#A7D63B]">Serve</span></span>
           </Link>
 
           {/* Desktop Menu */}
@@ -38,7 +38,7 @@ const Navbar = () => {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`relative text-[#1F5E2A] font-medium group px-1 py-2 ${isActive ? 'text-[#A7D63B]' : ''}`}
+                  className={`relative text-white/90 hover:text-[#C8E66A] font-medium group px-1 py-2 ${isActive ? '!text-[#A7D63B]' : ''}`}
                 >
                   {item.name}
                   <span className={`absolute left-0 bottom-0 h-0.5 bg-[#A7D63B] transition-all duration-300 ${isActive ? 'w-full' : 'w-0 group-hover:w-full'}`}></span>
@@ -48,16 +48,16 @@ const Navbar = () => {
             
             <div className="flex items-center space-x-4 ml-4">
               <motion.button 
-                whileHover={{ scale: 1.05, boxShadow: "0 0 15px rgba(31, 94, 42, 0.2)" }}
+                whileHover={{ scale: 1.05, boxShadow: "0 0 15px rgba(255, 255, 255, 0.2)" }}
                 onClick={() => navigate('/signin')}
-                className="px-5 py-2 text-[#1F5E2A] border-2 border-[#1F5E2A] rounded-full font-bold transition-colors hover:bg-[#1F5E2A] hover:text-white"
+                className="px-5 py-2 text-white border-2 border-white rounded-full font-bold transition-colors hover:bg-white hover:text-[#153E1E] hover:shadow-lg"
               >
                 Sign In
               </motion.button>
               <motion.button 
                 whileHover={{ scale: 1.05, boxShadow: "0 0 15px rgba(167, 214, 59, 0.4)" }}
                 onClick={() => navigate('/signup')}
-                className="px-5 py-2 bg-[#A7D63B] text-[#1F5E2A] rounded-full font-bold transition-colors hover:bg-[#C8E66A]"
+                className="px-5 py-2 bg-[#A7D63B] text-[#153E1E] rounded-full font-bold transition-colors hover:bg-[#C8E66A] hover:shadow-lg"
               >
                 Sign Up
               </motion.button>
@@ -68,7 +68,7 @@ const Navbar = () => {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="text-[#1F5E2A] hover:text-[#A7D63B] focus:outline-none"
+              className="text-white hover:text-[#A7D63B] focus:outline-none"
             >
               <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 {isOpen ? (
@@ -89,7 +89,7 @@ const Navbar = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-[#F8F8F6] shadow-lg absolute w-full overflow-hidden"
+            className="md:hidden bg-[#153E1E] shadow-lg absolute w-full overflow-hidden"
           >
             <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
               {navItems.map((item) => (
@@ -97,18 +97,18 @@ const Navbar = () => {
                   key={item.name}
                   to={item.href}
                   onClick={() => setIsOpen(false)}
-                  className="block px-3 py-2 text-[#1F5E2A] font-medium hover:bg-[#E9A38E]/20 hover:text-[#1F5E2A] rounded-md"
+                  className="block px-3 py-2 text-white font-medium hover:bg-[#1F5E2A] rounded-md border-b border-[#2F7A3A] last:border-0"
                 >
                   {item.name}
                 </Link>
               ))}
-              <div className="flex flex-col space-y-2 mt-4 px-3">
+              <div className="flex flex-col space-y-2 mt-4 px-3 pt-2">
                 <button 
                   onClick={() => {
                     setIsOpen(false);
                     navigate('/signin');
                   }}
-                  className="w-full px-5 py-2 text-[#1F5E2A] border-2 border-[#1F5E2A] rounded-full font-bold hover:bg-[#1F5E2A] hover:text-white"
+                  className="w-full px-5 py-2 text-white border-2 border-white rounded-full font-bold hover:bg-white hover:text-[#153E1E] hover:shadow-lg transition-colors"
                 >
                   Sign In
                 </button>
@@ -117,7 +117,7 @@ const Navbar = () => {
                     setIsOpen(false);
                     navigate('/signup');
                   }}
-                  className="w-full px-5 py-2 bg-[#A7D63B] text-[#1F5E2A] rounded-full font-bold hover:bg-[#C8E66A]"
+                  className="w-full px-5 py-2 bg-[#A7D63B] text-[#153E1E] rounded-full font-bold hover:bg-[#C8E66A] hover:shadow-lg transition-colors"
                 >
                   Sign Up
                 </button>

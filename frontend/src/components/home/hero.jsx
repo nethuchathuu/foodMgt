@@ -40,7 +40,7 @@ const Hero = () => {
           <p className="text-lg md:text-xl text-gray-700">
             Available across <span className="font-bold text-[#1F5E2A]">Colombo District</span>, discover amazing deals on surplus food from local restaurants. Enjoy delicious meals at a fraction of the cost, or request food donations for your community.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4">
+          {/*<div className="flex flex-col sm:flex-row gap-4">
             <motion.button 
               whileHover={{ scale: 1.05, y: -2 }}
               className="px-8 py-4 bg-[#A7D63B] text-[#1F5E2A] rounded-2xl font-bold shadow-lg shadow-[#A7D63B]/30 hover:bg-[#C8E66A]"
@@ -53,7 +53,7 @@ const Hero = () => {
             >
               Request Donation
             </motion.button>
-          </div>
+          </div>*/}
         </motion.div>
         <motion.div 
           initial={{ opacity: 0, scale: 0.8 }}
