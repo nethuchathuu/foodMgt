@@ -15,10 +15,16 @@ const FinancialLoss = () => {
     try {
       const token = localStorage.getItem('token');
       const [listRes, totalsRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/restaurants/financial-loss', { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get('http://localhost:5000/api/wastage/today', { headers: { Authorization: `Bearer ${token}` } }),
         axios.get('http://localhost:5000/api/financial-loss/today', { headers: { Authorization: `Bearer ${token}` } })
       ]);
-      const data = listRes.data.wastedData || [];
+      const data = listRes.data.map(item => ({
+        id: item._id,
+        foodName: item.foodName,
+        quantity: item.quantity,
+        unit: item.unit,
+        loss: item.totalLoss
+      })) || [];
       setWastedData(data);
       
       const calculatedTotal = data.reduce((sum, item) => sum + item.loss, 0);

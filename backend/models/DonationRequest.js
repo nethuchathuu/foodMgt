@@ -23,6 +23,9 @@ const DonationRequestSchema = new mongoose.Schema({
   purpose: {
     type: String
   },
+  preferredPickupTime: {
+    type: String, // Stored as a formatted string in Sri Lankan Standard Time
+  },
   status: {
     type: String,
     enum: ['Pending', 'Accepted', 'Rejected', 'Completed'],

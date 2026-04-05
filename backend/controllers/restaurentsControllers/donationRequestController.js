@@ -90,9 +90,9 @@ exports.getRestaurantDonationRequests = async (req, res) => {
         quantity: reqObj.quantity,
         purpose: reqObj.purpose || '',
         urgency: 'Normal',
-        preferredPickup: reqObj.foodId?.expiryTime || 'Not specified',
+        preferredPickup: reqObj.preferredPickupTime || reqObj.foodId?.expiryTime || 'Not specified',
         status: reqObj.status,
-        time: new Date(reqObj.createdAt).toLocaleString(),
+        time: new Date(reqObj.createdAt).toLocaleString('en-US', { timeZone: 'Asia/Colombo' }),
         requester: requester
       });
     }

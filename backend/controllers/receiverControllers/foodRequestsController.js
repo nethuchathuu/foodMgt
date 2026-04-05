@@ -7,7 +7,7 @@ const Restaurant = require('../../models/Restaurant');
 exports.createFoodRequest = async (req, res) => {
   try {
     const receiverId = req.user._id;
-    const { foodId, quantity, purpose } = req.body;
+    const { foodId, quantity, purpose, preferredPickupTime } = req.body;
 
     const food = await FoodListing.findById(foodId);
     if (!food) {
@@ -26,7 +26,8 @@ exports.createFoodRequest = async (req, res) => {
       foodId,
       foodName: food.foodName || food.name || 'Unknown Food',
       quantity,
-      description: purpose
+      description: purpose,
+      preferredPickupTime
     });
     await foodRequest.save();
 
@@ -37,6 +38,7 @@ exports.createFoodRequest = async (req, res) => {
       foodId,
       quantity,
       purpose,
+      preferredPickupTime,
       status: 'Pending'
     });
     await donationRequest.save();
@@ -67,6 +69,7 @@ exports.getReceiverRequests = async (req, res) => {
         foodType: req.foodName || food.foodName || food.name || 'Unknown Food',
         quantity: req.quantity || 0,
         description: req.description || '',
+        preferredPickupTime: req.preferredPickupTime || '',
         status: req.status || 'Pending',
         date: (req.createdAt ? req.createdAt : new Date()).toISOString().split('T')[0],
         restaurantName: rest.restaurantName || rest.name || 'Unknown Restaurant',

@@ -1,15 +1,21 @@
 import React, { useState } from 'react';
-import { MapPin, Clock, Info, ShoppingCart, Search, Heart, Sparkles, Plus, Minus, CheckCircle } from 'lucide-react';
+import { MapPin, Clock, Info, ShoppingCart, Search, Heart, Sparkles, Plus, Minus, CheckCircle, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 export default function AvailableFood({ foods, currentTime }) {
   const [selectedDonation, setSelectedDonation] = useState(null);
   const [requestQty, setRequestQty] = useState(1);
+  const [requestPurpose, setRequestPurpose] = useState('');
+  const [pickupTime, setPickupTime] = useState('');
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const openDonationModal = (food) => {
     setSelectedDonation(food);
     setRequestQty(1);
+    setRequestPurpose('');
+    setPickupTime('');
     setShowSuccess(false);
   };
 
@@ -17,12 +23,48 @@ export default function AvailableFood({ foods, currentTime }) {
     setSelectedDonation(null);
   };
 
-  const handleRequestConfirm = () => {
-    // API logic to request donation goes here
-    setShowSuccess(true);
-    setTimeout(() => {
-      closeDonationModal();
-    }, 2000);
+  const handleRequestConfirm = async () => {
+    if (!selectedDonation) return;
+
+    try {
+      setIsSubmitting(true);
+      const token = localStorage.getItem('token');
+      
+      let formattedTimeString = '';
+      if (pickupTime) {
+        const [hours, minutes] = pickupTime.split(':');
+        const d = new Date();
+        d.setHours(parseInt(hours, 10));
+        d.setMinutes(parseInt(minutes, 10));
+        formattedTimeString = d.toLocaleString('en-US', {
+            hour: 'numeric',
+            minute: 'numeric',
+            hour12: true,
+            timeZone: 'Asia/Colombo'
+        });
+      }
+
+      await axios.post('http://localhost:5000/api/food-requests', {
+        foodId: selectedDonation._id,
+        quantity: requestQty,
+        purpose: requestPurpose,
+        preferredPickupTime: formattedTimeString
+      }, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      setShowSuccess(true);
+      setTimeout(() => {
+        closeDonationModal();
+      }, 2000);
+    } catch (error) {
+      console.error('Error submitting request:', error);
+      alert(error.response?.data?.message || 'Failed to submit donation request');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const formatTime = (isoString) => {
@@ -228,25 +270,48 @@ export default function AvailableFood({ foods, currentTime }) {
                     <label className="block text-sm font-bold text-gray-700 mb-2">Brief Purpose (Optional)</label>
                     <textarea 
                       rows="3"
+                      value={requestPurpose}
+                      onChange={(e) => setRequestPurpose(e.target.value)}
                       className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition resize-none"
                       placeholder="e.g. For our local community shelter tonight..."
                     ></textarea>
+                  </div>
+
+                  {/* Pickup Time */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Preferred Pickup Time</label>
+                    <input 
+                      type="time" 
+                      value={pickupTime}
+                      onChange={(e) => setPickupTime(e.target.value)}
+                      className="w-full rounded-xl border border-gray-200 p-3 focus:ring-2 focus:ring-[#A7D63B] outline-none transition"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Times are recorded in Sri Lanka Standard Time (IST).</p>
                   </div>
 
                   {/* Actions */}
                   <div className="pt-4 flex gap-3">
                     <button 
                       onClick={closeDonationModal}
-                      className="flex-1 py-3 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+                      disabled={isSubmitting}
+                      className="flex-1 py-3 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors disabled:opacity-50"
                     >
                       Cancel
                     </button>
                     <button 
                       onClick={handleRequestConfirm}
-                      className="flex-1 py-3 rounded-xl font-bold text-white shadow-md hover:opacity-90 transition-opacity"
+                      disabled={isSubmitting}
+                      className="flex-1 py-3 rounded-xl font-bold text-white shadow-md hover:opacity-90 transition-opacity disabled:opacity-75 flex items-center justify-center gap-2"
                       style={{ backgroundColor: '#1F5E2A' }}
                     >
-                      Confirm Request
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          Submitting...
+                        </>
+                      ) : (
+                        'Confirm Request'
+                      )}
                     </button>
                   </div>
                 </div>

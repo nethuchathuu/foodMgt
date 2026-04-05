@@ -24,6 +24,9 @@ const FoodRequestSchema = new mongoose.Schema({
   description: {
     type: String,
   },
+  preferredPickupTime: {
+    type: String, // Stored as a formatted string in Sri Lankan Standard Time
+  },
   status: {
     type: String,
     enum: ['Pending', 'Approved', 'Rejected'],
