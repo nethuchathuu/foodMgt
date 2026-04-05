@@ -36,7 +36,7 @@ export default function DisplayFoodPage() {
   const handleRequestConfirm = async () => {
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5000/api/food-requests', 
+      const response = await axios.post('http://localhost:5000/api/food-requests', 
         { foodId: food._id || food.id || id, quantity: requestQty, purpose },
         { headers: { Authorization: `Bearer ${token}` } }
       );

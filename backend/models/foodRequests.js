@@ -8,11 +8,14 @@ const FoodRequestSchema = new mongoose.Schema({
   },
   restaurantId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'Restaurant',
   },
-  foodType: {
-    type: String,
-    required: true,
+  foodId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'FoodListing',
+  },
+  foodName: {
+    type: String
   },
   quantity: {
     type: Number,

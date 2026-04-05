@@ -29,4 +29,7 @@ router.patch('/notifications/:id/read', protect, adminController.markNotificatio
 router.patch('/notifications/read-all', protect, adminController.markAllNotificationsAsRead);
 router.delete('/notifications/:id', protect, adminController.deleteNotification);
 
+// Food Listings
+router.use('/food-listings', protect, require('./adminRoutes/foodListingRoutes'));
+
 module.exports = router;

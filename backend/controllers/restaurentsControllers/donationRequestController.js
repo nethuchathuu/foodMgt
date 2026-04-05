@@ -1,6 +1,8 @@
 const DonationRequest = require('../../models/DonationRequest');
 const FoodListing = require('../../models/FoodListing');
 const Restaurant = require('../../models/Restaurant');
+const Person = require('../../models/Person');
+const Organization = require('../../models/Organization');
 
 // createDonationRequest
 exports.createDonationRequest = async (req, res) => {
@@ -20,7 +22,8 @@ exports.createDonationRequest = async (req, res) => {
       restaurantId,
       foodId,
       quantity,
-      purpose
+      purpose,
+      status: 'Pending'
     });
 
     await donationRequest.save();
@@ -28,7 +31,7 @@ exports.createDonationRequest = async (req, res) => {
     res.status(201).json({ message: 'Donation request created successfully', request: donationRequest });
   } catch (error) {
     console.error('Error creating donation request:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', error: error.message });    
   }
 };
 
@@ -43,18 +46,58 @@ exports.getRestaurantDonationRequests = async (req, res) => {
     }
 
     const requests = await DonationRequest.find({ restaurantId: restaurant._id })
-      .populate('foodId', 'name description expiresIn image type')
-      .populate('receiverId', 'name email phoneNumber address organizationName')
+      .populate('foodId')     
+      .populate('receiverId')
       .sort({ createdAt: -1 });
 
-    // Map to normalized frontend format (optional, keeping close to MongoDB schema but formatting nicely if needed)
-    const formattedRequests = requests.map(req => {
-      const obj = req.toObject();
-      obj.id = obj._id;
-      return obj;
-    });
+    const processed = [];
+    for (const reqObj of requests) {
+      const receiver = reqObj.receiverId || {};
+      let requester = {
+        id: receiver._id,
+        type: receiver.role === 'requester_org' ? 'Organization' : 'Individual',
+        name: receiver.name || 'Unknown',
+        orgName: '',
+        email: receiver.email || '',
+        phone: '',
+        address: '',
+        avatar: ''
+      };
 
-    res.status(200).json(formattedRequests);
+      if (receiver.role === 'requester_person') {
+        const person = await Person.findOne({ userId: receiver._id });
+        if (person) {
+          requester.name = person.fullName || requester.name;
+          requester.phone = person.phoneNumber || requester.phone;
+          requester.address = person.homeAddress || requester.address;
+          requester.avatar = person.profilePicture || requester.avatar;
+        }
+      } else if (receiver.role === 'requester_org') {
+        const org = await Organization.findOne({ userId: receiver._id });
+        if (org) {
+          requester.name = org.organizationName || requester.name;
+          requester.orgName = org.organizationName;
+          requester.phone = org.phoneNumber || requester.phone;
+          requester.address = org.organizationAddress || requester.address;
+          requester.avatar = org.logo || requester.avatar;
+        }
+      }
+
+      processed.push({
+        id: reqObj._id.toString(),
+        foodId: reqObj.foodId,
+        items: reqObj.foodId?.foodName || reqObj.foodId?.name || 'Unknown Item',
+        quantity: reqObj.quantity,
+        purpose: reqObj.purpose || '',
+        urgency: 'Normal',
+        preferredPickup: reqObj.foodId?.expiryTime || 'Not specified',
+        status: reqObj.status,
+        time: new Date(reqObj.createdAt).toLocaleString(),
+        requester: requester
+      });
+    }
+
+    res.status(200).json(processed);
   } catch (error) {
     console.error('Error fetching donation requests:', error);
     res.status(500).json({ message: 'Server error', error: error.message });

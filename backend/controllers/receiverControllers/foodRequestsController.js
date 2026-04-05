@@ -1,8 +1,9 @@
-﻿const DonationRequest = require('../../models/DonationRequest');
+﻿const FoodRequest = require('../../models/foodRequests');
+const DonationRequest = require('../../models/DonationRequest');
 const FoodListing = require('../../models/FoodListing');
 const Restaurant = require('../../models/Restaurant');
 
-// Create food request (receiver) 
+// Create food request (receiver)
 exports.createFoodRequest = async (req, res) => {
   try {
     const receiverId = req.user._id;
@@ -18,21 +19,32 @@ exports.createFoodRequest = async (req, res) => {
       return res.status(400).json({ message: 'Food item has no associated restaurant' });
     }
 
-    // Save as DonationRequest to seamlessly tie the single request between Rest and Rec
+    // 1) Save to FoodRequest (Receiver's POV)
+    const foodRequest = new FoodRequest({
+      receiverId,
+      restaurantId,
+      foodId,
+      foodName: food.foodName || food.name || 'Unknown Food',
+      quantity,
+      description: purpose
+    });
+    await foodRequest.save();
+
+    // 2) Save to DonationRequest (Restaurant's POV)
     const donationRequest = new DonationRequest({
       receiverId,
       restaurantId,
       foodId,
       quantity,
-      purpose
+      purpose,
+      status: 'Pending'
     });
-
     await donationRequest.save();
 
-    res.status(201).json({ message: 'Request created successfully', request: donationRequest });
+    res.status(201).json({ message: 'Request created successfully', request: foodRequest });
   } catch (error) {
     console.error('Error creating food request:', error);
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', error: error.message });    
   }
 };
 
@@ -40,9 +52,9 @@ exports.createFoodRequest = async (req, res) => {
 exports.getReceiverRequests = async (req, res) => {
   try {
     const receiverId = req.user._id;
-    // Query DonationRequest which acts as the single source of truth
-    const requests = await DonationRequest.find({ receiverId })
-      .populate('foodId', 'foodName name image price unit discountPrice')
+    // Query FoodRequest which is the receiver's model
+    const requests = await FoodRequest.find({ receiverId })
+      .populate('foodId', 'foodName name image price unit discountPrice')       
       .populate('restaurantId', 'name restaurantName address phoneNumber phone email')
       .sort({ createdAt: -1 });
 
@@ -50,11 +62,11 @@ exports.getReceiverRequests = async (req, res) => {
       const food = req.foodId || {};
       const rest = req.restaurantId || {};
       return {
-        id: req._id, // Fallback ID if needed by frontend
+        id: req._id, 
         _id: req._id,
-        foodType: food.foodName || food.name || 'Unknown Food',
+        foodType: req.foodName || food.foodName || food.name || 'Unknown Food',
         quantity: req.quantity || 0,
-        description: req.purpose || '',
+        description: req.description || '',
         status: req.status || 'Pending',
         date: (req.createdAt ? req.createdAt : new Date()).toISOString().split('T')[0],
         restaurantName: rest.restaurantName || rest.name || 'Unknown Restaurant',
@@ -76,8 +88,8 @@ exports.getReceiverRequestById = async (req, res) => {
     const receiverId = req.user._id;
     const requestId = req.params.id;
 
-    const request = await DonationRequest.findOne({ _id: requestId, receiverId })
-      .populate('foodId', 'foodName name image price unit discountPrice')
+    const request = await FoodRequest.findOne({ _id: requestId, receiverId })
+      .populate('foodId', 'foodName name image price unit discountPrice')       
       .populate('restaurantId', 'name restaurantName address phoneNumber phone email');
 
     if (!request) {
@@ -90,15 +102,15 @@ exports.getReceiverRequestById = async (req, res) => {
     const formattedRequest = {
       id: request._id,
       _id: request._id,
-      foodType: food.foodName || food.name || 'Unknown Food',
+      foodType: request.foodName || food.foodName || food.name || 'Unknown Food',
       quantity: request.quantity,
-      description: request.purpose || '',
+      description: request.description || '',
       status: request.status || 'Pending',
       date: (request.createdAt ? request.createdAt : new Date()).toISOString().split('T')[0],
-      restaurantName: rest.restaurantName || rest.name || 'Unknown Restaurant',
+      restaurantName: rest.restaurantName || rest.name || 'Unknown Restaurant', 
       restaurantLocation: rest.address || 'Unknown Location',
       restaurantContact: rest.phoneNumber || rest.phone || 'N/A',
-      responses: [] // To be updated if response arrays exist
+      responses: []
     };
 
     res.status(200).json(formattedRequest);
@@ -112,16 +124,16 @@ exports.getReceiverRequestById = async (req, res) => {
 exports.updateFoodRequest = async (req, res) => {
   try {
     const { id } = req.params;
-    const { quantity, description, foodType } = req.body;
-    const request = await DonationRequest.findOneAndUpdate(
+    const { quantity, description } = req.body;
+    const request = await FoodRequest.findOneAndUpdate(
       { _id: id, receiverId: req.user._id, status: 'Pending' },
-      { quantity, purpose: description },
+      { quantity, description },
       { new: true }
     );
     if (!request) return res.status(404).json({ message: 'Pending request not found' });
     res.status(200).json({ message: 'Request updated', request });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error: error.message });
+    res.status(500).json({ message: 'Server error', error: error.message });    
   }
 };
 
@@ -129,7 +141,7 @@ exports.updateFoodRequest = async (req, res) => {
 exports.deleteFoodRequest = async (req, res) => {
   try {
     const { id } = req.params;
-    const request = await DonationRequest.findOneAndDelete({ _id: id, receiverId: req.user._id, status: 'Pending' });
+    const request = await FoodRequest.findOneAndDelete({ _id: id, receiverId: req.user._id, status: 'Pending' });
     if (!request) return res.status(404).json({ message: 'Pending request not found' });
     res.status(200).json({ message: 'Request deleted' });
   } catch (error) {

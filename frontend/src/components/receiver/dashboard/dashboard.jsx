@@ -18,7 +18,7 @@ export default function ReceiverDashboardContent() {
         setTotalOrders(Array.isArray(ordersRes.data) ? ordersRes.data.length : 0);
 
         // Fetch Requests
-        const requestsRes = await axios.get('http://localhost:5000/api/food-requests/my-requests', config);
+        const requestsRes = await axios.get('http://localhost:5000/api/food-requests/receiver', config);
         setTotalRequests(requestsRes.data.length);
         
         // Filter Approved Requests
