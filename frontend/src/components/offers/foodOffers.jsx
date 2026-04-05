@@ -42,6 +42,14 @@ const FoodOffers = () => {
     return `${minutes}m left`;
   };
 
+  const isNearExpiry = (expiryDate) => {
+    if (!expiryDate) return false;
+    const expiry = new Date(expiryDate).getTime();
+    const now = new Date().getTime();
+    const diff = expiry - now;
+    return diff > 0 && diff <= 60 * 60 * 1000; // 1 hour in ms
+  };
+
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
     visible: (i) => ({
@@ -83,7 +91,7 @@ const FoodOffers = () => {
                <p>Check back later for fresh deals.</p>
              </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 xl:gap-8">
+            <div className="flex flex-wrap justify-center gap-6 xl:gap-8">
               {offers.map((food, idx) => (
                 <motion.div 
                   key={idx}
@@ -92,7 +100,7 @@ const FoodOffers = () => {
                   animate="visible"
                   variants={cardVariants}
                   whileHover={{ scale: 1.04, boxShadow: "0 25px 40px rgba(0,0,0,0.12)" }}
-                  className="bg-white/70 backdrop-blur-lg rounded-2xl overflow-hidden shadow-xl group border border-white/40 flex flex-col"
+                  className="w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(33.333%-1rem)] xl:w-[calc(33.333%-1.333rem)] bg-white/70 backdrop-blur-lg rounded-2xl overflow-hidden shadow-xl group border border-white/40 flex flex-col"
                 >
                   <div className="h-48 overflow-hidden relative">
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent z-10 pointer-events-none" />
@@ -103,9 +111,11 @@ const FoodOffers = () => {
                       </span>
                     )}
                     
-                    <span className="absolute top-3 right-3 z-20 bg-gradient-to-r from-orange-400 to-red-500 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-md">
-                      <Clock size={12} /> Expiry Warning
-                    </span>
+                    {isNearExpiry(food.expiryTime) && (
+                      <span className="absolute top-3 right-3 z-20 bg-gradient-to-r from-orange-400 to-red-500 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center gap-1 shadow-md">
+                        <Clock size={12} /> Expiry Warning
+                      </span>
+                    )}
 
                     <img 
                       src={food.image ? food.image : "https://images.unsplash.com/photo-1546833999-b9f581a1996d?auto=format&fit=crop&q=80&w=400"} 
