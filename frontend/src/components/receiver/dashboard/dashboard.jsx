@@ -6,24 +6,62 @@ export default function ReceiverDashboardContent() {
   const [totalOrders, setTotalOrders] = useState(0);
   const [totalRequests, setTotalRequests] = useState(0);
   const [approvedRequests, setApprovedRequests] = useState(0);
+  const [recentActivities, setRecentActivities] = useState([]);
 
   useEffect(() => {
     const fetchDashboardStats = async () => {
       try {
         const token = localStorage.getItem('token');
-        const config = { headers: { Authorization: `Bearer ${token}` } };
-        
+        const config = { headers: { Authorization: `Bearer ${token}` } };       
+
         // Fetch Orders (all statuses)
         const ordersRes = await axios.get('http://localhost:5000/api/orders/my-orders', config);
-        setTotalOrders(Array.isArray(ordersRes.data) ? ordersRes.data.length : 0);
+        const orders = Array.isArray(ordersRes.data) ? ordersRes.data : [];
+        setTotalOrders(orders.length);
 
         // Fetch Requests
         const requestsRes = await axios.get('http://localhost:5000/api/food-requests/receiver', config);
-        setTotalRequests(requestsRes.data.length);
-        
+        const requests = Array.isArray(requestsRes.data) ? requestsRes.data : [];
+        setTotalRequests(requests.length);
+
         // Filter Approved Requests
-        const approvedCount = requestsRes.data.filter(req => req.status === 'Approved').length;
+        const approvedCount = requests.filter(req => req.status === 'Approved').length;
         setApprovedRequests(approvedCount);
+
+        // Combine logic for recent activities (top 5)
+        const combinedActivities = [
+          ...orders.map(o => ({
+            id: `order-${o._id || o.id}`,
+            _rawId: o._id || o.id,
+            type: 'order',
+            title: `Ordered ${o.foodName || 'Food'}`,
+            status: o.status || 'Pending',
+            date: o.createdAt || new Date().toISOString(),
+            icon: ShoppingBag,
+            statusColor: o.status === 'Completed' ? '#D67A5C' : o.status === 'Accepted' ? '#A7D63B' : '#E9A38E' // Adjust colors based on status
+          })),
+          ...requests.map(r => ({
+            id: `request-${r._id || r.id}`,
+            _rawId: r._id || r.id,
+            type: 'request',
+            title: `Requested ${r.foodType || r.foodName || 'Food'}`,
+            status: r.status || 'Pending',
+            date: r.date || r.createdAt || new Date().toISOString(),
+            icon: HandHeart,
+            statusColor: r.status === 'Approved' ? '#9BC7D8' : r.status === 'Rejected' ? '#D67A5C' : '#E9A38E' // Adjust colors
+          }))
+        ];
+
+        // Sort by date descending and take top 5
+        combinedActivities.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        
+        // Format the date to a readable string (YYYY-MM-DD or similar) before setting
+        const top5 = combinedActivities.slice(0, 5).map(act => ({
+          ...act,
+          date: new Date(act.date).toLocaleDateString()
+        }));
+
+        setRecentActivities(top5);
       } catch (error) {
         console.error('Error fetching dashboard stats:', error);
       }
@@ -53,36 +91,6 @@ export default function ReceiverDashboardContent() {
       value: approvedRequests,
       icon: CheckCircle,
       accentColor: '#D67A5C'
-    }
-  ];
-
-  const recentActivities = [
-    {
-      id: 1,
-      type: 'order',
-      title: 'Ordered Rice Pack',
-      status: 'Pending',
-      date: '2026-03-24',
-      icon: ShoppingBag,
-      statusColor: '#E9A38E'
-    },
-    {
-      id: 2,
-      type: 'request',
-      title: 'Requested Bakery Items',
-      status: 'Approved',
-      date: '2026-03-23',
-      icon: HandHeart,
-      statusColor: '#9BC7D8'
-    },
-    {
-      id: 3,
-      type: 'order',
-      title: 'Ordered Juice Pack',
-      status: 'Completed',
-      date: '2026-03-22',
-      icon: ShoppingBag,
-      statusColor: '#D67A5C'
     }
   ];
 
@@ -140,17 +148,17 @@ export default function ReceiverDashboardContent() {
           <h2 className="text-2xl font-bold mb-4" style={{ color: '#1F5E2A' }}>Recent Activities</h2>
           <div className="bg-white rounded-2xl p-4 shadow-sm border" style={{ borderColor: '#D8C3A5' }}>
             <div className="flex flex-col">
-              {recentActivities.map((activity, index) => {
+              {recentActivities.length > 0 ? recentActivities.map((activity, index) => {
                 const ActivityIcon = activity.icon;
                 return (
-                  <div 
+                  <div
                     key={activity.id}
                     className={"flex justify-between items-center p-3 transition-colors hover:bg-[#F8F8F6] rounded-xl " + (index !== recentActivities.length - 1 ? "border-b border-gray-100" : "")}
                   >
                     <div className="flex items-center gap-4">
-                      <div 
+                      <div
                         className="w-10 h-10 rounded-full flex items-center justify-center opacity-80"
-                        style={{ backgroundColor: activity.statusColor }}
+                        style={{ backgroundColor: activity.statusColor }}       
                       >
                         <ActivityIcon className="w-5 h-5 text-white" />
                       </div>
@@ -159,7 +167,7 @@ export default function ReceiverDashboardContent() {
                         <p className="text-sm font-medium" style={{ color: '#D8C3A5' }}>{activity.date}</p>
                       </div>
                     </div>
-                    <span 
+                    <span
                       className="px-3 py-1 text-sm font-bold rounded-full bg-opacity-10"
                       style={{ color: activity.statusColor, backgroundColor: activity.statusColor + '20' }}
                     >
@@ -167,7 +175,11 @@ export default function ReceiverDashboardContent() {
                     </span>
                   </div>
                 );
-              })}
+              }) : (
+                <div className="p-4 text-center text-gray-500 font-medium">
+                  No recent activities found.
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -177,3 +189,4 @@ export default function ReceiverDashboardContent() {
     </div>
   );
 }
+
