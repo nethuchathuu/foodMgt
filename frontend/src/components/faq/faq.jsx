@@ -45,9 +45,13 @@ const Faq = () => {
           </div>
           <div className="space-y-4">
             {[
-              { q: "Is the food safe to eat?", a: "Absolutely! Restaurants only post food that is perfectly safe and delicious, just items that they wouldn't be able to sell the next day." },
-              { q: "How do donations work?", a: "Registered charitable organizations can request free food from participating restaurants through the platform. Restaurants approve and prepare the hand-off." },
-              { q: "Can anyone buy the discounted food?", a: "Yes, anyone can sign up as a personal user, browse local deals, and reserve food for pickup at a fraction of the regular cost." }
+              { q: "What is the main purpose of this platform?", a: "Our platform helps reduce food waste by connecting restaurants with individuals and organizations who can purchase discounted food or request donations in real time." },
+              { q: "Who can use this system?", a: "Anyone can join! Restaurants can list surplus food, while individuals and organizations can browse, order, or request food donations." },
+              { q: "How does food ordering work?", a: "Users can browse available food, select items, and place orders. Restaurants will then accept or reject the order and prepare it for pickup." },
+              { q: "How does the donation request process work?", a: "Organizations or individuals can request available food marked for donation. Restaurants review and approve requests, then schedule pickup or delivery." },
+              { q: "What happens when food reaches its expiry time?", a: "The system automatically detects expired food and moves it to wastage tracking. This helps restaurants monitor losses and reduce future waste." },
+              { q: "Can restaurants track their food waste and losses?", a: "Yes! Restaurants can monitor daily wastage, view reasons for waste, and calculate financial loss to improve their operations." },
+              { q: "Is there a benefit for restaurants to use this system?", a: "Definitely! Restaurants can reduce losses, earn from surplus food, improve sustainability, and build a positive brand image by supporting the community." }
             ].map((faq, idx) => (
               <FAQItem key={idx} question={faq.q} answer={faq.a} />
             ))}

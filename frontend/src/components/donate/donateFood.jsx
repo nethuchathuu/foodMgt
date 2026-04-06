@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Leaf, Utensils, ShieldCheck, Clock, Users, ArrowRight } from 'lucide-react';
 
@@ -12,6 +13,7 @@ const avatars = [
 const DonateFood = () => {
   const [clicked, setClicked] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const navigate = useNavigate();
 
   const handleDonateClick = () => {
     setClicked(true);
@@ -143,7 +145,10 @@ const DonateFood = () => {
                   )}
                 </motion.button>
                 
-                <button className="px-10 py-5 border-2 border-white text-white rounded-2xl font-bold hover:bg-white hover:text-[#D67A5C] transition-colors w-full sm:w-auto flex items-center justify-center gap-2">
+                <button 
+                  onClick={() => navigate('/signup')}
+                  className="px-10 py-5 border-2 border-white text-white rounded-2xl font-bold hover:bg-white hover:text-[#D67A5C] transition-colors w-full sm:w-auto flex items-center justify-center gap-2"
+                >
                   Join the Kindness <ArrowRight size={20} />
                 </button>
               </div>
