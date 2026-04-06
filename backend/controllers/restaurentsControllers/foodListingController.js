@@ -204,6 +204,10 @@ exports.updateFood = async (req, res) => {
       updateData.acceptableForDonation = updateData.acceptableForDonation === 'true' || updateData.acceptableForDonation === true;
     }
 
+    if (req.file) {
+      updateData.image = `http://localhost:5000/uploads/food/${req.file.filename}`;
+    }
+
     // Auto reset isExpired flag if someone updates expiryTime to the future
     if (updateData.expiryTime) {
        if (String(updateData.expiryTime).includes(':') && !String(updateData.expiryTime).includes('T')) {

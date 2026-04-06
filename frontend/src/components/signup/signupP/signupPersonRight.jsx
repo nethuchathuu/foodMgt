@@ -53,6 +53,11 @@ const SignupPersonRight = () => {
   const [selectedGender, setSelectedGender] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [name, setName] = useState('');
+  const [homeAddress, setHomeAddress] = useState('');
+  const [dob, setDob] = useState('');
+  const [nic, setNic] = useState('');
+  const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
@@ -64,17 +69,18 @@ const SignupPersonRight = () => {
   };
 
   const handleNext = () => {
-    // Collecting all fields from state. To make it complete, 
-    // ideally we have state variables for everything, but since we didn't add all,
-    // we'll pass whatever we have, assuming the form sets them.
     navigate('/signup/signupAfter', { 
       state: { 
         name: name || 'Person', 
         role: 'requester_person',
         profileData: {
           fullName: name,
-          gender: selectedGender
-          // Need to add other states if tracking them
+          gender: selectedGender,
+          homeAddress,
+          dob,
+          nic,
+          email,
+          phoneNumber
         }
       } 
     });
@@ -165,6 +171,8 @@ const SignupPersonRight = () => {
                 type="textarea" 
                 placeholder="Full residential address" 
                 fullWidth={true} 
+                value={homeAddress}
+                onChange={(e) => setHomeAddress(e.target.value)}
                 isActive={activeInput === "Home Address"}
                 onFocus={() => setActiveInput("Home Address")}
                 onBlur={() => setActiveInput(null)}
@@ -173,6 +181,8 @@ const SignupPersonRight = () => {
                 label="Date of Birth" 
                 icon={Calendar} 
                 type="date" 
+                value={dob}
+                onChange={(e) => setDob(e.target.value)}
                 isActive={activeInput === "Date of Birth"}
                 onFocus={() => setActiveInput("Date of Birth")}
                 onBlur={() => setActiveInput(null)}
@@ -181,6 +191,8 @@ const SignupPersonRight = () => {
                 label="NIC" 
                 icon={CreditCard} 
                 placeholder="National ID number" 
+                value={nic}
+                onChange={(e) => setNic(e.target.value)}
                 isActive={activeInput === "NIC"}
                 onFocus={() => setActiveInput("NIC")}
                 onBlur={() => setActiveInput(null)}
@@ -215,6 +227,8 @@ const SignupPersonRight = () => {
                 icon={Mail} 
                 type="email" 
                 placeholder="user@example.com" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 isActive={activeInput === "Email"}
                 onFocus={() => setActiveInput("Email")}
                 onBlur={() => setActiveInput(null)}
@@ -224,6 +238,8 @@ const SignupPersonRight = () => {
                 icon={Phone} 
                 type="tel" 
                 placeholder="+1 (555) 000-0000" 
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
                 isActive={activeInput === "Phone Number"}
                 onFocus={() => setActiveInput("Phone Number")}
                 onBlur={() => setActiveInput(null)}

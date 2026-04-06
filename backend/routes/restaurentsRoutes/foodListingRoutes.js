@@ -12,7 +12,7 @@ router.post('/', upload.single('foodImage'), foodListingController.addFood);
 router.get('/', foodListingController.getFoods);
 router.get('/count', foodListingController.getFoodCount);
 router.delete('/delete-all', foodListingController.deleteAllFoods);
-router.put('/:id', foodListingController.updateFood);
+router.put('/:id', upload.single('foodImage'), foodListingController.updateFood);
 router.delete('/:id', foodListingController.deleteFood);
 
 module.exports = router;

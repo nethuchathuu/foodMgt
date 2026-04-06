@@ -22,7 +22,8 @@ exports.getRestaurantOrders = async (req, res) => {
 		for (const o of orders) {
 			const receiver = o.receiverId || {};
 			let customer = {
-				name: receiver.name || 'Unknown',
+					id: receiver._id,
+					name: receiver.name || 'Unknown',
 				type: receiver.role === 'requester_org' ? 'Organization' : 'Individual',
 				email: receiver.email || '',
 				phone: '',
@@ -95,4 +96,5 @@ exports.updateOrderStatus = async (req, res) => {
 		res.status(500).json({ message: 'Failed to update order status', error: error.message });
 	}
 };
+
 

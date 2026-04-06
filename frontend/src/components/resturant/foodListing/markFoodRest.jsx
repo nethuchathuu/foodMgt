@@ -1,8 +1,27 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { X, Tag, CheckCircle2 } from 'lucide-react';
 
-const MarkFoodRest = ({ food, onClose }) => {
+const MarkFoodRest = ({ food, onClose, onSuccess }) => {
   const [status, setStatus] = useState(food?.status || 'Available');
+  const [loading, setLoading] = useState(false);
+
+  const handleConfirm = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`http://localhost:5000/api/food-listings/${food._id}`, 
+        { status }, 
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (onSuccess) onSuccess();
+    } catch (error) {
+      console.error('Error updating food status:', error);
+      alert('Failed to update status.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
@@ -14,13 +33,13 @@ const MarkFoodRest = ({ food, onClose }) => {
             </div>
             <h2 className="text-xl font-bold text-gray-800">Mark Status</h2>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-green-100 rounded-full transition-colors text-gray-500">
+          <button onClick={onClose} disabled={loading} className="p-2 hover:bg-green-100 rounded-full transition-colors text-gray-500">
             <X size={20} />
           </button>
         </div>
 
         <div className="p-6">
-          <p className="text-sm text-gray-500 font-medium mb-6">Change availability for <span className="text-gray-800 font-bold">{food?.name}</span></p>
+          <p className="text-sm text-gray-500 font-medium mb-6">Change availability for <span className="text-gray-800 font-bold">{food?.foodName || food?.name}</span></p>
 
           <div className="grid grid-cols-2 gap-4 mb-8">
             <button 
@@ -52,9 +71,13 @@ const MarkFoodRest = ({ food, onClose }) => {
             </button>
           </div>
 
-          <button className="w-full bg-[#A7D63B] text-[#1F5E2A] py-3 rounded-xl font-bold hover:bg-[#C8E66A] shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2">
+          <button 
+            onClick={handleConfirm}
+            disabled={loading}
+            className="w-full bg-[#A7D63B] text-[#1F5E2A] py-3 rounded-xl font-bold hover:bg-[#C8E66A] shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+          >
             <CheckCircle2 size={20} />
-            Confirm Status
+            {loading ? 'Updating...' : 'Confirm Status'}
           </button>
         </div>
       </div>

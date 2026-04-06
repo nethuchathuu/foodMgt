@@ -4,7 +4,6 @@ import { Search, Plus, Filter, LayoutGrid, List, Edit, Trash2, Settings, Tag, He
 import AddFoodRest from './addFoodRest';
 import EditFoodRest from './editFoodRest';
 import DeleteFoodRest from './deleteFoodRest';
-import SetFoodRest from './setFoodRest';
 import MarkFoodRest from './markFoodRest';
 
 const FoodListing = () => {
@@ -17,7 +16,6 @@ const FoodListing = () => {
   const [editingFood, setEditingFood] = useState(null);
   const [deletingFood, setDeletingFood] = useState(null);
   const [isDeleteAllOpen, setIsDeleteAllOpen] = useState(false);
-  const [settingFood, setSettingFood] = useState(null);
   const [markingFood, setMarkingFood] = useState(null);
 
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -52,7 +50,6 @@ const FoodListing = () => {
     setEditingFood(null);
     setDeletingFood(null);
     setIsDeleteAllOpen(false);
-    setSettingFood(null);
     setMarkingFood(null);
   };
 
@@ -200,9 +197,6 @@ const FoodListing = () => {
                   <button onClick={() => setDeletingFood(food)} className="flex justify-center p-2 text-red-500 hover:bg-red-50 rounded-lg transition" title="Delete">
                     <Trash2 size={18} />
                   </button>
-                  <button onClick={() => setSettingFood(food)} className="flex justify-center p-2 text-orange-500 hover:bg-orange-50 rounded-lg transition" title="Set Details">
-                    <Settings size={18} />
-                  </button>
                   <button onClick={() => setMarkingFood(food)} className="flex justify-center p-2 text-green-600 hover:bg-green-50 rounded-lg transition" title="Mark Status">
                     <Tag size={18} />
                   </button>
@@ -259,7 +253,6 @@ const FoodListing = () => {
                     <div className="flex gap-2">
                       <button onClick={() => setEditingFood(food)} className="p-1.5 text-blue-500 hover:bg-blue-50 rounded-lg"><Edit size={16} /></button>
                       <button onClick={() => setDeletingFood(food)} className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg"><Trash2 size={16} /></button>
-                      <button onClick={() => setSettingFood(food)} className="p-1.5 text-orange-500 hover:bg-orange-50 rounded-lg"><Settings size={16} /></button>
                       <button onClick={() => setMarkingFood(food)} className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg"><Tag size={16} /></button>
                     </div>
                   </td>
@@ -301,7 +294,6 @@ const FoodListing = () => {
       {isAddOpen && <AddFoodRest onClose={() => setIsAddOpen(false)} onSuccess={handleSuccess} />}
       {editingFood && <EditFoodRest food={editingFood} onClose={() => setEditingFood(null)} onSuccess={handleSuccess} />}
       {deletingFood && <DeleteFoodRest food={deletingFood} onClose={() => setDeletingFood(null)} onSuccess={handleSuccess} />}
-      {settingFood && <SetFoodRest food={settingFood} onClose={() => setSettingFood(null)} onSuccess={handleSuccess} />}
       {markingFood && <MarkFoodRest food={markingFood} onClose={() => setMarkingFood(null)} onSuccess={handleSuccess} />}
 
     </div>

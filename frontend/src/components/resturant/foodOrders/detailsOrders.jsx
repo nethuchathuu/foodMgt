@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { motion } from 'framer-motion';
 import { ShoppingBag, User, Building2, Phone, Mail, MapPin, CheckCircle, XCircle, ChevronRight, Hash } from 'lucide-react';
 
@@ -16,6 +17,34 @@ const DetailsOrders = ({ order, onStatusChange, onViewProfile }) => {
       </div>
     );
   }
+
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [customerAddress, setCustomerAddress] = useState('');
+
+  useEffect(() => {
+    const fetchPersonInfo = async () => {
+      // Default to order props if backend already populated them
+      setCustomerPhone(order.customer.phone || '');
+      setCustomerAddress(order.customer.address || '');
+
+      // Only fetch dynamically if properties are missing and it's an Individual
+      if (order.customer && order.customer.id && order.customer.type !== 'Organization' && (!order.customer.phone || !order.customer.address)) {
+        try {
+          const { data } = await axios.get(`http://localhost:5000/api/person/${order.customer.id}`);
+          if (data) {
+            setCustomerPhone(data.phoneNumber || '');
+            setCustomerAddress(data.homeAddress || '');
+          }
+        } catch (error) {
+          console.error("Error fetching person details:", error);
+        }
+      }
+    };
+
+    if (order) {
+      fetchPersonInfo();
+    }
+  }, [order]);
 
   const isOrganization = order.customer.type === "Organization";
 
@@ -103,7 +132,7 @@ const DetailsOrders = ({ order, onStatusChange, onViewProfile }) => {
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-sm text-gray-600">
                 <Phone size={16} className="text-gray-400" />
-                <span>{order.customer.phone}</span>
+                <span>{order.customer.type === "Organization" ? order.customer.phone : customerPhone || 'N/A'}</span>
               </div>
               <div className="flex items-center gap-3 text-sm text-gray-600">
                 <Mail size={16} className="text-gray-400" />
@@ -111,7 +140,7 @@ const DetailsOrders = ({ order, onStatusChange, onViewProfile }) => {
               </div>
               <div className="flex items-start gap-3 text-sm text-gray-600">
                 <MapPin size={16} className="text-gray-400 mt-0.5" />
-                <span>{order.customer.address}</span>
+                <span>{order.customer.type === "Organization" ? order.customer.address : customerAddress || 'N/A'}</span>
               </div>
             </div>
           </div>

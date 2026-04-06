@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { X, UploadCloud } from 'lucide-react';
+import { X, UploadCloud, Image as ImageIcon } from 'lucide-react';
 
 const EditFoodRest = ({ food, onClose, onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -13,12 +13,17 @@ const EditFoodRest = ({ food, onClose, onSuccess }) => {
     acceptableForDonation: food?.acceptableForDonation || false,
     foodImage: null
   });
+  const [preview, setPreview] = useState(food?.image || null);
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, files, type, checked } = e.target;
     if (name === 'foodImage') {
-      setFormData(prev => ({ ...prev, foodImage: files[0] }));
+      const file = files[0];
+      setFormData(prev => ({ ...prev, foodImage: file }));
+      if (file) {
+        setPreview(URL.createObjectURL(file));
+      }
     } else if (type === 'checkbox') {
       setFormData(prev => ({ ...prev, [name]: checked }));
     } else {
@@ -31,14 +36,26 @@ const EditFoodRest = ({ food, onClose, onSuccess }) => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      // In a real app we'd use formData if updating image, but for now we put JSON or FormData.
-      // If no new image, we just send other fields
-      await axios.put(`http://localhost:5000/api/food-listings/${food._id}`, {
-        ...formData,
-        foodImage: undefined // skip image logic for now or handle appropriately
-      }, {
-        headers: { Authorization: `Bearer ${token}` }
+      
+      const submitData = new FormData();
+      submitData.append('foodName', formData.foodName);
+      submitData.append('description', formData.description);
+      submitData.append('price', formData.price);
+      if (formData.discountPrice) submitData.append('discountPrice', formData.discountPrice);
+      submitData.append('quantity', formData.quantity);
+      if (formData.expiryTime) submitData.append('expiryTime', formData.expiryTime);
+      submitData.append('acceptableForDonation', formData.acceptableForDonation);
+      if (formData.foodImage) {
+        submitData.append('foodImage', formData.foodImage);
+      }
+
+      await axios.put(`http://localhost:5000/api/food-listings/${food._id}`, submitData, {
+        headers: { 
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
       });
+      
       if (onSuccess) onSuccess();
     } catch (error) {
       console.error('Error updating food:', error);
@@ -60,6 +77,27 @@ const EditFoodRest = ({ food, onClose, onSuccess }) => {
 
         <div className="p-8">
           <form className="space-y-6" onSubmit={handleSubmit}>
+            
+            {/* Image Upload Section */}
+            <div className="flex flex-col items-center justify-center w-full">
+              <label htmlFor="foodImage" className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-2xl cursor-pointer bg-gray-50 hover:bg-gray-100 overflow-hidden relative transition-colors">
+                {preview ? (
+                  <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <ImageIcon className="w-10 h-10 text-gray-400 mb-3" />
+                    <p className="mb-2 text-sm text-gray-500 font-semibold">Click to upload a new image</p>
+                  </div>
+                )}
+                <input id="foodImage" name="foodImage" type="file" accept="image/*" className="hidden" onChange={handleChange} />
+                {preview && (
+                  <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <span className="text-white font-bold bg-black/50 px-4 py-2 rounded-full backdrop-blur-sm">Change Image</span>
+                  </div>
+                )}
+              </label>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2 md:col-span-2">
                 <label className="text-sm font-semibold text-gray-700">Food Name</label>
