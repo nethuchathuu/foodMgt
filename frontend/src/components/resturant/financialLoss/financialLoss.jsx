@@ -9,7 +9,6 @@ import { Trash2, FileText } from 'lucide-react';
 const FinancialLoss = () => {
   const [wastedData, setWastedData] = useState([]);
   const [totalLoss, setTotalLoss] = useState(0);
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -38,24 +37,6 @@ const FinancialLoss = () => {
   useEffect(() => {
     fetchData();
   }, []);
-
-  const handleClearAll = () => {
-    setIsConfirmOpen(true);
-  };
-
-  const confirmClearAll = async () => {
-    try {
-      const token = localStorage.getItem('token');
-      await axios.delete('http://localhost:5000/api/restaurants/clear-financial-loss', {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setIsConfirmOpen(false);
-      fetchData();
-    } catch (err) {
-      console.error('Error clearing data:', err);
-      alert('Failed to clear data.');
-    }
-  };
 
   const generatePDF = () => {
     const doc = new jsPDF();
@@ -149,13 +130,6 @@ const FinancialLoss = () => {
                 <FileText size={18} />
                 Get Report PDF
               </button>
-              <button 
-                onClick={handleClearAll}
-                className="flex items-center justify-center gap-2 px-5 py-2.5 bg-red-100 text-red-600 rounded-xl hover:bg-red-200 transition shadow-sm font-semibold"
-              >
-                <Trash2 size={18} />
-                Clear All
-              </button>
             </div>
           </div>
           <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-sm border border-gray-100 flex flex-col justify-center items-center text-center gap-2 bg-gradient-to-r from-white to-[#F8F8F6]">
@@ -168,35 +142,6 @@ const FinancialLoss = () => {
         </div>
 
       </div>
-
-      {/* Confirmation Modal */}
-      {isConfirmOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl flex flex-col items-center text-center">
-            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-6">
-              <Trash2 className="w-10 h-10 text-red-500" />
-            </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Restart Tracking?</h2>
-            <p className="text-gray-500 mb-8 leading-relaxed">
-              Are you sure you want to clear your current progress and restart the daily tracking? This action cannot be undone.
-            </p>
-            <div className="flex gap-4 w-full">
-              <button 
-                onClick={() => setIsConfirmOpen(false)}
-                className="flex-1 px-6 py-3 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={confirmClearAll}
-                className="flex-1 px-6 py-3 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30 transition-all active:scale-95"
-              >
-                Restart
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -68,11 +68,17 @@ exports.getDashboardSummary = async (req, res) => {
 
     const loss = totalWastageLoss; // only wastage-based loss
 
+    const todayDonationRequests = await require('../../models/DonationRequest').countDocuments({
+      restaurantId,
+      createdAt: { $gte: startOfDay, $lte: endOfDay }
+    });
+
     res.status(200).json({
       totalFood,
       todayOrders,
       wastage: totalWastageQuantity,
-      loss
+      loss,
+      todayRequests: todayDonationRequests
     });
   } catch (error) {
     res.status(500).json({ message: 'Error getting dashboard summary', error: error.message });

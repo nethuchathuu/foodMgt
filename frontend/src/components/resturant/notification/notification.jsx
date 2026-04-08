@@ -5,6 +5,7 @@ import { Trash2, CheckCircle, Bell, Clock } from 'lucide-react';
 const Notification = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isClearAllOpen, setIsClearAllOpen] = useState(false);
 
   const fetchNotifications = async () => {
     try {
@@ -56,15 +57,15 @@ const Notification = () => {
     }
   };
 
-  const deleteAllNotifications = async () => {
-    if (!window.confirm('Are you sure you want to delete all notifications?')) return;
+  const handleClearAll = async () => {
     try {
       await axios.delete('http://localhost:5000/api/restaurants/notifications/delete-all', {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       fetchNotifications();
+      setIsClearAllOpen(false);
     } catch (err) {
-      console.error('Failed to delete all notifications:', err);
+      console.error('Failed to clear all notifications:', err);
     }
   };
 
@@ -94,11 +95,11 @@ const Notification = () => {
             <CheckCircle className="w-4 h-4" /> Mark All Read
           </button>
           <button 
-            onClick={deleteAllNotifications}
+            onClick={() => setIsClearAllOpen(true)}
             disabled={notifications.length === 0}
             className="flex items-center gap-2 px-4 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-md transition-colors disabled:opacity-50"
           >
-            <Trash2 className="w-4 h-4" /> Delete All
+            <Trash2 className="w-4 h-4" /> Clear All
           </button>
         </div>
       </div>
@@ -150,6 +151,34 @@ const Notification = () => {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {isClearAllOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl transform transition-all scale-100 opacity-100 flex flex-col items-center text-center">
+            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-6">
+              <Trash2 className="w-10 h-10 text-red-500" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Clear All Items?</h2>
+            <p className="text-gray-500 mb-8 leading-relaxed">
+              Are you sure you want to permanently clear all your notifications? This action cannot be undone.
+            </p>
+            <div className="flex gap-4 w-full">
+              <button 
+                onClick={() => setIsClearAllOpen(false)}
+                className="flex-1 px-6 py-3 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleClearAll}
+                className="flex-1 px-6 py-3 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30 transition-all active:scale-95"
+              >
+                Clear All
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

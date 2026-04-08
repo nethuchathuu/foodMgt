@@ -161,3 +161,21 @@ exports.getMyDonationRequests = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
+
+// delete all donation requests (for restaurant)
+exports.deleteAllDonationRequests = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const restaurant = await Restaurant.findOne({ userId });
+
+    if (!restaurant) {
+      return res.status(404).json({ message: 'Restaurant profile not found' });
+    }
+
+    await DonationRequest.deleteMany({ restaurantId: restaurant._id });
+    res.status(200).json({ message: 'All donation requests deleted' });
+  } catch (error) {
+    console.error('Error deleting all donation requests:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};

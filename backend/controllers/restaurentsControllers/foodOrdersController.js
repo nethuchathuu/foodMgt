@@ -2,7 +2,7 @@
 	// placeholder to ensure file is a valid module when empty
 })();
 
-const FoodOrder = require('../../models/foodOrders');
+const Order = require('../../models/Order');
 const Restaurant = require('../../models/Restaurant');
 const Person = require('../../models/Person');
 const Organization = require('../../models/Organization');
@@ -16,7 +16,7 @@ exports.getRestaurantOrders = async (req, res) => {
 		if (!restaurant) return res.status(404).json({ message: 'Restaurant profile not found.' });
 		const restaurantId = restaurant._id;
 
-		const orders = await FoodOrder.find({ restaurantId }).sort({ createdAt: -1 }).populate('receiverId').populate('foodId');
+		const orders = await Order.find({ restaurantId }).sort({ createdAt: -1 }).populate('receiverId').populate('foodId');
 
 		const processed = [];
 		for (const o of orders) {
@@ -79,10 +79,10 @@ exports.updateOrderStatus = async (req, res) => {
 
 		const { id } = req.params;
 		const { status } = req.body;
-		const allowed = ['Pending', 'Accepted', 'Completed', 'Cancelled'];
-		if (!allowed.includes(status)) return res.status(400).json({ message: 'Invalid status' });
+		const allowed = ['Pending', 'Accepted', 'Completed', 'Cancelled', 'Rejected'];
+		if (!allowed.includes(status)) return res.status(400).json({ message: `Invalid status ${status}` });
 
-		const updated = await FoodOrder.findOneAndUpdate(
+		const updated = await Order.findOneAndUpdate(
 			{ _id: id, restaurantId },
 			{ status },
 			{ new: true }
@@ -94,6 +94,21 @@ exports.updateOrderStatus = async (req, res) => {
 	} catch (error) {
 		console.error('Error updating order status:', error);
 		res.status(500).json({ message: 'Failed to update order status', error: error.message });
+	}
+};
+
+// Delete all orders for the authenticated restaurant
+exports.deleteAllOrders = async (req, res) => {
+	try {
+		const userId = req.user._id;
+		const restaurant = await Restaurant.findOne({ userId });
+		if (!restaurant) return res.status(404).json({ message: 'Restaurant profile not found.' });
+
+		await Order.deleteMany({ restaurantId: restaurant._id });
+		res.status(200).json({ message: 'All orders deleted' });
+	} catch (error) {
+		console.error('Error deleting all orders:', error);
+		res.status(500).json({ message: 'Failed to delete orders', error: error.message });
 	}
 };
 

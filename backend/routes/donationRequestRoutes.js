@@ -15,4 +15,7 @@ router.get('/restaurant', protect, donationRequestController.getRestaurantDonati
 // PATCH /api/donation-requests/:id - Update the status of a donation request
 router.patch('/:id', protect, donationRequestController.updateDonationRequestStatus);
 
+// DELETE /api/donation-requests/delete-all - Delete all requests for restaurant
+router.delete('/restaurant/delete-all', protect, donationRequestController.deleteAllDonationRequests);
+
 module.exports = router;

@@ -6,6 +6,9 @@ const foodOrdersController = require('../../controllers/restaurentsControllers/f
 // Get all orders for the authenticated restaurant
 router.get('/', protect, foodOrdersController.getRestaurantOrders);
 
+// Delete all orders for the authenticated restaurant
+router.delete('/delete-all', protect, foodOrdersController.deleteAllOrders);
+
 // Update order status
 router.put('/:id', protect, foodOrdersController.updateOrderStatus);
 

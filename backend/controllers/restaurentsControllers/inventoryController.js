@@ -71,3 +71,12 @@ exports.deleteInventory = async (req, res) => {
     res.status(500).json({ message: 'Error deleting inventory', error: error.message });
   }
 };
+
+exports.deleteAllInventory = async (req, res) => {
+  try {
+    await Inventory.deleteMany({ restaurantId: req.user._id });
+    res.status(200).json({ message: 'All inventory items deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting all inventory items', error: error.message });
+  }
+};

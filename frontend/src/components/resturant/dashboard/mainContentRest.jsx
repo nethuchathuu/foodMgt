@@ -4,13 +4,15 @@ import TotalFood from './totalFood';
 import TodayOrders from './todayOrders';
 import MoneyLost from './MoneyLost';
 import TodayChart from './todayChart';
+import TodayRequests from './todayRequests';
 
 const MainContentRest = () => {
   const [summary, setSummary] = useState({
     totalFood: 0,
     todayOrders: 0,
     wastage: 0,
-    loss: 0
+    loss: 0,
+    todayRequests: 0
   });
 
   useEffect(() => {
@@ -27,7 +29,8 @@ const MainContentRest = () => {
           totalFood: summaryRes.data.totalFood,
           todayOrders: summaryRes.data.todayOrders,
           wastage: summaryRes.data.wastage,
-          loss: todayLossRes.data.totalLoss || 0
+          loss: todayLossRes.data.totalLoss || 0,
+          todayRequests: summaryRes.data.todayRequests || 0
         });
       } catch (err) {
         console.error('Error fetching dashboard summary:', err);
@@ -38,9 +41,10 @@ const MainContentRest = () => {
 
   return (
     <div className="p-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
         <TotalFood data={summary.totalFood} />
         <TodayOrders data={summary.todayOrders} />
+        <TodayRequests data={summary.todayRequests} />
         <MoneyLost data={summary.loss} />
       </div>
       

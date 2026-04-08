@@ -41,6 +41,11 @@ const AddFoodRest = ({ onClose, onSuccess }) => {
           submitData.append(key, formData[key]);
         }
       });
+      
+      // If no file was selected, use the default plate icon URL as a fallback
+      if (!formData.foodImage) {
+        submitData.append('image', 'https://cdn-icons-png.flaticon.com/512/1046/1046779.png');
+      }
 
       await axios.post('http://localhost:5000/api/food-listings', submitData, {
         headers: { 

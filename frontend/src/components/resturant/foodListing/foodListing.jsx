@@ -100,7 +100,7 @@ const FoodListing = () => {
             className="bg-red-100 text-red-600 px-6 py-3 rounded-xl font-bold shadow-lg hover:bg-red-200 hover:scale-105 transition-all flex items-center gap-2"
           >
             <Trash2 size={20} />
-            Delete All
+            Clear All
           </button>
           <button 
             onClick={() => setIsAddOpen(true)}
@@ -270,9 +270,9 @@ const FoodListing = () => {
             <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-6">
               <Trash2 className="w-10 h-10 text-red-500" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Delete All Items?</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Clear All Items?</h2>
             <p className="text-gray-500 mb-8 leading-relaxed">
-              Are you sure you want to permanently delete all your food listings? This action cannot be undone.
+              Are you sure you want to permanently clear all your food listings? This action cannot be undone.
             </p>
             <div className="flex gap-4 w-full">
               <button 
@@ -285,7 +285,7 @@ const FoodListing = () => {
                 onClick={handleDeleteAll}
                 className="flex-1 px-6 py-3 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30 transition-all active:scale-95"
               >
-                Delete All
+                Clear All
               </button>
             </div>
           </div>

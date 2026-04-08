@@ -8,6 +8,7 @@ import autoTable from 'jspdf-autotable';
 
 const WastageTracking = () => {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isClearAllOpen, setIsClearAllOpen] = useState(false);
   const [logs, setLogs] = useState([]);
 
   useEffect(() => {
@@ -43,13 +44,13 @@ const WastageTracking = () => {
   }, {});
 
   const handleClearAll = async () => {
-    if (!window.confirm('Are you sure you want to clear all wastage records for today?')) return;
     try {
       const token = localStorage.getItem('token');
       await axios.delete('http://localhost:5000/api/wastage/today', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setLogs([]);
+      setIsClearAllOpen(false);
     } catch (err) {
       console.error('Failed to clear today wastage:', err);
       alert('Failed to clear wastage');
@@ -145,7 +146,7 @@ const WastageTracking = () => {
             <motion.button 
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              onClick={handleClearAll}
+              onClick={() => setIsClearAllOpen(true)}
               disabled={logs.length === 0}
               className="bg-red-100 text-red-600 px-4 py-3 rounded-2xl font-bold shadow-sm hover:bg-red-200 transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -236,6 +237,34 @@ const WastageTracking = () => {
           />
         )}
       </AnimatePresence>
+
+      {isClearAllOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl transform transition-all scale-100 opacity-100 flex flex-col items-center text-center">
+            <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-6">
+              <Trash2 className="w-10 h-10 text-red-500" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Clear All Wastage?</h2>
+            <p className="text-gray-500 mb-8 leading-relaxed">
+              Are you sure you want to permanently clear all your wastage records for today? This action cannot be undone.
+            </p>
+            <div className="flex gap-4 w-full">
+              <button 
+                onClick={() => setIsClearAllOpen(false)}
+                className="flex-1 px-6 py-3 rounded-xl font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleClearAll}
+                className="flex-1 px-6 py-3 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 shadow-lg shadow-red-500/30 transition-all active:scale-95"
+              >
+                Clear All
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
