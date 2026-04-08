@@ -32,6 +32,7 @@ import ViewOrderDetails from './components/admin/orderMonitoring/viewOrderDetail
 import Donation from './components/admin/donation/donation';
 import ViewDonation from './components/admin/donation/viewDonation';
 import RestaurantDashboard from './components/resturant/dashboard';
+import Profile from './components/resturant/profile/profile';
 import ReceiverDashboard from './components/receiver/home';
 import BrowseFood from './components/receiver/browseFood/browseFood';
 import DisplayFood from './components/receiver/browseFood/displayFood';
@@ -44,7 +45,7 @@ import './index.css';
 
 const AppLayout = () => {
   const location = useLocation();
-  const isAuthRoute = location.pathname.startsWith('/signup') || location.pathname.startsWith('/signin') || location.pathname.includes('dashboard') || location.pathname.startsWith('/receiver') || location.pathname.startsWith('/admin');
+  const isAuthRoute = location.pathname.startsWith('/signup') || location.pathname.startsWith('/signin') || location.pathname.includes('dashboard') || location.pathname.startsWith('/receiver') || location.pathname.startsWith('/admin') || location.pathname.startsWith('/restaurant');
 
   return (
     <div className="font-sans bg-[#F8F8F6] min-h-screen text-[#1F5E2A] selection:bg-[#A7D63B] selection:text-[#1F5E2A] scroll-smooth flex flex-col">
@@ -66,6 +67,7 @@ const AppLayout = () => {
           <Route path="/signup/restaurant" element={<SignupRestaurants />} />
           <Route path="/signup/restaurant/owner" element={<SignupRestOwner />} />
           <Route path="/restaurant-dashboard" element={<RestaurantDashboard />} />
+          <Route path="/restaurant/profile" element={<Profile />} />
           
           {/* Admin Routes */}
           <Route path="/admin/login" element={<AdminLogin />} />
