@@ -3,6 +3,7 @@ const FoodListing = require('../models/FoodListing');
 const Restaurant = require('../models/Restaurant');
 const Person = require('../models/Person');
 const Organization = require('../models/Organization');
+const RestaurentNotification = require('../models/restaurentNotification');
 
 exports.createOrder = async (req, res) => {
   try {
@@ -15,6 +16,14 @@ exports.createOrder = async (req, res) => {
     const totalPrice = Number(quantity) * (food.discountPrice || food.price || 0);
     const order = new Order({ receiverId, restaurantId, foodId, quantity: Number(quantity), totalPrice });
     await order.save();
+
+    await RestaurentNotification.create({
+      restaurantId,
+      title: 'New Food Order',
+      message: `A new order has been placed for ${quantity}x ${food.foodName || 'Item'}.`,
+      type: 'Order'
+    });
+
     res.status(201).json({ message: 'Order created', order });
   } catch (error) {
     res.status(500).json({ message: 'Error creating order', error: error.message });

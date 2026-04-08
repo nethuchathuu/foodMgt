@@ -15,6 +15,7 @@ const foodOffersRoutes = require('./routes/homeRoutes/foodOffersRoutes');
 const browseFoodRoutes = require('./routes/receiverRoutes/browseFoodRoutes');
 const foodOrdersRoutes = require('./routes/receiverRoutes/foodOrdersRoute');
 const restFoodOrdersRoutes = require('./routes/restaurentsRoutes/foodOrdersRoutes');
+const restNotificationRoutes = require('./routes/restaurentsRoutes/notificationRoutes');
 const foodRequestsRoutes = require('./routes/receiverRoutes/foodRequestsRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const donationRequestRoutes = require('./routes/donationRequestRoutes');
@@ -61,6 +62,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/donation-requests', donationRequestRoutes);
 // Restaurant-side orders (list + status updates)
 app.use('/api/restaurants/food-orders', restFoodOrdersRoutes);
+app.use('/api/restaurants/notifications', restNotificationRoutes);
 
 const PORT = process.env.PORT || 5000;
 

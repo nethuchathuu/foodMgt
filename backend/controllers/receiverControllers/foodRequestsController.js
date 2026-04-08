@@ -2,6 +2,7 @@
 const DonationRequest = require('../../models/DonationRequest');
 const FoodListing = require('../../models/FoodListing');
 const Restaurant = require('../../models/Restaurant');
+const RestaurentNotification = require('../../models/restaurentNotification');
 
 // Create food request (receiver)
 exports.createFoodRequest = async (req, res) => {
@@ -42,6 +43,14 @@ exports.createFoodRequest = async (req, res) => {
       status: 'Pending'
     });
     await donationRequest.save();
+
+    // 3) Push notification for restaurant
+    await RestaurentNotification.create({
+      restaurantId,
+      title: 'New Donation Request',
+      message: `A new donation request for ${quantity}x ${food.foodName || 'Item'} has been made.`,
+      type: 'Donation'
+    });
 
     res.status(201).json({ message: 'Request created successfully', request: foodRequest });
   } catch (error) {

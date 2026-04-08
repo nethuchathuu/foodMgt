@@ -3,6 +3,7 @@ const FoodListing = require('../../models/FoodListing');
 const Restaurant = require('../../models/Restaurant');
 const Person = require('../../models/Person');
 const Organization = require('../../models/Organization');
+const RestaurentNotification = require('../../models/restaurentNotification');
 
 // createDonationRequest
 exports.createDonationRequest = async (req, res) => {
@@ -27,6 +28,13 @@ exports.createDonationRequest = async (req, res) => {
     });
 
     await donationRequest.save();
+
+    await RestaurentNotification.create({
+      restaurantId,
+      title: 'New Donation Request',
+      message: `A donation request for ${quantity}x ${food.foodName} has been made.`,
+      type: 'Donation'
+    });
 
     res.status(201).json({ message: 'Donation request created successfully', request: donationRequest });
   } catch (error) {

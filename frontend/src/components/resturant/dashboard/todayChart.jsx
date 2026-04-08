@@ -29,7 +29,7 @@ const TodayChart = () => {
   }, []);
   return (
     <div className="bg-white rounded-2xl p-6 shadow-sm hover:shadow-md transition">
-      <h3 className="text-lg font-semibold text-[#1F5E2A] mb-4">Today's Orders & Sales</h3>
+      <h3 className="text-lg font-semibold text-[#1F5E2A] mb-4">Today's Orders</h3>
       <div className="h-72 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>

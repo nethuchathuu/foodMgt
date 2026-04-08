@@ -2,6 +2,7 @@ const cron = require('node-cron');
 const FoodListing = require('../models/FoodListing');
 const Inventory = require('../models/Inventory');
 const Wastage = require('../models/Wastage');
+const RestaurentNotification = require('../models/restaurentNotification');
 const financialLossController = require('../controllers/restaurentsControllers/financialLossController');
 
 // Run every 5 minutes and mark expired foods as wastage
@@ -82,6 +83,18 @@ cron.schedule('*/5 * * * *', async () => {
             await financialLossController.updateWastedLoss(updatedFood.restaurantId, totalLoss);
           } catch (err) {
             console.error('Expiry job: failed to update financial loss', err.message);
+          }
+
+          // Create Expiry Notification
+          try {
+            await RestaurentNotification.create({
+              restaurantId: updatedFood.restaurantId,
+              title: 'Food Item Expired',
+              message: `${updatedFood.foodName} (${remainingQty} ${updatedFood.unit || 'units'}) has expired and was marked as wastage.`,
+              type: 'Expiry'
+            });
+          } catch (err) {
+            console.error('Expiry job: failed to create notification', err.message);
           }
         }
       } catch (err) {

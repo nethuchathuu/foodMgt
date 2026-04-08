@@ -1,5 +1,6 @@
 ﻿const FoodOrder = require('../../models/foodOrders');
 const FoodListing = require('../../models/FoodListing');
+const RestaurentNotification = require('../../models/restaurentNotification');
 
 // Create a new order (receiver)
 exports.createOrder = async (req, res) => {
@@ -25,6 +26,15 @@ exports.createOrder = async (req, res) => {
     });
 
     await newOrder.save();
+
+    if (restaurantId) {
+      await RestaurentNotification.create({
+        restaurantId,
+        title: 'New Food Order',
+        message: `A new order has been placed for ${quantity}x ${food.foodName || 'Item'}.`,
+        type: 'Order'
+      });
+    }
 
     res.status(201).json({ message: 'Order created successfully', order: newOrder });
   } catch (error) {
