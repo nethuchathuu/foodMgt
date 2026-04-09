@@ -38,7 +38,12 @@ exports.getRestaurantOrders = async (req, res) => {
 					customer.name = person.fullName || customer.name;
 					customer.phone = person.phoneNumber || customer.phone;
 					customer.address = person.homeAddress || customer.address;
-					customer.avatar = person.profilePicture || customer.avatar;
+					let avatarUrl = person.profilePicture || customer.avatar;
+					if (avatarUrl === 'undefined' || avatarUrl === 'null') avatarUrl = '';
+					if (avatarUrl && !avatarUrl.startsWith('http')) {
+						avatarUrl = `http://localhost:5000/${avatarUrl.replace(/^[\\/]+/, '')}`;
+					}
+					customer.avatar = avatarUrl;
 					customer.createdAt = person.createdAt || customer.createdAt;
 				}
 			} 
@@ -49,7 +54,12 @@ exports.getRestaurantOrders = async (req, res) => {
 					customer.name = org.orgName || customer.name;
 					customer.phone = org.contactNumber || customer.phone;
 					customer.address = org.orgAddress || customer.address;
-					customer.avatar = org.representative?.profileImage?.fileUrl || customer.avatar;
+					let avatarUrl = org.logo || org.representative?.profileImage?.fileUrl || customer.avatar;
+					if (avatarUrl === 'undefined' || avatarUrl === 'null') avatarUrl = '';
+					if (avatarUrl && !avatarUrl.startsWith('http')) {
+						avatarUrl = `http://localhost:5000/${avatarUrl.replace(/^[\\/]+/, '')}`;
+					}
+					customer.avatar = avatarUrl;
 					customer.createdAt = org.createdAt || customer.createdAt;
 				}
 			}

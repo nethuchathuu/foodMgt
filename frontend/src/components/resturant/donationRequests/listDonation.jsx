@@ -119,7 +119,7 @@ const ListDonation = ({ requests, selectedRequestId, onSelectRequest }) => {
                   <div className="pl-2">
                     <p className="text-sm font-medium text-gray-700">{req.items}</p>
                     <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
-                      <Clock size={12}/> {req.preferredPickup}
+                      <Clock size={12}/> {req.time}
                     </p>
                     <div className="flex justify-between items-end mt-3">
                       <div className="text-sm text-gray-500">
