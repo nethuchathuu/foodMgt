@@ -6,6 +6,7 @@ import OwnerDetails from './ownerDetails';
 
 const Profile = () => {
   const [activeSection, setActiveSection] = useState('restaurant'); // 'restaurant' or 'owner'
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -71,7 +72,7 @@ const Profile = () => {
         {/* Logout Button */}
         <div className="pt-6 border-t border-[#1F5E2A]/10 flex justify-center mt-6">
           <button 
-            onClick={handleLogout}
+            onClick={() => setShowLogoutConfirm(true)}
             className="flex items-center justify-center gap-3 w-full sm:w-auto px-8 py-3 bg-red-50/80 text-red-600 hover:bg-red-100 hover:text-red-700 hover:shadow-lg hover:-translate-y-1 rounded-xl font-bold transition-all border border-red-100 backdrop-blur-sm"
           >
             <LogOut className="w-5 h-5" />
@@ -79,6 +80,33 @@ const Profile = () => {
           </button>
         </div>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-[200] flex justify-center items-center bg-black/40 backdrop-blur-sm px-4">
+          <div className="bg-white rounded-[2rem] shadow-2xl p-8 max-w-sm w-full transform transition-all text-center border border-white/50">
+            <div className="w-20 h-20 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner">
+              <LogOut className="w-10 h-10 text-red-500" />
+            </div>
+            <h3 className="text-2xl font-black text-gray-800 mb-3 tracking-wide">Confirm Logout</h3>
+            <p className="text-gray-500 font-medium mb-8 leading-relaxed">Are you absolutely sure you want to log out of your account?</p>
+            <div className="flex gap-4">
+              <button 
+                onClick={() => setShowLogoutConfirm(false)}
+                className="flex-1 py-3.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold transition-colors shadow-sm"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleLogout}
+                className="flex-1 py-3.5 bg-red-500 hover:bg-red-600 text-white rounded-xl font-bold transition-colors shadow-md shadow-red-500/30"
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

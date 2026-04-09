@@ -28,24 +28,29 @@ exports.getRestaurantOrders = async (req, res) => {
 				email: receiver.email || '',
 				phone: '',
 				address: '',
-				avatar: ''
+				avatar: '',
+				createdAt: receiver.createdAt || new Date().toISOString()
 			};
 
-			if (receiver.role === 'requester_person') {
+			if (receiver.role === 'requester_person' || receiver.role === 'requester' || !receiver.role || receiver.role === 'Person') {
 				const person = await Person.findOne({ userId: receiver._id });
 				if (person) {
 					customer.name = person.fullName || customer.name;
 					customer.phone = person.phoneNumber || customer.phone;
 					customer.address = person.homeAddress || customer.address;
 					customer.avatar = person.profilePicture || customer.avatar;
+					customer.createdAt = person.createdAt || customer.createdAt;
 				}
-			} else if (receiver.role === 'requester_org') {
+			} 
+			
+			if (receiver.role === 'requester_org' || receiver.role === 'Organization') {
 				const org = await Organization.findOne({ userId: receiver._id });
 				if (org) {
 					customer.name = org.orgName || customer.name;
 					customer.phone = org.contactNumber || customer.phone;
 					customer.address = org.orgAddress || customer.address;
 					customer.avatar = org.representative?.profileImage?.fileUrl || customer.avatar;
+					customer.createdAt = org.createdAt || customer.createdAt;
 				}
 			}
 

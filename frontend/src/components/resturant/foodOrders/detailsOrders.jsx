@@ -132,15 +132,15 @@ const DetailsOrders = ({ order, onStatusChange, onViewProfile }) => {
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-sm text-gray-600">
                 <Phone size={16} className="text-gray-400" />
-                <span>{order.customer.type === "Organization" ? order.customer.phone : customerPhone || 'N/A'}</span>
+                <span>{customerPhone || order.customer.phone || 'N/A'}</span>
               </div>
               <div className="flex items-center gap-3 text-sm text-gray-600">
                 <Mail size={16} className="text-gray-400" />
-                <span>{order.customer.email}</span>
+                <span>{order.customer.email || 'N/A'}</span>
               </div>
               <div className="flex items-start gap-3 text-sm text-gray-600">
                 <MapPin size={16} className="text-gray-400 mt-0.5" />
-                <span>{order.customer.type === "Organization" ? order.customer.address : customerAddress || 'N/A'}</span>
+                <span>{customerAddress || order.customer.address || 'N/A'}</span>
               </div>
             </div>
           </div>

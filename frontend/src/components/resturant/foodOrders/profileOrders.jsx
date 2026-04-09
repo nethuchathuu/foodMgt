@@ -9,6 +9,10 @@ const ProfileOrders = ({ isOpen, onClose, customer }) => {
   const themeColor = isOrg ? 'bg-[#E9A38E]' : 'bg-[#9BC7D8]';
   const themeText = isOrg ? 'text-[#E9A38E]' : 'text-[#9BC7D8]';
 
+  const memberYear = customer.createdAt 
+    ? new Date(customer.createdAt).getFullYear().toString().slice(-2) 
+    : '25';
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -69,8 +73,8 @@ const ProfileOrders = ({ isOpen, onClose, customer }) => {
                   <p className="text-gray-500 text-sm font-medium mt-1">{customer.orgName}</p>
                 )}
                 <div className="flex gap-4 mt-3 text-sm text-gray-500 font-medium">
-                  <span className="flex items-center gap-1"><Star size={14} className="text-yellow-400" fill="currentColor"/> 4.8 Rating</span>
-                  <span className="flex items-center gap-1"><Clock size={14}/> Member since '25</span>
+                  {/*<span className="flex items-center gap-1"><Star size={14} className="text-yellow-400" fill="currentColor"/> 4.8 Rating</span>*/}
+                  <span className="flex items-center gap-1"><Clock size={14}/> Member since '{memberYear}</span>
                 </div>
               </div>
 
