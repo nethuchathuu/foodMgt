@@ -78,7 +78,12 @@ exports.getRestaurantDonationRequests = async (req, res) => {
           requester.name = person.fullName || requester.name;
           requester.phone = person.phoneNumber || requester.phone;
           requester.address = person.homeAddress || requester.address;
-          requester.avatar = person.profilePicture || requester.avatar;
+          let avatarUrl = person.profilePicture || requester.avatar;
+          if (avatarUrl === 'undefined' || avatarUrl === 'null') avatarUrl = '';
+          if (avatarUrl && !avatarUrl.startsWith('http')) {
+            avatarUrl = `http://localhost:5000/${avatarUrl.replace(/^[\\/]+/, '')}`;
+          }
+          requester.avatar = avatarUrl || 'https://ui-avatars.com/api/?name=User&background=random';
         }
       } else if (receiver.role === 'requester_org') {
         const org = await Organization.findOne({ userId: receiver._id });
@@ -87,7 +92,12 @@ exports.getRestaurantDonationRequests = async (req, res) => {
           requester.orgName = org.organizationName;
           requester.phone = org.phoneNumber || requester.phone;
           requester.address = org.organizationAddress || requester.address;
-          requester.avatar = org.logo || requester.avatar;
+          let avatarUrl = org.logo || requester.avatar;
+          if (avatarUrl === 'undefined' || avatarUrl === 'null') avatarUrl = '';
+          if (avatarUrl && !avatarUrl.startsWith('http')) {
+            avatarUrl = `http://localhost:5000/${avatarUrl.replace(/^[\\/]+/, '')}`;
+          }
+          requester.avatar = avatarUrl || 'https://ui-avatars.com/api/?name=Org&background=random';
         }
       }
 

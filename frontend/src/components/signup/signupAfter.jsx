@@ -29,13 +29,16 @@ const SignupAfter = () => {
 
       // Separate file properties out of regular JSON block
       const documentsList = profileData.documents || [];
-      const profileImageFile = profileData.owner?.profilePicture;
+      const profileImageFile = profileData.owner?.profilePicture || profileData.profilePicture;
 
       // Clean profileData of raw File objects to prevent JSON stringify issues
       const cleanProfile = { ...profileData };
       delete cleanProfile.documents;
       if (cleanProfile.owner && cleanProfile.owner.profilePicture) {
         delete cleanProfile.owner.profilePicture;
+      }
+      if (cleanProfile.profilePicture) {
+        delete cleanProfile.profilePicture;
       }
       formData.append('profileData', JSON.stringify(cleanProfile));
 

@@ -61,18 +61,38 @@ exports.registerUser = async (req, res) => {
 
     // Create related profile entity based on role
     if (role === 'requester_person') {
+      let profilePictureUrl = profileData?.profilePicture || profileData?.profileImage;
+      if (profilePictureUrl === 'undefined' || profilePictureUrl === 'null') profilePictureUrl = '';
+      profilePictureUrl = profilePictureUrl || '';
+      
+      if (req.files && req.files.profileImage && req.files.profileImage[0]) {
+         const pImage = req.files.profileImage[0];
+         profilePictureUrl = pImage.path.replace(/\\\\/g, '/');
+      }
+
       await Person.create({
          userId: user._id,
          fullName: profileData?.fullName || name,
          email: normalizedEmail,
          gender: profileData?.gender || 'Unknown',
+         profilePicture: profilePictureUrl,
          ...profileData
       });
     } else if (role === 'requester_org') {
+      let logoUrl = profileData?.logo || profileData?.profileImage;
+      if (logoUrl === 'undefined' || logoUrl === 'null') logoUrl = '';
+      logoUrl = logoUrl || '';
+      
+      if (req.files && req.files.profileImage && req.files.profileImage[0]) {
+         const pImage = req.files.profileImage[0];
+         logoUrl = pImage.path.replace(/\\\\/g, '/');
+      }
+
       await Organization.create({
          userId: user._id,
          orgName: profileData?.orgName || name,
          officialEmail: normalizedEmail,
+         logo: logoUrl,
          ...profileData
       });
 

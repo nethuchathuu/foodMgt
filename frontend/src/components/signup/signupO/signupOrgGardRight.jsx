@@ -39,6 +39,7 @@ const SignupOrgGardRight = () => {
   const [activeInput, setActiveInput] = useState(null);
   const [selectedGender, setSelectedGender] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [profileFile, setProfileFile] = useState(null);
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -47,6 +48,7 @@ const SignupOrgGardRight = () => {
     const file = e.target.files[0];
     if (file) {
       setImagePreview(URL.createObjectURL(file));
+      setProfileFile(file);
     }
   };
 
@@ -59,7 +61,8 @@ const SignupOrgGardRight = () => {
         role: 'requester_org', // update role to be specific
         profileData: {
           orgName: location.state?.name,
-          representative: { gender: selectedGender }
+          representative: { gender: selectedGender },
+          profilePicture: profileFile
         }
       } 
     });

@@ -52,6 +52,7 @@ const SignupPersonRight = () => {
   const [activeInput, setActiveInput] = useState(null);
   const [selectedGender, setSelectedGender] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [profileFile, setProfileFile] = useState(null);
   const [name, setName] = useState('');
   const [homeAddress, setHomeAddress] = useState('');
   const [dob, setDob] = useState('');
@@ -65,6 +66,7 @@ const SignupPersonRight = () => {
     const file = e.target.files[0];
     if (file) {
       setImagePreview(URL.createObjectURL(file));
+      setProfileFile(file);
     }
   };
 
@@ -80,7 +82,8 @@ const SignupPersonRight = () => {
           dob,
           nic,
           email,
-          phoneNumber
+          phoneNumber,
+          profilePicture: profileFile
         }
       } 
     });
