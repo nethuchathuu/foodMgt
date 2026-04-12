@@ -153,9 +153,37 @@ exports.updateFoodRequest = async (req, res) => {
 exports.deleteFoodRequest = async (req, res) => {
   try {
     const { id } = req.params;
-    const request = await FoodRequest.findOneAndDelete({ _id: id, receiverId: req.user._id, status: 'Pending' });
+    const receiverId = req.user._id;
+    
+    // Find the receiver's food request
+    const request = await FoodRequest.findOne({ _id: id, receiverId, status: 'Pending' });
     if (!request) return res.status(404).json({ message: 'Pending request not found' });
-    res.status(200).json({ message: 'Request deleted' });
+    
+    request.status = 'Cancelled';
+    await request.save();
+
+    // Also update the restaurant's view of the request
+    if (request.restaurantId) {
+      const donationRequest = await DonationRequest.findOne({ 
+        foodId: request.foodId, 
+        receiverId: receiverId,
+        restaurantId: request.restaurantId,
+        status: 'Pending'
+      });
+      if (donationRequest) {
+        donationRequest.status = 'Cancelled';
+        await donationRequest.save();
+      }
+
+      await RestaurentNotification.create({
+        restaurantId: request.restaurantId,
+        title: 'Donation Request Cancelled',
+        message: `A donation request for ${request.quantity}x ${request.foodName || 'Item'} was cancelled by the requester.`,
+        type: 'Donation'
+      });
+    }
+
+    res.status(200).json({ message: 'Request cancelled' });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }

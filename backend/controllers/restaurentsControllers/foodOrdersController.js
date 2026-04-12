@@ -8,6 +8,7 @@ const Restaurant = require('../../models/Restaurant');
 const Person = require('../../models/Person');
 const Organization = require('../../models/Organization');
 const FoodListing = require('../../models/FoodListing');
+const ReceiverNotification = require('../../models/receiverNotification');
 
 // Get all orders for the authenticated restaurant
 exports.getRestaurantOrders = async (req, res) => {
@@ -102,16 +103,26 @@ exports.updateOrderStatus = async (req, res) => {
 			{ _id: id, restaurantId },
 			{ status },
 			{ new: true }
-		);
+		).populate('receiverId');
 
 		if (!updated) return res.status(404).json({ message: 'Order not found' });
 
                 if (updated.receiverId && updated.foodId) {
                         await FoodOrder.findOneAndUpdate(
-                                { receiverId: updated.receiverId, restaurantId: updated.restaurantId, foodId: updated.foodId, quantity: updated.quantity },
+                                { receiverId: updated.receiverId._id, restaurantId: updated.restaurantId, foodId: updated.foodId, quantity: updated.quantity },
                                 { status },
                                 { sort: { createdAt: -1 } }
                         );
+                        
+                        const receiverRole = updated.receiverId.role || 'Person';
+                        const receiverModel = receiverRole === 'requester_org' || receiverRole === 'Organization' ? 'Organization' : 'Person';
+                        await ReceiverNotification.create({
+                          receiverId: updated.receiverId._id,
+                          receiverModel,
+                          title: `Order ${status}`,
+                          message: `Your order from ${restaurant.restaurantName || 'the restaurant'} has been ${status.toLowerCase()}.`,
+                          type: 'Order'
+                        });
                 }
 
 		res.status(200).json({ message: 'Order status updated', order: updated });

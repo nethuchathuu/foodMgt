@@ -6,7 +6,8 @@ const statusColors = {
   "Pending": "bg-yellow-100 text-yellow-700 border-yellow-200",
   "Accepted": "bg-[#C8E66A]/30 text-[#1F5E2A] border-[#A7D63B]",
   "Completed": "bg-gray-100 text-gray-600 border-gray-200",
-  "Rejected": "bg-[#E9A38E]/30 text-[#D67A5C] border-[#E9A38E]"
+  "Rejected": "bg-[#E9A38E]/30 text-[#D67A5C] border-[#E9A38E]",
+  "Cancelled": "bg-[#FDECEA] text-[#D67A5C] border-[#E9A38E]"
 };
 
 const typeStyles = {
@@ -41,7 +42,7 @@ const ListOrders = ({ orders, selectedOrderId, onSelectOrder }) => {
           />
         </div>
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-          {['All', 'Pending', 'Accepted', 'Completed'].map(status => (
+          {['All', 'Pending', 'Accepted', 'Completed', 'Cancelled'].map(status => (
             <button
               key={status}
               onClick={() => setStatusFilter(status)}

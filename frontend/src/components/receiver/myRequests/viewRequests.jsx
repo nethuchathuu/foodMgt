@@ -135,7 +135,7 @@ export default function ViewRequests({ requests = [], loading = false }) {
 
       {/* Edit Modal */}
       {activeModal === 'edit' && selectedRequest && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4 animate-fade-in">
           <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl animate-fade-scale">
             <div className="p-6 border-b border-gray-100">
               <h2 className="text-xl font-bold" style={{ color: '#1F5E2A' }}>Edit Request</h2>
@@ -166,7 +166,7 @@ export default function ViewRequests({ requests = [], loading = false }) {
 
       {/* Cancel Confirmation Modal */}
       {activeModal === 'cancel' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4 animate-fade-in">
           <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl animate-fade-scale text-center p-8">
             <XCircle className="w-16 h-16 mx-auto mb-4" style={{ color: '#D67A5C' }} />
             <h2 className="text-2xl font-bold mb-2" style={{ color: '#1F5E2A' }}>Cancel Request?</h2>

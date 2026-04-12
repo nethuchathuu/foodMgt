@@ -150,21 +150,23 @@ const DetailsOrders = ({ order, onStatusChange, onViewProfile }) => {
 
       {/* Action Buttons */}
       <div className="p-6 border-t border-gray-100 bg-gray-50 flex gap-4">
-        {order.status === 'Pending' ? (
+        {order.status === 'Pending' || order.status === 'Cancelled' ? (
           <>
             <motion.button 
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => onStatusChange(order.id, 'Accepted')}
-              className="flex-1 bg-[#A7D63B] text-[#1F5E2A] py-3 rounded-xl font-bold shadow-sm hover:shadow-md transition-all flex justify-center items-center gap-2"
+              whileHover={{ scale: order.status === 'Cancelled' ? 1 : 1.02 }}
+              whileTap={{ scale: order.status === 'Cancelled' ? 1 : 0.98 }}
+              onClick={() => order.status !== 'Cancelled' && onStatusChange(order.id, 'Accepted')}
+              disabled={order.status === 'Cancelled'}
+              className={`flex-1 ${order.status === 'Cancelled' ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-[#A7D63B] text-[#1F5E2A] hover:shadow-md'} py-3 rounded-xl font-bold shadow-sm transition-all flex justify-center items-center gap-2`}
             >
               <CheckCircle size={20} /> Accept Order
             </motion.button>
             <motion.button 
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => onStatusChange(order.id, 'Rejected')}
-              className="flex-1 bg-white border-2 border-[#D67A5C] text-[#D67A5C] py-3 rounded-xl font-bold hover:bg-[#D67A5C] hover:text-white transition-all shadow-sm flex justify-center items-center gap-2"
+              whileHover={{ scale: order.status === 'Cancelled' ? 1 : 1.02 }}
+              whileTap={{ scale: order.status === 'Cancelled' ? 1 : 0.98 }}
+              onClick={() => order.status !== 'Cancelled' && onStatusChange(order.id, 'Rejected')}
+              disabled={order.status === 'Cancelled'}
+              className={`flex-1 ${order.status === 'Cancelled' ? 'bg-gray-200 border-2 border-gray-300 text-gray-400 cursor-not-allowed' : 'bg-white border-2 border-[#D67A5C] text-[#D67A5C] hover:bg-[#D67A5C] hover:text-white'} py-3 rounded-xl font-bold transition-all shadow-sm flex justify-center items-center gap-2`}
             >
               <XCircle size={20} /> Reject
             </motion.button>

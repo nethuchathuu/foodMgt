@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Link } from 'react-router-dom';
 import { Clock, Info, CheckCircle, XCircle } from 'lucide-react';
 
@@ -25,10 +26,18 @@ export default function ViewOrders({ orders: initialOrders = mockOrders, loading
   const handleCancelClick = (id) => setActiveModal({ type: 'cancel', orderId: id });
   const handleConfirmClick = (id) => setActiveModal({ type: 'confirm', orderId: id });
 
-  const executeCancel = () => {
-    console.log("Canceled order", activeModal.orderId);
-    setOrders(prev => prev.map(o => o.id === activeModal.orderId ? { ...o, status: 'Completed' } : o));
-    setActiveModal(null);
+  const executeCancel = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.put(`http://localhost:5000/api/orders/${activeModal.orderId}/cancel`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setOrders(prev => prev.map(o => (o.id === activeModal.orderId || o._id === activeModal.orderId) ? { ...o, status: 'Cancelled' } : o));
+      setActiveModal(null);
+    } catch (error) {
+      console.error('Error cancelling order:', error);
+      alert('Failed to cancel order');
+    }
   };
 
   const executeConfirm = () => {
@@ -46,7 +55,7 @@ export default function ViewOrders({ orders: initialOrders = mockOrders, loading
 
           return (
             <div 
-              key={order.id} 
+              key={order._id || order.id} 
               className="bg-white border rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in-up"
               style={{ borderColor: '#D8C3A5', animationDelay: `${(index + 3) * 100}ms` }}
             >
@@ -73,15 +82,15 @@ export default function ViewOrders({ orders: initialOrders = mockOrders, loading
                 </div>
                 
                 <div className="text-sm flex flex-col md:flex-row md:gap-4 font-medium" style={{ color: '#1F5E2A' }}>
-                  <span className="opacity-80">Ordered on: {order.date}</span>
-                  <span className="opacity-80 md:border-l md:pl-4 border-gray-300">From: {order.restaurant}</span>
+                  <span className="opacity-80">Ordered on: {order.date || new Date(order.createdAt).toLocaleDateString()}</span>
+                  <span className="opacity-80 md:border-l md:pl-4 border-gray-300">From: {order.restaurant || order.restaurantId?.name || 'Unknown'}</span>
                 </div>
               </div>
 
               {/* Actions */}
               <div className="flex flex-wrap items-center gap-3">
                 <Link 
-                  to={`/receiver/orders/${order.id}`}
+                  to={`/receiver/orders/${order._id || order.id}`}
                   className="px-4 py-2.5 rounded-xl font-semibold shadow-sm hover:opacity-90 transform hover:scale-105 transition-all flex items-center gap-2"
                   style={{ backgroundColor: '#9BC7D8', color: '#FFFFFF' }}
                 >
@@ -91,7 +100,7 @@ export default function ViewOrders({ orders: initialOrders = mockOrders, loading
 
                 {order.status === 'Pending' && (
                   <button 
-                    onClick={() => handleCancelClick(order.id)}
+                    onClick={() => handleCancelClick(order._id || order.id)}
                     className="px-4 py-2.5 rounded-xl font-semibold shadow-sm hover:opacity-90 hover-shake-warning transition-all flex items-center gap-2"
                     style={{ backgroundColor: '#D8C3A5', color: '#1F5E2A' }}
                   >
@@ -102,7 +111,7 @@ export default function ViewOrders({ orders: initialOrders = mockOrders, loading
 
                 {order.status === 'Accepted' && (
                   <button 
-                    onClick={() => handleConfirmClick(order.id)}
+                    onClick={() => handleConfirmClick(order._id || order.id)}
                     className="px-4 py-2.5 rounded-xl font-semibold shadow-sm hover:opacity-90 hover:animate-pulse transition-all flex items-center gap-2"
                     style={{ backgroundColor: '#E9A38E', color: '#FFFFFF' }}
                   >
@@ -130,7 +139,7 @@ export default function ViewOrders({ orders: initialOrders = mockOrders, loading
 
       {/* Modals */}
       {activeModal?.type === 'cancel' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4">
           <div className="bg-white rounded-2xl p-6 shadow-xl max-w-md w-full animate-fade-scale text-center border-2" style={{ borderColor: '#D8C3A5' }}>
             <XCircle className="w-16 h-16 mx-auto mb-4" style={{ color: '#D67A5C' }} />
             <h2 className="text-2xl font-bold mb-2" style={{ color: '#1F5E2A' }}>Cancel Order?</h2>
@@ -157,7 +166,7 @@ export default function ViewOrders({ orders: initialOrders = mockOrders, loading
       )}
 
       {activeModal?.type === 'confirm' && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4">
           <div className="bg-white rounded-2xl p-6 shadow-xl max-w-md w-full animate-zoom-in text-center border-2" style={{ borderColor: '#D8C3A5' }}>
             <CheckCircle className="w-16 h-16 mx-auto mb-4" style={{ color: '#9BC7D8' }} />
             <h2 className="text-2xl font-bold mb-2" style={{ color: '#1F5E2A' }}>Confirm Receipt?</h2>

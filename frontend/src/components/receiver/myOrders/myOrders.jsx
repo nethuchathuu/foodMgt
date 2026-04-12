@@ -26,7 +26,7 @@ export default function MyOrders() {
   }, []);
 
   const pendingCount = orders.filter(o => o.status === 'Pending').length;
-  const acceptedCount = orders.filter(o => o.status === 'Accepted').length;
+  const acceptedCount = orders.filter(o => o.status === 'Accepted' || o.status === 'Completed').length;
   const completedCount = orders.filter(o => o.status === 'Completed').length;
 
   const stats = [

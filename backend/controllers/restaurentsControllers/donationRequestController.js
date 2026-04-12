@@ -5,6 +5,7 @@ const Restaurant = require('../../models/Restaurant');
 const Person = require('../../models/Person');
 const Organization = require('../../models/Organization');
 const RestaurentNotification = require('../../models/restaurentNotification');
+const ReceiverNotification = require('../../models/receiverNotification');
 
 // createDonationRequest
 exports.createDonationRequest = async (req, res) => {
@@ -137,7 +138,7 @@ exports.updateDonationRequestStatus = async (req, res) => {
       id,
       { status },
       { new: true, runValidators: true }
-    );
+    ).populate('receiverId').populate('restaurantId');
 
     if (!updatedRequest) {
       return res.status(404).json({ message: 'Donation request not found' });
@@ -145,10 +146,22 @@ exports.updateDonationRequestStatus = async (req, res) => {
 
     if (updatedRequest.receiverId && updatedRequest.foodId) {
       await FoodRequest.findOneAndUpdate(
-        { receiverId: updatedRequest.receiverId, restaurantId: updatedRequest.restaurantId, foodId: updatedRequest.foodId, quantity: updatedRequest.quantity },
+        { receiverId: updatedRequest.receiverId._id, restaurantId: updatedRequest.restaurantId._id || updatedRequest.restaurantId, foodId: updatedRequest.foodId, quantity: updatedRequest.quantity },
         { status },
         { sort: { createdAt: -1 } }
       );
+      
+      const receiverRole = updatedRequest.receiverId.role || 'Person';
+      const receiverModel = receiverRole === 'requester_org' || receiverRole === 'Organization' ? 'Organization' : 'Person';
+      const restaurantName = updatedRequest.restaurantId.restaurantName || updatedRequest.restaurantId.name || 'the restaurant';
+      
+      await ReceiverNotification.create({
+        receiverId: updatedRequest.receiverId._id,
+        receiverModel,
+        title: `Donation Request ${status}`,
+        message: `Your donation request from ${restaurantName} has been ${status.toLowerCase()}.`,
+        type: 'Donation'
+      });
     }
 
     res.status(200).json(updatedRequest);

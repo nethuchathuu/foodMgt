@@ -24,7 +24,7 @@ export default function ReceiverDashboardContent() {
         const orders = Array.isArray(ordersRes.data) ? ordersRes.data : [];
         setTotalOrders(orders.length);
         
-        const acceptedOrdersCount = orders.filter(o => o.status === 'Accepted').length;
+        const acceptedOrdersCount = orders.filter(o => o.status === 'Accepted' || o.status === 'Completed').length;
         setAcceptedOrders(acceptedOrdersCount);
 
         // Fetch Requests
@@ -32,8 +32,8 @@ export default function ReceiverDashboardContent() {
         const requests = Array.isArray(requestsRes.data) ? requestsRes.data : [];
         setTotalRequests(requests.length);
 
-        // Filter Approved Requests
-        const approvedCount = requests.filter(req => req.status === 'Approved').length;
+        // Filter Approved/Accepted Requests
+        const approvedCount = requests.filter(req => req.status === 'Approved' || req.status === 'Accepted' || req.status === 'Completed').length;
         setApprovedRequests(approvedCount);
 
         // Compute requests made this month for limits
@@ -88,20 +88,6 @@ export default function ReceiverDashboardContent() {
 
   const summaryCards = [
     {
-      id: 'acceptedOrders',
-      label: 'Accepted Orders',
-      value: acceptedOrders,
-      icon: PackageCheck,
-      accentColor: '#A7D63B'
-    },
-    {
-      id: 'approvedRequests',
-      label: 'Approved Requests',
-      value: approvedRequests,
-      icon: CheckCircle,
-      accentColor: '#9BC7D8'
-    },
-    {
       id: 'totalOrders',
       label: 'Total Orders',
       value: totalOrders,
@@ -114,6 +100,20 @@ export default function ReceiverDashboardContent() {
       value: totalRequests,
       icon: HandHeart,
       accentColor: '#E9A38E'
+    },
+    {
+      id: 'acceptedOrders',
+      label: 'Accepted Orders',
+      value: acceptedOrders,
+      icon: PackageCheck,
+      accentColor: '#A7D63B'
+    },
+    {
+      id: 'approvedRequests',
+      label: 'Accepted Requests',
+      value: approvedRequests,
+      icon: CheckCircle,
+      accentColor: '#9BC7D8'
     }
   ];
 

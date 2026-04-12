@@ -114,3 +114,47 @@ exports.getOrderDetails = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch order', error: error.message });
   }
 };
+
+// Cancel an order
+exports.cancelOrder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const receiverId = req.user._id;
+
+    const order = await FoodOrder.findOne({ _id: id, receiverId });
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    if (order.status !== 'Pending') {
+      return res.status(400).json({ message: 'Only pending orders can be cancelled' });
+    }
+
+    order.status = 'Cancelled';
+    await order.save();
+
+    // Also update the restaurant's view of the order
+    if (order.restaurantId) {
+      const restOrder = await Order.findOne({ 
+        foodId: order.foodId, 
+        receiverId: receiverId,
+        restaurantId: order.restaurantId,
+        status: 'Pending'
+      });
+      if (restOrder) {
+        restOrder.status = 'Cancelled';
+        await restOrder.save();
+      }
+
+      await RestaurentNotification.create({
+        restaurantId: order.restaurantId,
+        title: 'Order Cancelled',
+        message: `An order for ${order.quantity}x ${order.foodName || 'Item'} was cancelled by the requester.`,
+        type: 'Order'
+      });
+    }
+
+    res.status(200).json({ message: 'Order cancelled successfully', order });
+  } catch (error) {
+    console.error('Error cancelling order:', error);
+    res.status(500).json({ message: 'Failed to cancel order', error: error.message });
+  }
+};
