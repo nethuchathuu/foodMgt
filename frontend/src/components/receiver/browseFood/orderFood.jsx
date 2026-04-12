@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, ArrowLeft, Info, Package, MapPin, MessageSquare, Truck, Store } from 'lucide-react';
+import { ShoppingBag, ArrowLeft, Info, Package, MapPin, MessageSquare, Truck, Store, CheckCircle } from 'lucide-react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import SidebarUser from '../slidebarUser';
@@ -18,6 +18,7 @@ export default function OrderFood() {
   const [deliveryType, setDeliveryType] = useState('pickup');
   const [location, setLocation] = useState('');
   const [notes, setNotes] = useState('');
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -33,8 +34,11 @@ export default function OrderFood() {
         }, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        alert('Order placed successfully!');
-        navigate('/receiver/orders');
+        
+        setShowSuccess(true);
+        setTimeout(() => {
+          navigate('/receiver/orders');
+        }, 2500); // Navigate to orders after 2.5 seconds
       } catch (err) {
         console.error('Failed to create order:', err);
         alert('Failed to place order. Please try again.');
@@ -97,17 +101,19 @@ export default function OrderFood() {
                     <img src={food?.image || 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80'} alt={food?.name || 'Food'} className="w-full h-full object-cover" />
                   </div>
                   
-                  <h4 className="font-bold mb-1" style={{ color: '#1F5E2A' }}>{food?.name || ''}</h4>
-                  <p className="text-sm text-gray-600 mb-3">{food?.restaurant || ''}</p>
+                  <h4 className="font-bold mb-1" style={{ color: '#1F5E2A' }}>{food?.foodName || ''}</h4>
+                  <p className="text-sm text-gray-600 mb-3">{food?.restaurantId?.name || ''}</p>
                   
                   <div className="space-y-2 text-sm pt-4 border-t border-gray-200">
                     <div className="flex justify-between">
                       <span className="text-gray-500">Available:</span>
-                      <span className="font-bold" style={{ color: '#D67A5C' }}>{food?.quantity || 0} packs</span>
+                      <span className="font-bold" style={{ color: '#D67A5C' }}>{food?.quantity || 0} {food?.unit || 'portions'}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-500">Expires:</span>
-                      <span className="font-bold" style={{ color: '#E9A38E' }}>in {food?.expiresIn || ''}</span>
+                      <span className="font-bold" style={{ color: '#E9A38E' }}>
+                        {food?.expiryTime ? new Date(food.expiryTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -130,7 +136,7 @@ export default function OrderFood() {
                         <input
                           type="text"
                           disabled
-                          value={food?.name || ''}
+                          value={food?.foodName || ''}
                           className="block w-full pl-10 pr-3 py-3 border rounded-xl bg-gray-100 text-gray-600 cursor-not-allowed border-gray-200"
                         />
                       </div>
@@ -261,6 +267,26 @@ export default function OrderFood() {
               </div>
 
             </div>
+
+            {/* Success Popup Modal */}
+            {showSuccess && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+                <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl animate-fade-scale">
+                  <div className="bg-[#1F5E2A] p-6 text-white text-center relative">
+                    <ShoppingBag className="w-12 h-12 mx-auto mb-3 text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
+                    <h2 className="text-2xl font-bold">Order Confirmed</h2>
+                    <p className="text-white/80 text-sm mt-1">Your order from {food?.restaurantId?.name || 'Restaurant'} is secured.</p>
+                  </div>
+                  <div className="p-6">
+                    <div className="py-12 flex flex-col items-center justify-center text-center animate-zoom-in">
+                      <CheckCircle className="w-20 h-20 text-[#1F5E2A] mb-4" />
+                      <h3 className="text-2xl font-bold text-[#1F5E2A] mb-2">Success!</h3>
+                      <p className="text-gray-600">Your food has been successfully reserved. Redirecting to your orders...</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </main>
       </div>

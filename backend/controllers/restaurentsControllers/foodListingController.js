@@ -116,45 +116,17 @@ exports.getAvailableFoodListings = async (req, res) => {
     const Organization = require('../../models/Organization');
     const Person = require('../../models/Person');
 
-    // Process items and filter out any bad data from non-restaurants
-    const processedFoods = [];
-    for (const f of foods) {
-      if (!f.restaurantId) continue;
-
+    const processedFoods = foods.map(f => {
       const foodObj = f.toObject();
-      const userId = f.restaurantId._id;
-      const role = f.restaurantId.role;
-
-      let providerName = f.restaurantId.name || 'Unknown Provider';
-      let providerLocation = 'Not Provided';
-
-      if (role === 'restaurant' || !role) {
-        const profile = await Restaurant.findOne({ userId });
-        if (profile) {
-          providerName = profile.restaurantName || providerName;
-          providerLocation = profile.address || providerLocation;
-        }
-      } else if (role === 'requester_org') {
-        const profile = await Organization.findOne({ userId });
-        if (profile) {
-          providerName = profile.orgName || providerName;
-          providerLocation = profile.orgAddress || providerLocation;
-        }
-      } else if (role === 'requester_person') {
-        const profile = await Person.findOne({ userId });
-        if (profile) {
-          providerName = profile.fullName || providerName;
-          providerLocation = profile.homeAddress || providerLocation;
-        }
+      if (foodObj.restaurantId) {
+        foodObj.restaurantId = {
+          _id: foodObj.restaurantId._id,
+          name: foodObj.restaurantId.restaurantName || 'Unknown Provider',
+          location: foodObj.restaurantId.address || 'Not Provided'
+        };
       }
-
-      foodObj.restaurantId = {
-        _id: f.restaurantId._id,
-        name: providerName,
-        location: providerLocation
-      };
-      processedFoods.push(foodObj);
-    }
+      return foodObj;
+    });
 
     res.status(200).json(processedFoods);
   } catch (error) {
