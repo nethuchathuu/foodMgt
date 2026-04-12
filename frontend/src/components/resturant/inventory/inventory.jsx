@@ -4,16 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { PlusCircle, Search, Edit2, Trash2, Package } from 'lucide-react';
 import InventoryFormModal from './inventoryFormModal';
 
-const getEmoji = (name) => {
-  const lowerName = (name || '').toLowerCase();
-  if (lowerName.includes('rice')) return "🍛";
-  if (lowerName.includes('bread') || lowerName.includes('bun')) return "🍞";
-  if (lowerName.includes('salad') || lowerName.includes('veg')) return "🥗";
-  if (lowerName.includes('chicken') || lowerName.includes('meat')) return "🍗";
-  if (lowerName.includes('curry')) return "🍲";
-  return "🍲";
-};
-
 const Inventory = () => {
   const [items, setItems] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -181,13 +171,9 @@ const Inventory = () => {
                   key={item._id}
                   className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition group relative overflow-hidden"
                 >
-                  <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
-                    <span className="text-6xl">{getEmoji(item.name || item.foodName)}</span>
-                  </div>
-
                   <div className="flex justify-between items-start mb-4 relative z-10">
                     <h3 className="text-2xl font-bold text-[#1F5E2A] flex items-center gap-2">
-                      <span className="text-3xl">{getEmoji(item.name || item.foodName)}</span> {item.name || item.foodName}
+                      {item.name || item.foodName}
                     </h3>
                     <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button 
