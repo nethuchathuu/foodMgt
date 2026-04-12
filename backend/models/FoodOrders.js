@@ -24,7 +24,7 @@ const FoodOrderSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Pending', 'Accepted', 'Completed', 'Cancelled'],
+    enum: ['Pending', 'Accepted', 'Completed', 'Cancelled', 'Rejected'],
     default: 'Pending',
   },
   createdAt: {

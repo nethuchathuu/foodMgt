@@ -3,6 +3,7 @@
 })();
 
 const Order = require('../../models/Order');
+const FoodOrder = require('../../models/foodOrders');
 const Restaurant = require('../../models/Restaurant');
 const Person = require('../../models/Person');
 const Organization = require('../../models/Organization');
@@ -104,6 +105,14 @@ exports.updateOrderStatus = async (req, res) => {
 		);
 
 		if (!updated) return res.status(404).json({ message: 'Order not found' });
+
+                if (updated.receiverId && updated.foodId) {
+                        await FoodOrder.findOneAndUpdate(
+                                { receiverId: updated.receiverId, restaurantId: updated.restaurantId, foodId: updated.foodId, quantity: updated.quantity },
+                                { status },
+                                { sort: { createdAt: -1 } }
+                        );
+                }
 
 		res.status(200).json({ message: 'Order status updated', order: updated });
 	} catch (error) {

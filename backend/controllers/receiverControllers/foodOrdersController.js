@@ -1,4 +1,5 @@
 ﻿const FoodOrder = require('../../models/foodOrders');
+const Order = require('../../models/Order');
 const FoodListing = require('../../models/FoodListing');
 const RestaurentNotification = require('../../models/restaurentNotification');
 
@@ -27,7 +28,18 @@ exports.createOrder = async (req, res) => {
 
     await newOrder.save();
 
+    // Sync to Restaurant view
     if (restaurantId) {
+      const restOrder = new Order({
+        foodId,
+        restaurantId,
+        receiverId,
+        quantity: Number(quantity),
+        totalPrice: Number(quantity) * (food.discountPrice || food.price || 0),
+        status: 'Pending'
+      });
+      await restOrder.save();
+
       await RestaurentNotification.create({
         restaurantId,
         title: 'New Food Order',

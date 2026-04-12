@@ -1,4 +1,5 @@
 const DonationRequest = require('../../models/DonationRequest');
+const FoodRequest = require('../../models/foodRequests');
 const FoodListing = require('../../models/FoodListing');
 const Restaurant = require('../../models/Restaurant');
 const Person = require('../../models/Person');
@@ -140,6 +141,14 @@ exports.updateDonationRequestStatus = async (req, res) => {
 
     if (!updatedRequest) {
       return res.status(404).json({ message: 'Donation request not found' });
+    }
+
+    if (updatedRequest.receiverId && updatedRequest.foodId) {
+      await FoodRequest.findOneAndUpdate(
+        { receiverId: updatedRequest.receiverId, restaurantId: updatedRequest.restaurantId, foodId: updatedRequest.foodId, quantity: updatedRequest.quantity },
+        { status },
+        { sort: { createdAt: -1 } }
+      );
     }
 
     res.status(200).json(updatedRequest);
