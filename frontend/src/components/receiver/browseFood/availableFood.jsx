@@ -11,6 +11,48 @@ export default function AvailableFood({ foods, currentTime }) {
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const [userRole, setUserRole] = React.useState('requester_person');
+  const [requestsMadeThisMonth, setRequestsMadeThisMonth] = React.useState(0);
+
+  React.useEffect(() => {
+    const checkLimits = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const userStr = localStorage.getItem('user');
+        let isOrg = false;
+        if (userStr) {
+          try {
+            const userObj = JSON.parse(userStr);
+            if (userObj && userObj.role) {
+              setUserRole(userObj.role);
+              if (userObj.role.toLowerCase().includes('org') || userObj.role.toLowerCase().includes('organization')) {
+                isOrg = true;
+              }
+            }
+          } catch(e) {}
+        }
+        
+        if (!isOrg) {
+          const config = { headers: { Authorization: `Bearer ${token}` } };
+          const res = await axios.get('http://localhost:5000/api/food-requests/receiver', config);
+          const currentMonth = new Date().getMonth();
+          const currentYear = new Date().getFullYear();
+          const thisMonthRequests = (res.data || []).filter(r => {
+            const d = new Date(r.date || r.createdAt);
+            return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+          });
+          setRequestsMadeThisMonth(thisMonthRequests.length);
+        }
+      } catch (err) {
+        console.error('Error fetching request limits', err);
+      }
+    };
+    checkLimits();
+  }, []);
+
+  const isIndividual = !userRole.toLowerCase().includes('org') && !userRole.toLowerCase().includes('organization');
+  const hasReachedLimit = isIndividual && requestsMadeThisMonth >= 3;
+
   const openDonationModal = (food) => {
     setSelectedDonation(food);
     setRequestQty(1);
@@ -56,6 +98,7 @@ export default function AvailableFood({ foods, currentTime }) {
       });
       
       setShowSuccess(true);
+      setRequestsMadeThisMonth(prev => prev + 1);
       setTimeout(() => {
         closeDonationModal();
       }, 2000);
@@ -178,12 +221,10 @@ export default function AvailableFood({ foods, currentTime }) {
                 
                 {isDonatable && (
                   <button 
-                    onClick={() => openDonationModal(food)}
+                    onClick={() => openDonationModal(food)} disabled={hasReachedLimit}
                     className="flex-1 flex justify-center items-center gap-1 py-2.5 px-1 rounded-xl font-semibold transition-opacity hover:opacity-90 text-white shadow-sm min-w-[100px]"
-                    style={{ backgroundColor: '#1F5E2A' }}
-                  >
-                    <Heart className="w-4 h-4" />
-                    Request
+                    style={{ backgroundColor: hasReachedLimit ? '#ccc' : '#1F5E2A' }}>
+                    {hasReachedLimit ? 'Limit Reached' : <><Heart className="w-4 h-4" />Request</>}
                   </button>
                 )}
                 

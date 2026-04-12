@@ -82,9 +82,29 @@ export default function MyRequests() {
             </div>
 
             {/* Request List component */}
-            <div className="pt-4">
-              <h2 className="text-xl font-bold mb-4" style={{ color: '#1F5E2A' }}>Request History</h2>
-              <ViewRequests requests={requests} loading={loading} />
+            <div className="pt-6">
+              <div className="bg-white rounded-2xl shadow-md p-5 border border-gray-100 relative overflow-hidden">
+                {/* Accent Top Bar */}
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#E9A38E] to-[#1F5E2A]"></div>
+
+                {/* Header */}
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-bold flex items-center gap-2" style={{ color: '#1F5E2A' }}>
+                    📋 Request History
+                  </h2>
+
+                  {/* Optional Badge */}
+                  <span className="text-sm bg-green-100 px-3 py-1 rounded-full font-bold" style={{ color: '#1F5E2A', backgroundColor: '#E9A38E33' }}>
+                    {requests?.length || 0} Requests
+                  </span>
+                </div>
+
+                {/* Divider */}
+                <div className="h-[1px] bg-gray-100 mb-4"></div>
+
+                {/* Content */}
+                <ViewRequests requests={requests} loading={loading} />
+              </div>
             </div>
 
           </div>
