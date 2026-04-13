@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight, ArrowLeft, User, CreditCard, Mail, Phone, CheckCircle2, Camera, Edit2 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
-const InputField = ({ label, icon: Icon, type = "text", placeholder, fullWidth = false, isActive, onFocus, onBlur }) => {
+const InputField = ({ label, icon: Icon, type = "text", placeholder, fullWidth = false, isActive, onFocus, onBlur, value, onChange }) => {
   return (
     <div className={`flex flex-col mb-4 relative ${fullWidth ? 'col-span-1 md:col-span-2' : ''}`}>
       <label className="text-sm font-semibold text-[#1F5E2A] mb-2 pl-1">{label}</label>
@@ -15,6 +15,8 @@ const InputField = ({ label, icon: Icon, type = "text", placeholder, fullWidth =
           type={type} 
           className="w-full bg-transparent py-3 pr-4 outline-none text-[#1F5E2A] placeholder-[#D8C3A5]"
           placeholder={placeholder}
+          value={value}
+          onChange={onChange}
           onFocus={onFocus}
           onBlur={onBlur}
         />
@@ -38,6 +40,10 @@ const InputField = ({ label, icon: Icon, type = "text", placeholder, fullWidth =
 const SignupOrgGardRight = () => {
   const [activeInput, setActiveInput] = useState(null);
   const [selectedGender, setSelectedGender] = useState(null);
+  const [fullName, setFullName] = useState('');
+  const [nic, setNic] = useState('');
+  const [email, setEmail] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [imagePreview, setImagePreview] = useState(null);
   const [profileFile, setProfileFile] = useState(null);
   const fileInputRef = useRef(null);
@@ -60,8 +66,18 @@ const SignupOrgGardRight = () => {
         ...location.state,
         role: 'requester_org', // update role to be specific
         profileData: {
-          orgName: location.state?.name,
-          representative: { gender: selectedGender },
+          orgName: location.state?.orgName || location.state?.name,
+          orgAddress: location.state?.orgAddress,
+          regNumber: location.state?.regNumber,
+          officialEmail: location.state?.officialEmail,
+          contactNumber: location.state?.contactNumber,
+          representative: { 
+            gender: selectedGender,
+            fullName,
+            nic,
+            email,
+            phoneNumber
+          },
           profilePicture: profileFile
         }
       } 
@@ -149,6 +165,8 @@ const SignupOrgGardRight = () => {
                 icon={User} 
                 placeholder="Enter full name" 
                 fullWidth={true}
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
                 isActive={activeInput === "Full Name"}
                 onFocus={() => setActiveInput("Full Name")}
                 onBlur={() => setActiveInput(null)}
@@ -182,6 +200,8 @@ const SignupOrgGardRight = () => {
                 label="NIC" 
                 icon={CreditCard} 
                 placeholder="National ID number" 
+                value={nic}
+                onChange={(e) => setNic(e.target.value)}
                 isActive={activeInput === "NIC"}
                 onFocus={() => setActiveInput("NIC")}
                 onBlur={() => setActiveInput(null)}
@@ -191,6 +211,8 @@ const SignupOrgGardRight = () => {
                 icon={Mail} 
                 type="email" 
                 placeholder="representative@example.com" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 isActive={activeInput === "Email"}
                 onFocus={() => setActiveInput("Email")}
                 onBlur={() => setActiveInput(null)}
@@ -201,6 +223,8 @@ const SignupOrgGardRight = () => {
                 type="tel" 
                 placeholder="+1 (555) 000-0000" 
                 fullWidth={true}
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
                 isActive={activeInput === "Phone Number"}
                 onFocus={() => setActiveInput("Phone Number")}
                 onBlur={() => setActiveInput(null)}

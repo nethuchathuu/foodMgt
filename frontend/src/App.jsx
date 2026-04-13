@@ -42,6 +42,8 @@ import DetailsOrder from './components/receiver/myOrders/detailsOrder';
 import MyRequests from './components/receiver/myRequests/myRequests';
 import DetailsRequest from './components/receiver/myRequests/detailsRequest';
 import ReceiverNotification from './components/receiver/notification/notification';
+import ProfileIndividual from './components/receiver/profile/profileIndividual';
+import ProfileOrganization from './components/receiver/profile/profileOrganization';
 import './index.css';
 
 const AppLayout = () => {
@@ -100,6 +102,8 @@ const AppLayout = () => {
           <Route path="/receiver/requests" element={<MyRequests />} />
           <Route path="/receiver/requests/:id" element={<DetailsRequest />} />
           <Route path="/receiver/notification" element={<ReceiverNotification />} />
+          <Route path="/receiver/profileIndividual" element={<ProfileIndividual />} />
+          <Route path="/receiver/profileOrganization" element={<ProfileOrganization />} />
           
           {/* Default receiver route to home */}
           <Route path="/receiver/*" element={<ReceiverDashboard />} />

@@ -51,10 +51,24 @@ const InputField = ({ label, icon: Icon, type = "text", placeholder, fullWidth =
 const SignupOrgRight = () => {
   const [activeInput, setActiveInput] = useState(null);
   const [orgName, setOrgName] = useState('');
+  const [orgAddress, setOrgAddress] = useState('');
+  const [regNumber, setRegNumber] = useState('');
+  const [officialEmail, setOfficialEmail] = useState('');
+  const [contactNumber, setContactNumber] = useState('');
   const navigate = useNavigate();
 
   const handleNext = () => {
-    navigate('/signup-org-guardian', { state: { name: orgName || 'Organization', role: 'requester' } });
+    navigate('/signup-org-guardian', { 
+      state: { 
+        name: orgName || 'Organization', 
+        role: 'requester',
+        orgName,
+        orgAddress,
+        regNumber,
+        officialEmail,
+        contactNumber
+      } 
+    });
   };
 
   return (
@@ -101,6 +115,8 @@ const SignupOrgRight = () => {
                 type="textarea" 
                 placeholder="Full operational address" 
                 fullWidth={true} 
+                value={orgAddress}
+                onChange={(e) => setOrgAddress(e.target.value)}
                 isActive={activeInput === "Organization Address"}
                 onFocus={() => setActiveInput("Organization Address")}
                 onBlur={() => setActiveInput(null)}
@@ -110,6 +126,8 @@ const SignupOrgRight = () => {
                 icon={FileText} 
                 placeholder="Official registration ID" 
                 fullWidth={true}
+                value={regNumber}
+                onChange={(e) => setRegNumber(e.target.value)}
                 isActive={activeInput === "Registration Number"}
                 onFocus={() => setActiveInput("Registration Number")}
                 onBlur={() => setActiveInput(null)}
@@ -119,6 +137,8 @@ const SignupOrgRight = () => {
                 icon={Mail} 
                 type="email" 
                 placeholder="contact@org.org" 
+                value={officialEmail}
+                onChange={(e) => setOfficialEmail(e.target.value)}
                 isActive={activeInput === "Email"}
                 onFocus={() => setActiveInput("Email")}
                 onBlur={() => setActiveInput(null)}
@@ -128,6 +148,8 @@ const SignupOrgRight = () => {
                 icon={Phone} 
                 type="tel" 
                 placeholder="+1 (555) 000-0000" 
+                value={contactNumber}
+                onChange={(e) => setContactNumber(e.target.value)}
                 isActive={activeInput === "Contact Number"}
                 onFocus={() => setActiveInput("Contact Number")}
                 onBlur={() => setActiveInput(null)}
