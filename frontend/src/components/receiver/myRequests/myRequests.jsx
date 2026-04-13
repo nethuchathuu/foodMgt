@@ -8,6 +8,7 @@ import ViewRequests from './viewRequests';
 export default function MyRequests() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -93,10 +94,20 @@ export default function MyRequests() {
                     📋 Request History
                   </h2>
 
-                  {/* Optional Badge */}
-                  <span className="text-sm bg-green-100 px-3 py-1 rounded-full font-bold" style={{ color: '#1F5E2A', backgroundColor: '#E9A38E33' }}>
-                    {requests?.length || 0} Requests
-                  </span>
+                  <div className="flex items-center gap-3">
+                    {requests.length > 0 && (
+                      <button 
+                        onClick={() => setShowClearConfirm(true)}
+                        className="px-4 py-1.5 text-sm font-bold text-white rounded-xl shadow-sm hover:opacity-90 transition-all"
+                        style={{ backgroundColor: '#D67A5C' }}
+                      >
+                        Clear All
+                      </button>
+                    )}
+                    <span className="text-sm bg-green-100 px-3 py-1 rounded-full font-bold" style={{ color: '#1F5E2A', backgroundColor: '#E9A38E33' }}>
+                      {requests?.length || 0} Requests
+                    </span>
+                  </div>
                 </div>
 
                 {/* Divider */}
@@ -110,6 +121,21 @@ export default function MyRequests() {
           </div>
         </main>
       </div>
+
+      {/* Clear All Confirmation Modal */}
+      {showClearConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl animate-fade-scale text-center p-8">
+            <XCircle className="w-16 h-16 mx-auto mb-4" style={{ color: '#D67A5C' }} />
+            <h2 className="text-2xl font-bold mb-2" style={{ color: '#1F5E2A' }}>Clear All Requests?</h2>
+            <p className="text-gray-600 mb-8">Are you sure you want to clear all your requests? This action cannot be undone.</p>
+            <div className="flex gap-3">
+               <button onClick={() => setShowClearConfirm(false)} className="flex-1 py-3 rounded-xl font-bold" style={{ backgroundColor: '#D8C3A5', color: '#1F5E2A' }}>Cancel</button>
+               <button onClick={() => { setRequests([]); setShowClearConfirm(false); }} className="flex-1 py-3 rounded-xl font-bold text-white shadow-md hover:opacity-90" style={{ backgroundColor: '#D67A5C' }}>Yes, Clear All</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

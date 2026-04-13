@@ -1,17 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, Package, Calendar, MapPin, Store, Phone } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Package, Calendar, MapPin, Store, Phone, Hash, Clock, XCircle } from 'lucide-react';
 import SidebarUser from '../slidebarUser';
 import NavbarUser from '../navbarUser';
 import axios from 'axios';
 
 function getStatusStyle(status) {
   switch (status) {
-    case 'Cancelled': return { bg: '#D67A5C', text: '#FFFFFF' };
-    case 'Pending': return { bg: '#E9A38E', text: '#FFFFFF' };
-    case 'Accepted': return { bg: '#9BC7D8', text: '#FFFFFF' };
-    case 'Completed': return { bg: '#1F5E2A', text: '#FFFFFF' };
-    default: return { bg: '#D8C3A5', text: '#1F5E2A' };
+    case 'Pending': return { bg: '#E9A38E', text: '#FFFFFF', icon: <Clock className="w-4 h-4" /> };
+    case 'Accepted': case 'Completed': return { bg: '#9BC7D8', text: '#FFFFFF', icon: <CheckCircle className="w-4 h-4" /> };
+    case 'Cancelled': case 'Rejected': return { bg: '#D67A5C', text: '#FFFFFF', icon: <XCircle className="w-4 h-4" /> };
+    default: return { bg: '#D8C3A5', text: '#1F5E2A', icon: null };
   }
 }
 
@@ -83,93 +82,89 @@ if (error || !order) {
           <div className="max-w-5xl mx-auto">
 
             {/* Back Navigation */}
-            <Link
-              to="/receiver/my-orders"
-              className="inline-flex items-center gap-2 mb-6 font-medium hover:underline transition-all"    
-              style={{ color: '#1F5E2A' }}
-            >
-              <ArrowLeft className="w-5 h-5" />
-              Back to My Orders
-            </Link>
+            <div className="flex justify-between items-center mb-4">
+              <Link
+                to="/receiver/my-orders"
+                className="inline-flex items-center gap-2 font-bold hover:underline transition-all"    
+                style={{ color: '#1F5E2A' }}
+              >
+                <ArrowLeft className="w-5 h-5" />
+                Back to My Orders
+              </Link>
+              
+              {order.status === 'Pending' && (
+                <button 
+                  className="px-6 py-2.5 rounded-xl font-bold text-white shadow-md hover:opacity-90 transition-opacity"
+                  style={{ backgroundColor: '#E9A38E' }}
+                >
+                  Edit Order
+                </button>
+              )}
+            </div>
 
             {/* Main Content Card */}
-            <div className="bg-white rounded-2xl shadow-sm border overflow-hidden p-6 md:p-8" style={{ borderColor: '#D8C3A5' }}>
+            <div className="bg-white rounded-2xl shadow-sm border p-8" style={{ borderColor: '#D8C3A5' }}>
 
               {/* Header Section */}
-              <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-8 pb-8 border-b border-gray-100">
+              <div className="flex justify-between items-start mb-8 border-b pb-6 border-gray-100">
                 <div>
-                  <h1 className="text-2xl font-bold mb-2" style={{ color: '#1F5E2A' }}>
+                  <h1 className="text-3xl font-bold mb-2" style={{ color: '#1F5E2A' }}>
                     {food.foodName || order.foodName || 'Item not specified'}
                   </h1>
-                  <p className="text-gray-500 font-medium">Order ID #{order._id}</p>
+                  <p className="text-gray-500 font-medium flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
+                    Ordered on: {new Date(order.createdAt).toLocaleDateString()}
+                  </p>
                 </div>
 
-                <span
-                  className="px-4 py-2 text-sm font-bold rounded-full flex items-center justify-center gap-2 shadow-sm w-fit"
+                <div
+                  className="px-4 py-2 rounded-full font-bold text-white shadow-sm flex items-center gap-2 text-sm"
                   style={{ backgroundColor: statusStyle.bg, color: statusStyle.text }}
                 >
+                  {statusStyle.icon}
                   {order.status || 'Pending'}
-                </span>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                 {/* Order Information Section */}
-                <div className="space-y-6">
-                  <h3 className="text-lg font-bold" style={{ color: '#1F5E2A' }}>Order Details</h3>
-
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-3">
-                      <Package className="w-5 h-5 mt-0.5 text-gray-400" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Ordered Quantity</p>
-                        <p className="font-bold text-lg" style={{ color: '#D67A5C' }}>{order.quantity} packs</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-start gap-3">
-                      <Calendar className="w-5 h-5 mt-0.5 text-gray-400" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Order Date</p>
-                        <p className="font-bold" style={{ color: '#1F5E2A' }}>{new Date(order.createdAt).toLocaleString()}</p>
-                      </div>
-                    </div>
-                  </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Ordered Quantity</label>
+                  <p className="text-xl font-medium flex items-center gap-2" style={{ color: '#D67A5C' }}>
+                    <Hash className="w-5 h-5 opacity-70" />
+                    {order.quantity} packs
+                  </p>
                 </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Order ID</label>
+                  <p className="text-lg font-mono text-gray-600">ORD-{order._id}</p>
+                </div>
+              </div>
 
-                {/* Restaurant Information Section */}
-                <div className="space-y-6 bg-[#F8F8F6] p-6 rounded-xl border border-gray-100">
-                  <h3 className="text-lg font-bold" style={{ color: '#1F5E2A' }}>Provider Info</h3>
-
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-3">
-                      <Store className="w-5 h-5 mt-0.5 text-gray-400" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Name</p>
-                        <p className="font-bold" style={{ color: '#1F5E2A' }}>{restaurant.name || 'Unknown'}</p>
-                      </div>
+              {/* Restaurant Info Fragment */}
+              {restaurant.name && (
+                <div className="mb-8 p-5 rounded-2xl bg-gray-50 border border-gray-100">
+                  <h3 className="font-bold text-lg mb-4" style={{ color: '#1F5E2A' }}>Provider Info</h3>
+                  <div className="flex flex-col sm:flex-row gap-4 sm:gap-8">
+                    <div className="flex items-center gap-2">
+                       <Store className="w-5 h-5 text-gray-400" />
+                       <span className="font-bold text-gray-700">{restaurant.name || 'Unknown'}</span>
                     </div>
-
-                    <div className="flex items-start gap-3">
-                      <MapPin className="w-5 h-5 mt-0.5 text-gray-400" />
-                      <div>
-                        <p className="text-sm font-medium text-gray-500">Location</p>
-                        <p className="font-bold flex-1" style={{ color: '#D67A5C' }}>{restaurant.address || 'Not provided'}</p>
+                    {restaurant.address && (
+                      <div className="flex items-center gap-2">
+                         <MapPin className="w-5 h-5 text-gray-400" />
+                         <span className="text-gray-600 font-medium">{restaurant.address}</span>
                       </div>
-                    </div>
-
-                    {(restaurant.phone || restaurant.email) && (
-                      <div className="flex items-start gap-3">
-                        <Phone className="w-5 h-5 mt-0.5 text-gray-400" />
-                        <div>
-                          <p className="text-sm font-medium text-gray-500">Contact</p>
-                          {restaurant.phone && <p className="font-bold" style={{ color: '#9BC7D8' }}>{restaurant.phone}</p>}
-                          {restaurant.email && <p className="text-sm mt-1 text-gray-600 truncate">{restaurant.email}</p>}
-                        </div>
+                    )}
+                    {restaurant.phone && (
+                      <div className="flex items-center gap-2">
+                         <Phone className="w-5 h-5 text-gray-400" />
+                         <span className="text-gray-600 font-medium">{restaurant.phone}</span>
                       </div>
                     )}
                   </div>
                 </div>
-              </div>
+              )}
 
             </div>
           </div>

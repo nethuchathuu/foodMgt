@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
-import { Clock, Info, CheckCircle, XCircle } from 'lucide-react';
+import { Clock, Info, CheckCircle, XCircle, Eye } from 'lucide-react';
 
 const mockOrders = [
   // kept as fallback only
@@ -56,67 +56,52 @@ export default function ViewOrders({ orders: initialOrders = mockOrders, loading
           return (
             <div 
               key={order._id || order.id} 
-              className="bg-white border rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 p-6 flex flex-col md:flex-row md:items-center justify-between gap-4 animate-fade-in-up"
-              style={{ borderColor: '#D8C3A5', animationDelay: `${(index + 3) * 100}ms` }}
+              className="bg-white border rounded-2xl p-5 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+              style={{ borderColor: '#D8C3A5' }}
             >
-              {/* Order Info */}
-              <div className="flex-1 space-y-2">
-                <div className="flex items-center gap-3">
-                  <h3 className="text-lg font-semibold" style={{ color: '#1F5E2A' }}>
-                    {order.foodName}
-                  </h3>
+              {/* Info Section */}
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <h3 className="text-lg font-bold" style={{ color: '#1F5E2A' }}>{order.foodName}</h3>
                   <span 
-                    className="px-3 py-1 text-xs font-bold rounded-full flex items-center gap-1 shadow-sm"
-                    style={{ 
-                      backgroundColor: currentStyle.bg, 
-                      color: currentStyle.text 
-                    }}
+                    className="px-3 py-1 rounded-full text-xs font-bold text-white shadow-sm"
+                    style={{ backgroundColor: currentStyle.bg }}
                   >
-                    <StatusIcon className="w-3 h-3" />
                     {order.status}
                   </span>
                 </div>
-                
-                <div className="text-sm font-medium" style={{ color: '#D67A5C' }}>
-                  Qty: {order.quantity} packs
-                </div>
-                
-                <div className="text-sm flex flex-col md:flex-row md:gap-4 font-medium" style={{ color: '#1F5E2A' }}>
-                  <span className="opacity-80">Ordered on: {order.date || new Date(order.createdAt).toLocaleDateString()}</span>
-                  <span className="opacity-80 md:border-l md:pl-4 border-gray-300">From: {order.restaurant || order.restaurantId?.name || 'Unknown'}</span>
-                </div>
+                <p className="font-medium mb-1" style={{ color: '#D67A5C' }}>{order.quantity} packs ordered</p>
+                <p className="text-sm truncate max-w-md" style={{ color: '#9BC7D8' }}>From: {order.restaurant || order.restaurantId?.name || 'Unknown'}</p>
+                <p className="text-xs font-medium mt-2 opacity-80" style={{ color: '#1F5E2A' }}>Ordered on: {order.date || new Date(order.createdAt).toLocaleDateString()}</p>
               </div>
 
-              {/* Actions */}
-              <div className="flex flex-wrap items-center gap-3">
+              {/* Actions Section */}
+              <div className="flex flex-wrap gap-2 w-full md:w-auto">
                 <Link 
                   to={`/receiver/orders/${order._id || order.id}`}
-                  className="px-4 py-2.5 rounded-xl font-semibold shadow-sm hover:opacity-90 transform hover:scale-105 transition-all flex items-center gap-2"
-                  style={{ backgroundColor: '#9BC7D8', color: '#FFFFFF' }}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-white transition-transform hover:scale-105 shadow-sm text-sm"
+                  style={{ backgroundColor: '#9BC7D8' }}
                 >
-                  <Info className="w-4 h-4" />
-                  View Details
+                  <Eye className="w-4 h-4" /> View Details
                 </Link>
 
                 {order.status === 'Pending' && (
                   <button 
                     onClick={() => handleCancelClick(order._id || order.id)}
-                    className="px-4 py-2.5 rounded-xl font-semibold shadow-sm hover:opacity-90 hover-shake-warning transition-all flex items-center gap-2"
-                    style={{ backgroundColor: '#D8C3A5', color: '#1F5E2A' }}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold border transition-colors hover:bg-gray-50 text-sm"
+                    style={{ borderColor: '#D8C3A5', color: '#1F5E2A' }}
                   >
-                    <XCircle className="w-4 h-4" />
-                    Cancel Order
+                    <XCircle className="w-4 h-4" /> Cancel
                   </button>
                 )}
 
                 {order.status === 'Accepted' && (
                   <button 
                     onClick={() => handleConfirmClick(order._id || order.id)}
-                    className="px-4 py-2.5 rounded-xl font-semibold shadow-sm hover:opacity-90 hover:animate-pulse transition-all flex items-center gap-2"
-                    style={{ backgroundColor: '#E9A38E', color: '#FFFFFF' }}
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-white transition-opacity hover:opacity-90 shadow-sm text-sm"
+                    style={{ backgroundColor: '#E9A38E' }}
                   >
-                    <CheckCircle className="w-4 h-4" />
-                    Confirm Received
+                    <CheckCircle className="w-4 h-4" /> Confirm
                   </button>
                 )}
               </div>

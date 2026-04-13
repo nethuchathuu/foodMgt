@@ -6,7 +6,46 @@ import SidebarUser from '../slidebarUser';
 import NavbarUser from '../navbarUser';
 import AvailableFood from './availableFood';
 
-const categories = ["All", "Rice", "Bakery", "Drinks", "Snacks"]; // We can keep categories, but FoodListing doesn't currently strictly enforce them unless added later
+const categories = ["All", "Rice", "Bakery", "Drinks", "Snacks", "Street Food"]; 
+
+const foodCategoryMapping = [
+  { foodName: "Chicken Fried Rice", category: "Rice" },
+  { foodName: "Vegetable Rice", category: "Rice" },
+  { foodName: "Egg Rice", category: "Rice" },
+  { foodName: "Seafood Rice", category: "Rice" },
+  { foodName: "Mixed Fried Rice", category: "Rice" },
+
+  { foodName: "Chocolate Cake", category: "Bakery" },
+  { foodName: "Fish Bun", category: "Bakery" },
+  { foodName: "Chicken Roll", category: "Bakery" },
+  { foodName: "Egg Bun", category: "Bakery" },
+  { foodName: "Vegetable Roti", category: "Bakery" },
+
+  { foodName: "Orange Juice", category: "Drinks" },
+  { foodName: "Iced Coffee", category: "Drinks" },
+  { foodName: "Milk Tea", category: "Drinks" },
+  { foodName: "Faluda", category: "Drinks" },
+  { foodName: "Lime Juice", category: "Drinks" },
+
+  { foodName: "French Fries", category: "Snacks" },
+  { foodName: "Chicken Nuggets", category: "Snacks" },
+  { foodName: "Samosa", category: "Snacks" },
+  { foodName: "Spring Rolls", category: "Snacks" },
+  { foodName: "Cutlets", category: "Snacks" },
+
+  // Street Food Category
+  { foodName: "Chicken Kottu", category: "Street Food" },
+  { foodName: "Cheese Kottu", category: "Street Food" },
+  { foodName: "Vegetable Kottu", category: "Street Food" },
+
+  { foodName: "Parata", category: "Street Food" },
+  { foodName: "Egg Parata", category: "Street Food" },
+  { foodName: "Chicken Parata", category: "Street Food" },
+  
+  { foodName: "Hoppers", category: "Street Food" },
+  { foodName: "String Hoppers", category: "Street Food" },
+  { foodName: "Isso Wade", category: "Street Food" }
+];
 
 export default function BrowseFood() {
   const [foods, setFoods] = useState([]);
@@ -39,8 +78,17 @@ export default function BrowseFood() {
     return () => clearInterval(interval);
   }, []);
 
+  const categoryFuse = new Fuse(foodCategoryMapping, {
+    keys: ['foodName'],
+    threshold: 0.4,
+  });
+
   // Filter functionality
-  let filteredFoods = foods.filter(food => {
+  let filteredFoods = foods.map(food => {
+    const match = categoryFuse.search(food.foodName || "");
+    const mappedCategory = match.length > 0 ? match[0].item.category : "Unknown";
+    return { ...food, inferredCategory: mappedCategory };
+  }).filter(food => {
     // Check if truly not expired right now
     if (food.expiryTime) {
       const expiry = new Date(food.expiryTime).getTime();
@@ -53,22 +101,29 @@ export default function BrowseFood() {
     return matchesDonation;
   });
 
-  // Apply Fuzzy Search for Search Term
-  if (searchTerm.trim() !== '') {
-    const fuseSearch = new Fuse(filteredFoods, {
-      keys: ['foodName', 'restaurantId.name'],
-      threshold: 0.4,
-    });
-    filteredFoods = fuseSearch.search(searchTerm).map(result => result.item);
-  }
-
-  // Apply Fuzzy Search for Categories
-  if (activeCategory !== 'All') {
-    const fuseCategory = new Fuse(filteredFoods, {
-      keys: ['foodName', 'description'],
-      threshold: 0.4,
-    });
-    filteredFoods = fuseCategory.search(activeCategory).map(result => result.item);
+  // Apply Fuzzy Search for Search Term and Categories Combined
+  if (searchTerm.trim() !== '' || activeCategory !== 'All') {
+    let fuseData = filteredFoods;
+    
+    // First filter by Category if provided (Fuzzy search for category)
+    if (activeCategory !== 'All') {
+      const fuseCategory = new Fuse(fuseData, {
+        keys: ['inferredCategory', 'category', 'foodName', 'description'],
+        threshold: 0.4,
+      });
+      fuseData = fuseCategory.search(activeCategory).map(result => result.item);
+    }
+    
+    // Then filter by Search Term (Fuzzy search for foodName, category, and restaurant name)
+    if (searchTerm.trim() !== '') {
+      const fuseSearch = new Fuse(fuseData, {
+        keys: ['foodName', 'inferredCategory', 'category', 'restaurantId.name'],
+        threshold: 0.4,
+      });
+      fuseData = fuseSearch.search(searchTerm).map(result => result.item);
+    }
+    
+    filteredFoods = fuseData;
   }
 
   return (

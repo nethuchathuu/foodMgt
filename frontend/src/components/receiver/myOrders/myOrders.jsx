@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Clock, CheckCircle, Star } from 'lucide-react';
+import { Clock, CheckCircle, XCircle, Star } from 'lucide-react';
 import SidebarUser from '../slidebarUser';
 import NavbarUser from '../navbarUser';
 import ViewOrders from './viewOrders';
@@ -8,6 +8,7 @@ import ViewOrders from './viewOrders';
 export default function MyOrders() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -27,13 +28,7 @@ export default function MyOrders() {
 
   const pendingCount = orders.filter(o => o.status === 'Pending').length;
   const acceptedCount = orders.filter(o => o.status === 'Accepted' || o.status === 'Completed').length;
-  const completedCount = orders.filter(o => o.status === 'Completed').length;
-
-  const stats = [
-    { id: 'pending', label: 'Pending Orders', count: pendingCount, icon: Clock, bgAccent: '#E9A38E', textColor: '#1F5E2A', animationClass: 'animate-pulse' },
-    { id: 'accepted', label: 'Accepted Orders', count: acceptedCount, icon: CheckCircle, bgAccent: '#9BC7D8', textColor: '#1F5E2A', animationClass: 'animate-bounce' },
-    { id: 'completed', label: 'Completed Orders', count: completedCount, icon: Star, bgAccent: '#D67A5C', textColor: '#1F5E2A', animationClass: '' }
-  ];
+  const rejectedCount = orders.filter(o => o.status === 'Rejected' || o.status === 'Cancelled').length;
 
   return (
     <div className="flex h-screen overflow-hidden font-sans" style={{ backgroundColor: '#F8F8F6' }}>
@@ -46,46 +41,101 @@ export default function MyOrders() {
           <div className="max-w-6xl mx-auto space-y-6">
             
             {/* Header */}
-            <div className="animate-fade-in-up">
+            <div>
               <h1 className="text-3xl font-bold mb-2" style={{ color: '#1F5E2A' }}>My Orders</h1>
-              <p className="opacity-80" style={{ color: '#1F5E2A' }}>Track and manage your food orders</p>
+              <p className="text-gray-600 font-medium">Track and manage your food orders</p>
             </div>
 
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {stats.map((stat, index) => {
-                const Icon = stat.icon;
-                return (
-                  <div 
-                    key={stat.id} 
-                    className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1 border flex items-center justify-between animate-fade-in-up"
-                    style={{ borderColor: '#D8C3A5', animationDelay: `${index * 100}ms` }}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className={`p-3 rounded-xl bg-opacity-20`} style={{ backgroundColor: `${stat.bgAccent}33` }}>
-                        <Icon className={`w-6 h-6 ${stat.animationClass}`} style={{ color: stat.bgAccent }} />
-                      </div>
-                      <h3 className="text-lg font-semibold" style={{ color: stat.textColor }}>{stat.label}</h3>
-                    </div>
-                    <div 
-                      className="text-2xl font-bold rounded-full w-12 h-12 flex items-center justify-center text-white shadow-sm"
-                      style={{ backgroundColor: stat.bgAccent }}
-                    >
-                      {stat.count}
-                    </div>
-                  </div>
-                );
-              })}
+              {/* Pending */}
+              <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-lg transition-all hover:-translate-y-1 border animate-pulse-soft flex items-start gap-4" style={{ borderColor: '#D8C3A5' }}>
+                <div className="p-3 rounded-xl bg-orange-50">
+                  <Clock className="w-8 h-8" style={{ color: '#E9A38E' }} />
+                </div>
+                <div>
+                  <h3 className="text-gray-500 font-bold mb-1">Pending Orders</h3>
+                  <p className="text-3xl font-black" style={{ color: '#1F5E2A' }}>{pendingCount}</p>
+                </div>
+              </div>
+
+              {/* Accepted/Completed */}
+              <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-lg transition-all hover:-translate-y-1 border animate-bounce-soft flex items-start gap-4" style={{ borderColor: '#D8C3A5' }}>
+                <div className="p-3 rounded-xl bg-blue-50">
+                  <CheckCircle className="w-8 h-8" style={{ color: '#9BC7D8' }} />
+                </div>
+                <div>
+                  <h3 className="text-gray-500 font-bold mb-1">Accepted Orders</h3>
+                  <p className="text-3xl font-black" style={{ color: '#1F5E2A' }}>{acceptedCount}</p>
+                </div>
+              </div>
+
+              {/* Rejected/Cancelled */}
+              <div className="bg-white p-6 rounded-2xl shadow-sm hover:shadow-lg transition-all hover:-translate-y-1 border animate-shake-soft flex items-start gap-4" style={{ borderColor: '#D8C3A5' }}>
+                <div className="p-3 rounded-xl bg-red-50">
+                  <XCircle className="w-8 h-8" style={{ color: '#D67A5C' }} />
+                </div>
+                <div>
+                  <h3 className="text-gray-500 font-bold mb-1">Cancelled Orders</h3>
+                  <p className="text-3xl font-black" style={{ color: '#1F5E2A' }}>{rejectedCount}</p>
+                </div>
+              </div>
             </div>
 
-            {/* View Orders List */}
-            <div className="mt-8">
-              <ViewOrders orders={orders} loading={loading} />
+            {/* List component */}
+            <div className="pt-6">
+              <div className="bg-white rounded-2xl shadow-md p-5 border border-gray-100 relative overflow-hidden">
+                {/* Accent Top Bar */}
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#E9A38E] to-[#1F5E2A]"></div>
+
+                {/* Header */}
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-bold flex items-center gap-2" style={{ color: '#1F5E2A' }}>
+                    📋 Order History
+                  </h2>
+
+                  <div className="flex items-center gap-3">
+                    {orders.length > 0 && (
+                      <button 
+                        onClick={() => setShowClearConfirm(true)}
+                        className="px-4 py-1.5 text-sm font-bold text-white rounded-xl shadow-sm hover:opacity-90 transition-all"
+                        style={{ backgroundColor: '#D67A5C' }}
+                      >
+                        Clear All
+                      </button>
+                    )}
+                    <span className="text-sm bg-green-100 px-3 py-1 rounded-full font-bold" style={{ color: '#1F5E2A', backgroundColor: '#E9A38E33' }}>
+                      {orders?.length || 0} Orders
+                    </span>
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <div className="h-[1px] bg-gray-100 mb-4"></div>
+
+                {/* Content */}
+                <ViewOrders orders={orders} loading={loading} />
+              </div>
             </div>
 
           </div>
         </main>
       </div>
+
+      {/* Clear All Confirmation Modal */}
+      {showClearConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl animate-fade-scale text-center p-8">
+            <XCircle className="w-16 h-16 mx-auto mb-4" style={{ color: '#D67A5C' }} />
+            <h2 className="text-2xl font-bold mb-2" style={{ color: '#1F5E2A' }}>Clear All Orders?</h2>
+            <p className="text-gray-600 mb-8">Are you sure you want to clear all your orders? This action cannot be undone.</p>
+            <div className="flex gap-3">
+               <button onClick={() => setShowClearConfirm(false)} className="flex-1 py-3 rounded-xl font-bold" style={{ backgroundColor: '#D8C3A5', color: '#1F5E2A' }}>Cancel</button>
+               <button onClick={() => { setOrders([]); setShowClearConfirm(false); }} className="flex-1 py-3 rounded-xl font-bold text-white shadow-md hover:opacity-90" style={{ backgroundColor: '#D67A5C' }}>Yes, Clear All</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
