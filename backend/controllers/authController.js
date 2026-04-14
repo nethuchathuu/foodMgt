@@ -183,8 +183,8 @@ exports.loginUser = async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Check approval (for restaurant)
-    if (user.role === 'restaurant' && !user.isVerified) {
+    // Check approval (for restaurant and organization)
+    if ((user.role === 'restaurant' || user.role === 'requester_org') && !user.isVerified) {
       return res.status(403).json({ message: 'Account not approved yet by admin' });
     }
 
