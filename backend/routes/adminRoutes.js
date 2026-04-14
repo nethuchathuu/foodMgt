@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/adminController');
 const restaurentController = require('../controllers/restaurentController');
+const organizationController = require('../controllers/organizationController');
 const { protect, adminOnly } = require('../middleware/verifyUser');
 
 // Admin Login
@@ -12,6 +13,7 @@ router.get('/dashboard-stats', protect, adminController.getDashboardStats);
 
 // Organizations
 router.get('/organizations', protect, adminController.getOrganizations);
+router.get('/organizations/:id', protect, organizationController.getOrganizationByIdAdmin);
 router.patch('/approve-org/:id', protect, adminController.approveOrganization);
 router.patch('/reject-org/:id', protect, adminController.rejectOrganization);
 
