@@ -52,3 +52,40 @@ exports.getOwnerDetails = async (req, res) => {
   }
 };
 
+
+exports.getRestaurantByIdAdmin = async (req, res) => {
+  try {
+    const User = require('../models/User'); // Import User model to get status
+    const userId = req.params.id;
+    
+    const user = await User.findById(userId);
+    if (!user || user.role !== 'restaurant') {
+      return res.status(404).json({ message: 'Restaurant user not found' });
+    }
+    
+    const restaurant = await Restaurant.findOne({ userId });
+    
+    if (!restaurant) {
+      return res.status(404).json({ message: 'Restaurant details not found' });
+    }
+    
+    // Combine data for frontend
+    const responseData = {
+      id: user._id,
+      name: restaurant.restaurantName || user.name,
+      regId: restaurant.registeredId || 'N/A',
+      status: user.status,
+      ownerName: restaurant.owner?.fullName || 'N/A',
+      email: restaurant.restaurantEmail || user.email,
+      phone: restaurant.phoneNumber || restaurant.owner?.contactNumber || 'N/A',
+      address: restaurant.address || 'N/A',
+      description: restaurant.description || 'N/A',
+      documents: restaurant.documents || []
+    };
+    
+    res.json(responseData);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};

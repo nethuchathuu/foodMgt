@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const adminController = require('../controllers/adminController');
+const restaurentController = require('../controllers/restaurentController');
 const { protect, adminOnly } = require('../middleware/verifyUser');
 
 // Admin Login
@@ -16,6 +17,7 @@ router.patch('/reject-org/:id', protect, adminController.rejectOrganization);
 
 // Restaurants
 router.get('/restaurants', protect, adminController.getRestaurants);
+router.get('/restaurants/:id', protect, restaurentController.getRestaurantByIdAdmin);
 router.patch('/approve-rest/:id', protect, adminController.approveRestaurant);
 router.patch('/reject-rest/:id', protect, adminController.rejectRestaurant);
 

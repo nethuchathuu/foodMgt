@@ -185,6 +185,9 @@ exports.loginUser = async (req, res) => {
 
     // Check approval (for restaurant and organization)
     if ((user.role === 'restaurant' || user.role === 'requester_org') && !user.isVerified) {
+      if (user.status === 'Rejected') {
+        return res.status(403).json({ message: 'Your account application has been rejected by the admin.' });
+      }
       return res.status(403).json({ message: 'Account not approved yet by admin' });
     }
 
