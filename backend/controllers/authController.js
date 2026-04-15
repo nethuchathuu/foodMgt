@@ -183,6 +183,11 @@ exports.loginUser = async (req, res) => {
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
+    // Check if user is explicitly blocked
+    if (user.status === 'Blocked') {
+      return res.status(403).json({ message: 'Your account has been blocked by the admin.' });
+    }
+
     // Check approval (for restaurant and organization)
     if ((user.role === 'restaurant' || user.role === 'requester_org') && !user.isVerified) {
       if (user.status === 'Rejected') {

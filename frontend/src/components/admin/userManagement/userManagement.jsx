@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Filter, Ban, CheckCircle, Eye, User as UserIcon, Store, Building2, ChevronDown } from 'lucide-react';
 import axios from 'axios';
+import Swal from 'sweetalert2';
 
 const UserManagement = () => {
   const navigate = useNavigate();
@@ -59,18 +60,38 @@ const UserManagement = () => {
     if (!user) return;
     
     const isCurrentlyActive = user.status === 'Active' || user.status === 'Approved';
-    if (isCurrentlyActive && !window.confirm(`Are you sure you want to block ${user.name}?`)) {
-      return;
-    }
+    const actionText = isCurrentlyActive ? 'block' : 'activate';
+    const confirmColor = isCurrentlyActive ? '#D67A5C' : '#9BC7D8';
+
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: `Do you want to ${actionText} ${user.name}?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: confirmColor,
+      cancelButtonColor: '#cbd5e1',
+      confirmButtonText: `Yes, ${actionText} user!`
+    });
+
+    if (!result.isConfirmed) return;
 
     try {
       const token = localStorage.getItem('token');
       await axios.patch(`http://localhost:5000/api/admin/toggle-user-status/${id}`, {}, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
+      Swal.fire({
+        title: 'Success!',
+        text: `User has been successfully ${actionText}d.`,
+        icon: 'success',
+        confirmButtonColor: '#9BC7D8'
+      });
+
       fetchUsers();
     } catch (error) {
       console.error("Error toggling user status", error);
+      Swal.fire('Error', 'Failed to toggle user status.', 'error');
     }
   };
 
