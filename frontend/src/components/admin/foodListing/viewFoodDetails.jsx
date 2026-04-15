@@ -145,9 +145,9 @@ const ViewFoodDetails = () => {
               <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
                 <p className="text-sm text-slate-500 mb-1">Price</p>
                 <div className="flex items-end gap-2">
-                  <span className="text-2xl font-bold" style={{ color: '#1F5E2A' }}>${price.toFixed(2)}</span>
+                  <span className="text-2xl font-bold" style={{ color: '#1F5E2A' }}>Rs. {price.toFixed(2)}</span>
                   {originalPrice !== undefined && (
-                    <span className="text-sm text-slate-400 line-through mb-1">${originalPrice.toFixed(2)}</span>
+                    <span className="text-sm text-slate-400 line-through mb-1">Rs. {originalPrice.toFixed(2)}</span>
                   )}
                 </div>
               </div>
@@ -209,7 +209,7 @@ const ViewFoodDetails = () => {
                 <MapPin className="text-slate-400 mt-1" size={20} />
                 <div>
                   <p className="text-sm text-slate-500 mb-0.5">Location</p>
-                  <p className="font-medium text-[#1F5E2A]">{food.restaurantId?.location || 'Not provided'}</p>
+                  <p className="font-medium text-[#1F5E2A]">{food.restaurantId?.address || 'Not provided'}</p>
                 </div>
               </div>
 
@@ -217,7 +217,7 @@ const ViewFoodDetails = () => {
                 <Phone className="text-slate-400 mt-1" size={20} />
                 <div>
                   <p className="text-sm text-slate-500 mb-0.5">Contact</p>
-                  <p className="font-medium text-[#1F5E2A]">{food.restaurantId?.contactPhone || 'Not provided'}</p>
+                  <p className="font-medium text-[#1F5E2A]">{food.restaurantId?.phoneNumber || 'Not provided'}</p>
                 </div>
               </div>
             </div>

@@ -305,11 +305,11 @@ const FoodListing = () => {
                   <div className="flex flex-col items-end">
                     {item.discountPrice ? (
                       <>
-                        <span className="font-bold text-lg" style={{ color: '#9BC7D8' }}>${item.discountPrice.toFixed(2)}</span>
-                        <span className="text-xs text-slate-400 line-through">${item.price.toFixed(2)}</span>
+                        <span className="font-bold text-lg" style={{ color: '#9BC7D8' }}>Rs. {item.discountPrice.toFixed(2)}</span>
+                        <span className="text-xs text-slate-400 line-through">Rs. {item.price.toFixed(2)}</span>
                       </>
                     ) : (
-                      <span className="font-bold text-lg" style={{ color: '#9BC7D8' }}>${item.price.toFixed(2)}</span>
+                      <span className="font-bold text-lg" style={{ color: '#9BC7D8' }}>Rs. {item.price.toFixed(2)}</span>
                     )}
                   </div>
                 </div>
