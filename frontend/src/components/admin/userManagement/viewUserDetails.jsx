@@ -1,27 +1,42 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Ban, CheckCircle, Mail, Phone, MapPin, Briefcase, Calendar, ShieldAlert } from 'lucide-react';
+import Swal from 'sweetalert2';
 
 const ViewUserDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // Mock User Data
-  const [user, setUser] = useState({
-    id: id || '1',
-    name: 'Sarah Smith',
-    email: 'sarah.smith@example.com',
-    phone: '+1 (555) 987-6543',
-    role: 'Restaurant',
-    status: 'Active',
-    joinedDate: 'Jan 15, 2024',
-    address: '45 Avenue St, Food District, FL',
-    entityName: 'Ocean Catch Seafood'
-  });
-
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [showBlockModal, setShowBlockModal] = useState(false);
 
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`http://localhost:5000/api/admin/users/${id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setUser(data);
+        } else {
+          console.error('Failed to fetch user details');
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUserDetails();
+  }, [id]);
+
   const getInitials = (name) => {
+    if (!name) return 'U';
     return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
   };
 
@@ -31,15 +46,41 @@ const ViewUserDetails = () => {
     'Organization': '#5C9DB5'
   };
 
-  const isBlocked = user.status === 'Blocked';
-
-  const toggleStatus = () => {
-    setUser(prev => ({
-      ...prev,
-      status: prev.status === 'Active' ? 'Blocked' : 'Active'
-    }));
-    setShowBlockModal(false);
+  const toggleStatus = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`http://localhost:5000/api/admin/toggle-user-status/${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const newStatus = user.status === 'Active' ? 'Blocked' : 'Active';
+        setUser(prev => ({
+          ...prev,
+          status: newStatus
+        }));
+        setShowBlockModal(false);
+        import('sweetalert2').then(Swal => {
+           Swal.default.fire({
+             title: 'Success!',
+             text: `User has been ${newStatus === 'Blocked' ? 'blocked' : 'activated'}.`,
+             icon: 'success',
+             confirmButtonColor: '#9BC7D8'
+           });
+        }).catch(() => alert(`User has been ${newStatus === 'Blocked' ? 'blocked' : 'activated'}.`));
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
+
+  if (loading) return <div className="p-6 text-center">Loading...</div>;
+  if (!user) return <div className="p-6 text-center">User not found.</div>;
+
+  const isBlocked = user.status === 'Blocked';
 
   return (
     <div className="p-6 font-['Poppins'] min-h-screen" style={{ backgroundColor: '#F8FAFC' }}>
@@ -201,6 +242,78 @@ const ViewUserDetails = () => {
                   </div>
                 )}
                 
+              </div>
+            </div>
+          )}
+
+          {/* Owner / Representative Details */}
+          {user.ownerDetails && (
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+              <h3 className="text-lg font-bold text-slate-800 mb-5 pb-3 border-b border-slate-50">
+                {user.role === 'Organization' ? 'Representative Details' : 'Owner Details'}
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                
+                {user.ownerDetails.fullName && (
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
+                      <Briefcase size={18} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-800">{user.ownerDetails.fullName}</p>
+                      <p className="text-xs text-slate-500">Full Name</p>
+                    </div>
+                  </div>
+                )}
+
+                {user.ownerDetails.email && (
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
+                      <Mail size={18} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-800">{user.ownerDetails.email}</p>
+                      <p className="text-xs text-slate-500">Email</p>
+                    </div>
+                  </div>
+                )}
+
+                {(user.ownerDetails.phoneNumber || user.ownerDetails.contactNumber) && (
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
+                      <Phone size={18} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-800">{user.ownerDetails.phoneNumber || user.ownerDetails.contactNumber}</p>
+                      <p className="text-xs text-slate-500">Contact Number</p>
+                    </div>
+                  </div>
+                )}
+
+                {user.ownerDetails.nic && (
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
+                      <Briefcase size={18} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-800">{user.ownerDetails.nic}</p>
+                      <p className="text-xs text-slate-500">NIC</p>
+                    </div>
+                  </div>
+                )}
+
+                {user.ownerDetails.gender && (
+                  <div className="flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400">
+                      <Briefcase size={18} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-800">{user.ownerDetails.gender}</p>
+                      <p className="text-xs text-slate-500">Gender</p>
+                    </div>
+                  </div>
+                )}
+
               </div>
             </div>
           )}

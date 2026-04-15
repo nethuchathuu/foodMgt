@@ -25,6 +25,7 @@ router.patch('/reject-rest/:id', protect, adminController.rejectRestaurant);
 
 // Users
 router.get('/users', protect, adminController.getUsers);
+router.get('/users/:id', protect, adminController.getUserDetailsAdmin);
 router.patch('/toggle-user-status/:id', protect, adminController.toggleUserStatus);
 
 // Notifications

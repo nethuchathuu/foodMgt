@@ -223,17 +223,93 @@ exports.getUsers = async (req, res) => {
         roleLabel = 'Restaurant';
       }
 
+      let displayStatus = user.status;
+      if (user.role === 'restaurant' || user.role === 'requester_org') {
+        if (user.status === 'Approved' || user.isVerified === true) displayStatus = 'Active';
+        else if (user.status === 'Rejected') displayStatus = 'Blocked';
+      } else if (user.role === 'requester_person') {
+         if (user.status !== 'Blocked') displayStatus = 'Active';
+      }
+
       return {
         id: user._id,
         name,
         email: user.email,
         role: roleLabel,
-        status: user.status || (user.isVerified ? 'Active' : 'Pending'),
+        status: displayStatus,
         avatar
       };
     });
 
     res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+exports.getUserDetailsAdmin = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    let name = user.name || 'Unknown';
+    let phone = 'N/A';
+    let address = 'N/A';
+    let entityName = '';
+    let roleLabel = 'User';
+    let joinedDate = user._id.getTimestamp ? user._id.getTimestamp().toLocaleDateString() : 'N/A';
+    let ownerDetails = null;
+    
+    if (user.role === 'requester_person') {
+      const p = await Person.findOne({ userId: user._id });
+      if (p) {
+        name = p.fullName || name;
+        phone = p.phoneNumber || phone;
+        address = p.homeAddress || address;
+      }
+      roleLabel = 'User';
+    } else if (user.role === 'requester_org') {
+      const o = await Organization.findOne({ userId: user._id });
+      if (o) {
+        name = o.representative?.fullName || name;
+        entityName = o.orgName || '';
+        phone = o.contactNumber || phone;
+        address = o.orgAddress || address;
+        ownerDetails = o.representative || null;
+      }
+      roleLabel = 'Organization';
+    } else if (user.role === 'restaurant') {
+      const r = await Restaurant.findOne({ userId: user._id });
+      if (r) {
+        name = r.owner?.fullName || name;
+        entityName = r.restaurantName || '';
+        phone = r.phoneNumber || phone;
+        address = r.address || address;
+        ownerDetails = r.owner || null;
+      }
+      roleLabel = 'Restaurant';
+    }
+
+    let displayStatus = user.status;
+    if (user.role === 'restaurant' || user.role === 'requester_org') {
+      if (user.status === 'Approved' || user.isVerified === true) displayStatus = 'Active';
+      else if (user.status === 'Rejected') displayStatus = 'Blocked';
+    } else if (user.role === 'requester_person') {
+       if (user.status !== 'Blocked') displayStatus = 'Active';
+    }
+
+    res.json({
+      id: user._id,
+      name: entityName || name, // For the card name, it might be better to show entityName if org/restaurant
+      email: user.email,
+      phone,
+      role: roleLabel,
+      status: displayStatus,
+      joinedDate,
+      address,
+      entityName,
+      ownerDetails
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
@@ -245,11 +321,20 @@ exports.toggleUserStatus = async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    if (user.status === 'Blocked') {
-      user.status = user.isVerified ? 'Approved' : 'Pending'; 
-      if (user.role === 'requester_person') user.status = 'Active';
+    if (user.status === 'Blocked' || user.status === 'Rejected') {
+      if (user.role === 'restaurant' || user.role === 'requester_org') {
+        user.status = 'Approved';
+        user.isVerified = true;
+      } else {
+        user.status = 'Active';
+      }
     } else {
-      user.status = 'Blocked';
+      if (user.role === 'restaurant' || user.role === 'requester_org') {
+        user.status = 'Rejected';
+        user.isVerified = false;
+      } else {
+        user.status = 'Blocked';
+      }
     }
 
     await user.save();
