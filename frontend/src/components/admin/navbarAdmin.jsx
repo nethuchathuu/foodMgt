@@ -41,7 +41,7 @@ const NavbarAdmin = () => {
 
         
 
-        <div className="relative group cursor-pointer">
+        {/*<div className="relative group cursor-pointer">
           <div 
             className="flex items-center justify-center w-10 h-10 rounded-full text-white"
             style={{ backgroundColor: '#60A5FA' }}
@@ -60,7 +60,7 @@ const NavbarAdmin = () => {
               Logout
             </button>
           </div>
-        </div>
+        </div>*/}
       </div>
     </header>
   );

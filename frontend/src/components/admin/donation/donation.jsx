@@ -30,13 +30,14 @@ const DonationMonitoring = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
   const [sortBy, setSortBy] = useState('Newest');
+  const [showClearModal, setShowClearModal] = useState(false);
 
   const handleClearAll = async () => {
-    if (!window.confirm("Are you sure you want to clear all donation requests? This action cannot be undone.")) return;
     try {
       const token = localStorage.getItem('token');
       await axios.delete('http://localhost:5000/api/admin/donations', { headers: { Authorization: '\u0042earer ' + token } });
       setDonations([]);
+      setShowClearModal(false);
     } catch(err) {
       alert("Failed to clear donations: " + err.message);
     }
@@ -141,7 +142,7 @@ const DonationMonitoring = () => {
             <Download size={18} /> Export CSV
           </button>
           <button 
-            onClick={handleClearAll}
+            onClick={() => setShowClearModal(true)}
             className="flex items-center gap-2 p-2.5 px-4 bg-white border border-red-200 text-red-600 rounded-xl font-bold shadow-sm hover:bg-red-50 transition-all font-medium"
             title="Clear All"
           >
@@ -300,6 +301,38 @@ const DonationMonitoring = () => {
           </table>
         </div>
       </div>
+
+      {/* Clear All Confirmation Modal */}
+      {showClearModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl animate-in fade-in zoom-in duration-200">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center mb-4">
+                <AlertCircle className="text-red-600" size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-800 mb-2">Clear All Donations?</h3>
+              <p className="text-slate-500 mb-6 leading-relaxed">
+                Are you sure you want to permanently delete all donation request records? This action cannot be undone and will wipe all request history.
+              </p>
+              
+              <div className="flex gap-3 w-full">
+                <button 
+                  onClick={() => setShowClearModal(false)}
+                  className="flex-1 py-2.5 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleClearAll}
+                  className="flex-1 py-2.5 px-4 rounded-xl font-bold text-white bg-red-500 hover:bg-red-600 transition-colors shadow-sm shadow-red-500/20"
+                >
+                  Yes, Clear All
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );
