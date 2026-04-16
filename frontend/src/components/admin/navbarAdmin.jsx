@@ -1,5 +1,5 @@
 import React from 'react';
-import { Bell, Settings, User } from 'lucide-react';
+import { Bell, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const NavbarAdmin = () => {
@@ -39,13 +39,7 @@ const NavbarAdmin = () => {
           ></span>
         </button>
 
-        <button 
-          className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-          style={{ color: '#475569' }}
-          onClick={() => navigate('/admin/settings')}
-        >
-          <Settings size={20} />
-        </button>
+        
 
         <div className="relative group cursor-pointer">
           <div 

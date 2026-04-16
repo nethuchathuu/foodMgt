@@ -2,7 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useEffect, useState } from 'react';
-import { ArrowLeft, Building, Utensils, Package, Clock, Zap, CheckCircle2, XCircle, FileText, Activity } from 'lucide-react';
+import { ArrowLeft, Building, Utensils, Package, Clock, Zap, CheckCircle2, XCircle, FileText, Activity, Hash, History } from 'lucide-react';
 
 const ViewDonationDetails = () => {
   const { id } = useParams();
@@ -31,31 +31,31 @@ const ViewDonationDetails = () => {
 
   // Adapt backend data to frontend mock shape
   const requestFormatted = {
-    id: request._id,
-    status: request.status,
-    dateRaw: request.createdAt,
-    date: new Date(request.createdAt).toLocaleDateString(),
-    time: new Date(request.createdAt).toLocaleTimeString(),
-    isUrgent: request.isUrgent,
+    id: request.id || request._id,
+    status: request.status || 'Pending',
+    dateRaw: request.dateRaw || request.createdAt,
+    date: new Date(request.dateRaw || request.createdAt).toLocaleDateString(),
+    time: request.time || new Date(request.dateRaw || request.createdAt).toLocaleTimeString(),
+    isUrgent: request.isUrgent || false,
     organization: {
-      name: request.organization,
-      type: 'NPO',
-      contact: 'Unknown Admin Data',
-      phone: ''
+      name: request.organization?.name || request.organization || 'Unknown',
+      type: request.organization?.type || 'NPO',
+      contact: request.organization?.contact || 'Not Provided',
+      phone: request.organization?.phone || 'Not Provided'
     },
     requestDetails: {
-      food: request.requestedFood,
-      quantity: request.quantity,
-      reason: request.reason || 'No reason provided',
-      dietaryMatches: request.dietaryDetails || []
+      food: request.requestDetails?.food || request.requestedFood || 'Unknown',
+      quantity: request.requestDetails?.quantity || request.quantity || 0,
+      reason: request.requestDetails?.reason || request.purpose || 'No reason provided',
+      dietaryMatches: request.requestDetails?.dietaryMatches || []
     },
     statusDetails: {
-      approvalTime: '--:--',
-      notes: request.adminNotes || 'Awaiting admin review.',
-      reviewer: 'Pending Review'
+      approvalTime: request.statusDetails?.approvalTime || '--:--',
+      notes: request.statusDetails?.notes || 'Awaiting admin review.',
+      reviewer: request.statusDetails?.reviewer || 'Admin'
     },
-    timeline: [
-      { time: new Date(request.createdAt).toLocaleTimeString(), title: 'Request Submitted', desc: 'Organization created the donation request.', completed: true },
+    timeline: request.timeline || [
+      { time: new Date(request.dateRaw || request.createdAt).toLocaleTimeString(), title: 'Request Submitted', desc: 'Organization created the donation request.', completed: true },
       { time: '--:--', title: 'Admin Review', desc: 'Pending administrator decision.', completed: request.status !== 'Pending' }
     ]
   };
@@ -64,7 +64,7 @@ const statusColors = {
     Approved: { bg: '#EAF6FB', text: '#9BC7D8' },
     Rejected: { bg: '#FDECEA', text: '#D67A5C' }
   };
-  const currentStatusStyle = statusColors[adaptedrequestFormatted.status] || { bg: '#f1f5f9', text: '#475569' };
+  const currentStatusStyle = statusColors[requestFormatted.status] || { bg: '#f1f5f9', text: '#475569' };
 
   return (
     <div className="p-6 font-['Poppins'] min-h-screen" style={{ backgroundColor: '#F8FAFC' }}>
@@ -80,7 +80,7 @@ const statusColors = {
           </button>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-slate-900">Donation Request</h1>
+              <h1 className="text-2xl font-bold text-slate-900">Donation Request Details</h1>
               <span 
                 className="px-3 py-1 rounded-full text-xs font-bold shadow-sm"
                 style={{ backgroundColor: currentStatusStyle.bg, color: currentStatusStyle.text }}
@@ -93,7 +93,9 @@ const statusColors = {
                 </span>
               )}
             </div>
-            <p className="text-slate-500 text-sm mt-1">{requestFormatted.id} • {requestFormatted.date}, {requestFormatted.time}</p>
+            <p className="text-slate-500 text-sm mt-1 flex items-center gap-2">
+              <Hash size={14}/> {requestFormatted.id}
+            </p>
           </div>
         </div>
 
@@ -212,9 +214,25 @@ const statusColors = {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.03)] border border-slate-100">
-            <h2 className="text-lg font-bold text-slate-800 mb-6">Request Timeline</h2>
+          <div className="bg-white rounded-2xl p-6 lg:p-8 shadow-[0_4px_12px_rgba(0,0,0,0.03)] border border-slate-100">
+            <h2 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-4 mb-6 flex items-center gap-2">
+              <History className="text-[#9BC7D8]" size={20} />
+              Request Timeline
+            </h2>
             
+            <div className="bg-slate-50 rounded-xl p-4 mb-8 border border-slate-100 flex items-center justify-between">
+              <div>
+                <p className="text-xs text-slate-500 font-medium mb-1">Status</p>
+                <p className="font-bold text-slate-800">{requestFormatted.status}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-slate-500 font-medium mb-1">Date Created</p>
+                <p className="font-bold text-slate-800 text-sm">
+                  {requestFormatted.date} {requestFormatted.time}
+                </p>
+              </div>
+            </div>
+
             <div className="relative pl-3">
               <div className="absolute left-4 top-2 bottom-6 w-0.5 bg-slate-200 rounded-full"></div>
               
@@ -230,8 +248,8 @@ const statusColors = {
                         {event.title}
                       </p>
                     </div>
-                    <p className="text-xs font-semibold text-slate-400 mb-1">{event.time}</p>
-                    <p className="text-xs text-slate-500 leading-snug">
+                    <p className="text-xs font-semibold text-slate-400 mb-1 bg-slate-100 px-2 py-0.5 rounded-md inline-block mt-1">{event.time}</p>
+                    <p className="text-xs text-slate-500 leading-snug mt-1">
                       {event.desc}
                     </p>
                   </div>

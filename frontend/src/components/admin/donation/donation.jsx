@@ -67,21 +67,24 @@ const DonationMonitoring = () => {
   };
 
   // Filter out any requests that aren't from "Today" based on functional behavior spec
-  const todayDonations = donations.filter(req => new Date(req.createdAt).toDateString() === new Date().toDateString());
+  const todayDonations = donations.filter(req => {
+    const rawDate = req.dateRaw || req.createdAt;
+    return new Date(rawDate).toDateString() === new Date().toDateString();
+  });
 
   const stats = [
-    { label: "Today's Requests", value: todayDonations.length, color: "#9BC7D8", bg: "#EAF6FB", icon: <HeartHandshake size={24}/> },
-    { label: "Approved", value: todayDonations.filter(d => d.status === 'Approved').length, color: "#6FAFC4", bg: "#EBF4F7", icon: <CheckCircle2 size={24}/> },
-    { label: "Pending", value: todayDonations.filter(d => d.status === 'Pending').length, color: "#E9A38E", bg: "#FFF4F0", icon: <AlertCircle size={24}/> },
-    { label: "Rejected", value: todayDonations.filter(d => d.status === 'Rejected').length, color: "#D67A5C", bg: "#FDECEA", icon: <XCircle size={24}/> }
+    { label: "Total Requests", value: donations.length, color: "#9BC7D8", bg: "#EAF6FB", icon: <HeartHandshake size={24}/> },
+    { label: "Approved", value: donations.filter(d => d.status === 'Approved').length, color: "#6FAFC4", bg: "#EBF4F7", icon: <CheckCircle2 size={24}/> },
+    { label: "Pending", value: donations.filter(d => d.status === 'Pending').length, color: "#E9A38E", bg: "#FFF4F0", icon: <AlertCircle size={24}/> },
+    { label: "Rejected", value: donations.filter(d => d.status === 'Rejected').length, color: "#D67A5C", bg: "#FDECEA", icon: <XCircle size={24}/> }
   ];
 
   const filteredDonations = useMemo(() => {
     let result = donations.filter(item => {
       const matchSearch = 
-        item.organization.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        item.requestedFood.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (item._id || '').toLowerCase().includes(searchTerm.toLowerCase());
+        (item.organization || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (item.requestedFood || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (item.id || '').toLowerCase().includes(searchTerm.toLowerCase());
       
       const matchFilter = activeFilter === 'All' || item.status === activeFilter;
       return matchSearch && matchFilter;
@@ -91,9 +94,9 @@ const DonationMonitoring = () => {
       // In a real app we'd sort by full timestamp, here we mock it by keeping default order / simple time reverse
       result.reverse();
     } else if (sortBy === 'Organization') {
-      result.sort((a, b) => a.organization.localeCompare(b.organization));
+      result.sort((a, b) => (a.organization || '').localeCompare(b.organization || ''));
     } else if (sortBy === 'Status') {
-      result.sort((a, b) => a.status.localeCompare(b.status));
+      result.sort((a, b) => (a.status || '').localeCompare(b.status || ''));
     }
     return result;
   }, [searchTerm, activeFilter, sortBy, donations]);
@@ -220,7 +223,7 @@ const DonationMonitoring = () => {
                           )}
                         </div>
                         <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                          {item.id} &bull; {item.time}
+                          {item.id} &bull; {new Date(item.dateRaw || item.createdAt).toLocaleDateString()} {item.time}
                         </p>
                       </td>
                       <td className="px-6 py-4">
@@ -259,7 +262,7 @@ const DonationMonitoring = () => {
                   <td colSpan="5" className="px-6 py-16 text-center text-slate-500">
                     <div className="flex flex-col items-center justify-center">
                       <HeartHandshake size={48} className="text-slate-200 mb-4" />
-                      <p className="text-lg font-medium text-slate-600">No donation requests found for today</p>
+                      <p className="text-lg font-medium text-slate-600">No donation requests found</p>
                       <p className="text-sm mt-1">Try adjusting your search or filters</p>
                     </div>
                   </td>
