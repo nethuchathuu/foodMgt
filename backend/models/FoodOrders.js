@@ -30,6 +30,12 @@ const FoodOrderSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now,
+  },
+  acceptedAt: {
+    type: Date,
+  },
+  completedAt: {
+    type: Date,
   }
 });
 

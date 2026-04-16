@@ -39,13 +39,14 @@ const OrderMonitoring = () => {
   const stats = [
     { label: "Total Orders", value: orders.length, color: "#9BC7D8", bg: "#EAF6FB", icon: <Clock size={24}/> },
     { label: "Pending", value: orders.filter(o => o.status === 'Pending').length, color: "#E9A38E", bg: "#FFF4F0", icon: <AlertCircle size={24}/> },
-    { label: "Completed", value: orders.filter(o => o.status === 'Completed').length, color: "#6FAFC4", bg: "#EBF4F7", icon: <CheckCircle2 size={24}/> },
-    { label: "Cancelled", value: orders.filter(o => o.status === 'Cancelled').length, color: "#D67A5C", bg: "#FDECEA", icon: <XCircle size={24}/> }
+    { label: "Approved/Active", value: orders.filter(o => o.status === 'Accepted').length, color: "#5C9DB5", bg: "#EAF6FB", icon: <CheckCircle2 size={24}/> },
+    { label: "Completed", value: orders.filter(o => o.status === 'Completed').length, color: "#6FAFC4", bg: "#EBF4F7", icon: <CheckCircle2 size={24}/> }
   ];
 
   const getStatusStyle = (status) => {
     switch (status) {
       case 'Pending': return { bg: '#FFF4F0', text: '#E9A38E' };
+      case 'Accepted': return { bg: '#EAF6FB', text: '#5C9DB5' };
       case 'Completed': return { bg: '#EAF6FB', text: '#9BC7D8' };
       case 'Cancelled': return { bg: '#FDECEA', text: '#D67A5C' };
       default: return { bg: '#F1F5F9', text: '#475569' };
@@ -132,7 +133,7 @@ const OrderMonitoring = () => {
         {/* Filters */}
         <div className="flex flex-wrap flex-1 items-center gap-3 w-full xl:w-auto xl:justify-end">
           <div className="flex items-center gap-2 overflow-x-auto pb-2 xl:pb-0 hide-scrollbar">
-            {['All', 'Pending', 'Completed', 'Cancelled'].map(filter => (
+            {['All', 'Pending', 'Accepted', 'Completed', 'Cancelled'].map(filter => (
               <button 
                 key={filter} 
                 onClick={() => setActiveFilter(filter)}
@@ -143,7 +144,7 @@ const OrderMonitoring = () => {
                 }`}
                 style={activeFilter === filter ? { backgroundColor: '#9BC7D8' } : {}}
               >
-                {filter}
+                {filter === 'Accepted' ? 'Approved' : filter}
               </button>
             ))}
           </div>
@@ -203,14 +204,14 @@ const OrderMonitoring = () => {
                       <td className="px-6 py-4 text-slate-600">{order.restaurantName || ""}</td>
                       <td className="px-6 py-4">
                         <span className="text-slate-800">{order.foodName}</span>
-                        <p className="text-xs font-semibold mt-1" style={{ color: '#9BC7D8' }}>${(order.totalPrice || 0).toFixed(2)}</p>
+                        <p className="text-xs font-semibold mt-1" style={{ color: '#9BC7D8' }}>Rs. {(order.totalPrice || 0).toFixed(2)}</p>
                       </td>
                       <td className="px-6 py-4">
                         <span 
                           className="px-3 py-1.5 rounded-full text-xs font-bold shadow-sm"
                           style={{ backgroundColor: statusSty.bg, color: statusSty.text }}
                         >
-                          {order.status}
+                          {order.status === 'Accepted' ? 'Approved' : order.status}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">

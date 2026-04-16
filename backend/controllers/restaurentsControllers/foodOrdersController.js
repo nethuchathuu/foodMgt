@@ -99,9 +99,13 @@ exports.updateOrderStatus = async (req, res) => {
 		const allowed = ['Pending', 'Accepted', 'Completed', 'Cancelled', 'Rejected'];
 		if (!allowed.includes(status)) return res.status(400).json({ message: `Invalid status ${status}` });
 
+		let updateFields = { status };
+		if (status === 'Accepted') updateFields.acceptedAt = new Date();
+		if (status === 'Completed') updateFields.completedAt = new Date();
+
 		const updated = await Order.findOneAndUpdate(
 			{ _id: id, restaurantId },
-			{ status },
+			updateFields,
 			{ new: true }
 		).populate('receiverId');
 
@@ -110,7 +114,7 @@ exports.updateOrderStatus = async (req, res) => {
                 if (updated.receiverId && updated.foodId) {
                         await FoodOrder.findOneAndUpdate(
                                 { receiverId: updated.receiverId._id, restaurantId: updated.restaurantId, foodId: updated.foodId, quantity: updated.quantity },
-                                { status },
+                                updateFields,
                                 { sort: { createdAt: -1 } }
                         );
                         

@@ -8,6 +8,7 @@ const ViewOrderDetails = () => {
 
   const statusColors = {
     Pending: { bg: '#FFF4F0', text: '#E9A38E' },
+    Accepted: { bg: '#EAF6FB', text: '#5C9DB5' },
     Completed: { bg: '#EAF6FB', text: '#9BC7D8' },
     Cancelled: { bg: '#FDECEA', text: '#D67A5C' }
   };
@@ -62,7 +63,7 @@ const ViewOrderDetails = () => {
                 className="px-3 py-1 rounded-full text-xs font-bold shadow-sm"
                 style={{ backgroundColor: currentStatusStyle.bg, color: currentStatusStyle.text }}
               >
-                {order.status}
+                {order.status === 'Accepted' ? 'Approved' : order.status}
               </span>
             </div>
             <p className="text-slate-500 text-sm flex items-center gap-2 mt-1">
@@ -98,7 +99,7 @@ const ViewOrderDetails = () => {
                       </span>
                     </div>
                   </div>
-                  <p className="font-bold text-slate-800">${item.price.toFixed(2)}</p>
+                  <p className="font-bold text-slate-800">Rs. {Number(item.price).toFixed(2)}</p>
                 </div>
               ))}
             </div>
@@ -106,15 +107,15 @@ const ViewOrderDetails = () => {
             <div className="mt-6 pt-6 border-t border-slate-100">
               <div className="flex justify-between text-sm text-slate-500 mb-2">
                 <span>Subtotal</span>
-                <span>${order.financials.subtotal.toFixed(2)}</span>
+                <span>Rs. {Number(order.financials.subtotal).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sm text-slate-500 mb-4">
                 <span>Tax</span>
-                <span>${order.financials.tax.toFixed(2)}</span>
+                <span>Rs. {Number(order.financials.tax).toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-lg font-bold text-slate-800 bg-slate-50 p-4 rounded-xl border border-slate-200">
                 <span className="flex items-center gap-2"><CreditCard size={20} className="text-[#9BC7D8]"/> Total Due</span>
-                <span style={{ color: '#9BC7D8' }}>${order.financials.total.toFixed(2)}</span>
+                <span style={{ color: '#9BC7D8' }}>Rs. {Number(order.financials.total).toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -214,7 +215,7 @@ const ViewOrderDetails = () => {
                       {event.status}
                     </p>
                     <span className="text-xs font-semibold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
-                      {event.time}
+                      {event.time === '--:--' && event.status === 'Preparing Order' && order.status === 'Accepted' && order.acceptedAt ? new Date(order.acceptedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : event.time === '--:--' && event.status === 'Completed' && order.status === 'Completed' && order.completedAt ? new Date(order.completedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : event.time}
                     </span>
                   </div>
                   <p className="text-sm text-slate-500 leading-snug">
