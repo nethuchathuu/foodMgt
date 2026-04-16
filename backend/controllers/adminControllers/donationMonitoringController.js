@@ -61,6 +61,9 @@ exports.getDonationById = async (req, res) => {
       id: d._id,
       status: d.status === 'Accepted' ? 'Approved' : d.status,
       dateRaw: d.createdAt,
+      approvalTimeRaw: d.approvalTime || null,
+      completedTimeRaw: d.completedTime || null,
+      pickupTime: d.preferredPickupTime || 'Not specified',
       time: new Date(d.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       isUrgent: false,
       organization: {
@@ -96,8 +99,15 @@ exports.updateDonationStatus = async (req, res) => {
   try {
     let { status } = req.body;
     if (status === 'Approved') status = 'Accepted';
+
+    const updateData = { status };
+    if (status === 'Accepted') {
+      updateData.approvalTime = new Date();
+    } else if (status === 'Completed') {
+      updateData.completedTime = new Date();
+    }
     
-    const d = await DonationRequest.findByIdAndUpdate(req.params.id, { status }, { new: true });
+    const d = await DonationRequest.findByIdAndUpdate(req.params.id, updateData, { new: true });
     if (!d) return res.status(404).json({ message: 'Not found' });
     res.status(200).json(d);
   } catch (error) {

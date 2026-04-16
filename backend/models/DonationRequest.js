@@ -31,6 +31,12 @@ const DonationRequestSchema = new mongoose.Schema({
     enum: ['Pending', 'Accepted', 'Rejected', 'Completed', 'Cancelled'],
     default: 'Pending'
   },
+  approvalTime: {
+    type: Date
+  },
+  completedTime: {
+    type: Date
+  },
   createdAt: {
     type: Date,
     default: Date.now

@@ -50,14 +50,11 @@ const ViewDonationDetails = () => {
       dietaryMatches: request.requestDetails?.dietaryMatches || []
     },
     statusDetails: {
-      approvalTime: request.statusDetails?.approvalTime || '--:--',
-      notes: request.statusDetails?.notes || 'Awaiting admin review.',
-      reviewer: request.statusDetails?.reviewer || 'Admin'
-    },
-    timeline: request.timeline || [
-      { time: new Date(request.dateRaw || request.createdAt).toLocaleTimeString(), title: 'Request Submitted', desc: 'Organization created the donation request.', completed: true },
-      { time: '--:--', title: 'Admin Review', desc: 'Pending administrator decision.', completed: request.status !== 'Pending' }
-    ]
+      requestedTime: request.dateRaw || request.createdAt,
+      approvalTime: request.approvalTimeRaw || null,
+      completedTime: request.completedTimeRaw || null,
+      pickupTime: request.pickupTime || 'Not specified'
+    }
   };
 const statusColors = {
     Pending: { bg: '#FFF4F0', text: '#E9A38E' },
@@ -186,75 +183,79 @@ const statusColors = {
 
         </div>
 
-        {/* Right Column: Status Details & Timeline */}
+        {/* Right Column: Key Times & Status Details */}
         <div className="space-y-6">
-          <div className="bg-white rounded-2xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.03)] border border-slate-100">
-            <h2 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-4 mb-4 flex items-center gap-2">
-              <Activity className="text-[#9BC7D8]" size={20} />
-              Status Details
-            </h2>
-            
-            <div className="space-y-4">
-               <div>
-                  <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Current Status</p>
-                  <span className="px-3 py-1 rounded-full text-sm font-bold inline-block" style={{ backgroundColor: currentStatusStyle.bg, color: currentStatusStyle.text }}>
-                    {requestFormatted.status}
-                  </span>
-               </div>
-               <div>
-                  <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Approval Time</p>
-                  <p className="font-medium text-slate-700">{requestFormatted.statusDetails.approvalTime}</p>
-               </div>
-               <div>
-                  <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">Admin Notes</p>
-                  <p className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg border border-slate-100 leading-snug">
-                    {requestFormatted.statusDetails.notes}
-                  </p>
-               </div>
-            </div>
-          </div>
-
           <div className="bg-white rounded-2xl p-6 lg:p-8 shadow-[0_4px_12px_rgba(0,0,0,0.03)] border border-slate-100">
             <h2 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-4 mb-6 flex items-center gap-2">
-              <History className="text-[#9BC7D8]" size={20} />
-              Request Timeline
+              <Clock className="text-[#9BC7D8]" size={20} />
+              Status & Timeline Overview
             </h2>
-            
-            <div className="bg-slate-50 rounded-xl p-4 mb-8 border border-slate-100 flex items-center justify-between">
-              <div>
-                <p className="text-xs text-slate-500 font-medium mb-1">Status</p>
-                <p className="font-bold text-slate-800">{requestFormatted.status}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-slate-500 font-medium mb-1">Date Created</p>
-                <p className="font-bold text-slate-800 text-sm">
-                  {requestFormatted.date} {requestFormatted.time}
-                </p>
-              </div>
-            </div>
 
-            <div className="relative pl-3">
-              <div className="absolute left-4 top-2 bottom-6 w-0.5 bg-slate-200 rounded-full"></div>
-              
-              {requestFormatted.timeline.map((event, idx) => (
-                <div key={idx} className="relative mb-6 last:mb-0">
-                  <div className={`absolute -left-1.5 p-1 rounded-full bg-white ${event.completed ? 'text-[#9BC7D8]' : 'text-slate-300'}`}>
-                    {event.completed ? <CheckCircle2 size={18} className="fill-current text-white" /> : <Clock size={18} />}
+            <div className="space-y-6">
+              {/* Status */}
+              <div>
+                <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-2">Current Status</p>
+                <span className="px-4 py-1.5 rounded-full text-sm font-bold inline-block" style={{ backgroundColor: currentStatusStyle.bg, color: currentStatusStyle.text }}>
+                  {requestFormatted.status}
+                </span>
+              </div>
+
+              {/* Timeline Container */}
+              <div className="relative pl-4 border-l-2 border-slate-100 space-y-6 border-dashed mt-6">
+                
+                {/* Requested */}
+                <div className="relative">
+                  <div className="absolute -left-[23px] top-1 p-1 bg-white rounded-full text-[#9BC7D8]">
+                    <CheckCircle2 size={16} className="fill-current text-white" />
                   </div>
-                  
-                  <div className="ml-7">
-                    <div className="flex justify-between items-start mb-0.5">
-                      <p className={`text-sm font-bold ${event.completed ? 'text-slate-800' : 'text-slate-400'}`}>
-                        {event.title}
-                      </p>
-                    </div>
-                    <p className="text-xs font-semibold text-slate-400 mb-1 bg-slate-100 px-2 py-0.5 rounded-md inline-block mt-1">{event.time}</p>
-                    <p className="text-xs text-slate-500 leading-snug mt-1">
-                      {event.desc}
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-800">Requested Time</h3>
+                    <p className="text-sm text-slate-600 mt-1">
+                      {requestFormatted.statusDetails.requestedTime ? new Date(requestFormatted.statusDetails.requestedTime).toLocaleString() : '--:--'}
                     </p>
                   </div>
                 </div>
-              ))}
+
+                {/* Approved */}
+                <div className="relative">
+                  <div className={`absolute -left-[23px] top-1 p-1 bg-white rounded-full ${requestFormatted.statusDetails.approvalTime ? 'text-[#9BC7D8]' : 'text-slate-200'}`}>
+                    {requestFormatted.statusDetails.approvalTime ? <CheckCircle2 size={16} className="fill-current text-white" /> : <Clock size={16} />}
+                  </div>
+                  <div>
+                    <h3 className={`text-sm font-bold ${requestFormatted.statusDetails.approvalTime ? 'text-slate-800' : 'text-slate-400'}`}>Approval Time</h3>
+                    <p className="text-sm font-medium text-slate-500 mt-1">
+                      {requestFormatted.statusDetails.approvalTime ? new Date(requestFormatted.statusDetails.approvalTime).toLocaleString() : '--:--'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Pickup */}
+                <div className="relative">
+                 <div className={`absolute -left-[23px] top-1 p-1 bg-white rounded-full ${requestFormatted.statusDetails.pickupTime && requestFormatted.statusDetails.pickupTime !== 'Not specified' ? 'text-[#9BC7D8]' : 'text-slate-200'}`}>
+                    <Activity size={16} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-800">Preferred Pickup Time</h3>
+                    <p className="text-sm font-medium text-slate-500 mt-1">
+                      {requestFormatted.statusDetails.pickupTime}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Completed */}
+                <div className="relative">
+                  <div className={`absolute -left-[23px] top-1 p-1 bg-white rounded-full ${requestFormatted.statusDetails.completedTime ? 'text-[#9BC7D8]' : 'text-slate-200'}`}>
+                    {requestFormatted.statusDetails.completedTime ? <CheckCircle2 size={16} className="fill-current text-white" /> : <Clock size={16} />}
+                  </div>
+                  <div>
+                    <h3 className={`text-sm font-bold ${requestFormatted.statusDetails.completedTime ? 'text-slate-800' : 'text-slate-400'}`}>Completed Time</h3>
+                    <p className="text-sm font-medium text-slate-500 mt-1">
+                      {requestFormatted.statusDetails.completedTime ? new Date(requestFormatted.statusDetails.completedTime).toLocaleString() : '--:--'}
+                    </p>
+                  </div>
+                </div>
+
+              </div>
             </div>
           </div>
         </div>

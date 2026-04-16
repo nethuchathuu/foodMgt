@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-import { Search, Eye, AlertCircle, CheckCircle2, XCircle, HeartHandshake, Zap, RefreshCw } from 'lucide-react';
+import { Search, Eye, AlertCircle, CheckCircle2, XCircle, HeartHandshake, Zap, Download } from 'lucide-react';
 
 const DonationMonitoring = () => {
   const navigate = useNavigate();
@@ -17,44 +17,47 @@ const DonationMonitoring = () => {
   const fetchDonations = async () => {
     try {
       setLoading(true);
-      setIsRefreshing(true);
       const token = localStorage.getItem('token');
       const res = await axios.get('http://localhost:5000/api/admin/donations', { headers: { Authorization: '\u0042earer ' + token } });
       setDonations(res.data);
-      setLastRefreshed(new Date().toLocaleTimeString());
     } catch(err) {
       setError(err.message);
     } finally {
       setLoading(false);
-      setIsRefreshing(false);
     }
   };
 
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFilter, setActiveFilter] = useState('All');
   const [sortBy, setSortBy] = useState('Newest');
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [lastRefreshed, setLastRefreshed] = useState(new Date().toLocaleTimeString());
 
-  // Simulate auto-refresh
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIsRefreshing(true);
-      setTimeout(() => {
-        setLastRefreshed(new Date().toLocaleTimeString());
-        setIsRefreshing(false);
-      }, 800);
-    }, 60000); // refresh every minute
+  const exportCSV = () => {
+    const headers = ["ID", "Organization", "Food Item", "Quantity", "Status", "Date", "Time"];
+    const csvContent = [
+      headers.join(","),
+      ...filteredDonations.map(d => {
+        const dateObj = new Date(d.dateRaw || d.createdAt);
+        return [
+          d.id,
+          `"${d.organization || ''}"`,
+          `"${d.requestedFood || ''}"`,
+          d.quantity,
+          d.status,
+          dateObj.toLocaleDateString(),
+          dateObj.toLocaleTimeString()
+        ].join(",");
+      })
+    ].join("\n");
 
-    return () => clearInterval(interval);
-  }, []);
-
-  const manualRefresh = () => {
-    setIsRefreshing(true);
-    setTimeout(() => {
-      setLastRefreshed(new Date().toLocaleTimeString());
-      setIsRefreshing(false);
-    }, 800);
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `donations_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const getStatusStyle = (status) => {
@@ -91,8 +94,11 @@ const DonationMonitoring = () => {
     });
 
     if (sortBy === 'Newest') {
-      // In a real app we'd sort by full timestamp, here we mock it by keeping default order / simple time reverse
-      result.reverse();
+      result.sort((a, b) => {
+        const dateA = new Date(a.dateRaw || a.createdAt);
+        const dateB = new Date(b.dateRaw || b.createdAt);
+        return dateB - dateA;
+      });
     } else if (sortBy === 'Organization') {
       result.sort((a, b) => (a.organization || '').localeCompare(b.organization || ''));
     } else if (sortBy === 'Status') {
@@ -111,13 +117,12 @@ const DonationMonitoring = () => {
           <p className="text-lg text-slate-500">Track and manage daily donation requests from organizations</p>
         </div>
         <div className="flex items-center gap-4">
-          <p className="text-sm text-slate-400">Last updated: {lastRefreshed}</p>
           <button 
-            onClick={manualRefresh}
-            className={`flex items-center gap-2 p-2.5 bg-white border border-slate-200 text-slate-600 rounded-xl shadow-sm hover:bg-slate-50 transition-all ${isRefreshing ? 'animate-pulse bg-slate-50' : ''}`}
-            title="Refresh Data"
+            onClick={exportCSV}
+            className="flex items-center gap-2 p-2.5 px-4 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold shadow-sm hover:bg-slate-50 transition-all font-medium"
+            title="Export Data"
           >
-            <RefreshCw size={18} className={isRefreshing ? 'animate-spin' : ''} />
+            <Download size={18} /> Export CSV
           </button>
         </div>
       </div>

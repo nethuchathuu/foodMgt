@@ -134,9 +134,16 @@ exports.updateDonationRequestStatus = async (req, res) => {
       return res.status(400).json({ message: 'Invalid status' });
     }
 
+    const updateData = { status };
+    if (status === 'Accepted') {
+      updateData.approvalTime = new Date();
+    } else if (status === 'Completed') {
+      updateData.completedTime = new Date();
+    }
+
     const updatedRequest = await DonationRequest.findByIdAndUpdate(
       id,
-      { status },
+      updateData,
       { new: true, runValidators: true }
     ).populate('receiverId').populate('restaurantId');
 
