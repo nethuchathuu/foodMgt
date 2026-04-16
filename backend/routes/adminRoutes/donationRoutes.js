@@ -3,6 +3,7 @@ const router = express.Router();
 const donationController = require('../../controllers/adminControllers/donationMonitoringController');
 
 router.get('/', donationController.getAllDonations);
+router.delete('/', donationController.deleteAllDonations);
 router.get('/:id', donationController.getDonationById);
 router.patch('/:id', donationController.updateDonationStatus);
 

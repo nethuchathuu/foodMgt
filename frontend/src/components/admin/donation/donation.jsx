@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
-import { Search, Eye, AlertCircle, CheckCircle2, XCircle, HeartHandshake, Zap, Download } from 'lucide-react';
+import { Search, Eye, AlertCircle, CheckCircle2, XCircle, HeartHandshake, Zap, Download, Trash2 } from 'lucide-react';
 
 const DonationMonitoring = () => {
   const navigate = useNavigate();
@@ -31,20 +31,36 @@ const DonationMonitoring = () => {
   const [activeFilter, setActiveFilter] = useState('All');
   const [sortBy, setSortBy] = useState('Newest');
 
+  const handleClearAll = async () => {
+    if (!window.confirm("Are you sure you want to clear all donation requests? This action cannot be undone.")) return;
+    try {
+      const token = localStorage.getItem('token');
+      await axios.delete('http://localhost:5000/api/admin/donations', { headers: { Authorization: '\u0042earer ' + token } });
+      setDonations([]);
+    } catch(err) {
+      alert("Failed to clear donations: " + err.message);
+    }
+  };
+
   const exportCSV = () => {
-    const headers = ["ID", "Organization", "Food Item", "Quantity", "Status", "Date", "Time"];
+    const headers = ["ID", "Organization", "Food Item", "Quantity", "Status", "Requested Time", "Pickup Time", "Approval Time", "Completed Time"];
     const csvContent = [
       headers.join(","),
       ...filteredDonations.map(d => {
-        const dateObj = new Date(d.dateRaw || d.createdAt);
+        const requestedTimeObj = new Date(d.dateRaw || d.createdAt);
+        const approvalTimeObj = d.approvalTimeRaw ? new Date(d.approvalTimeRaw) : null;
+        const completedTimeObj = d.completedTimeRaw ? new Date(d.completedTimeRaw) : null;
+
         return [
           d.id,
           `"${d.organization || ''}"`,
           `"${d.requestedFood || ''}"`,
           d.quantity,
           d.status,
-          dateObj.toLocaleDateString(),
-          dateObj.toLocaleTimeString()
+          `"${requestedTimeObj.toLocaleString()}"`,
+          `"${d.pickupTime || 'Not specified'}"`,
+          `"${approvalTimeObj ? approvalTimeObj.toLocaleString() : '--:--'}"`,
+          `"${completedTimeObj ? completedTimeObj.toLocaleString() : '--:--'}"`
         ].join(",");
       })
     ].join("\n");
@@ -123,6 +139,13 @@ const DonationMonitoring = () => {
             title="Export Data"
           >
             <Download size={18} /> Export CSV
+          </button>
+          <button 
+            onClick={handleClearAll}
+            className="flex items-center gap-2 p-2.5 px-4 bg-white border border-red-200 text-red-600 rounded-xl font-bold shadow-sm hover:bg-red-50 transition-all font-medium"
+            title="Clear All"
+          >
+            <Trash2 size={18} /> Clear All
           </button>
         </div>
       </div>

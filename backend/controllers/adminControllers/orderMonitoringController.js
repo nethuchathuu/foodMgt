@@ -3,6 +3,16 @@ const Order = require('../../models/Order');
 const Person = require('../../models/Person');
 const Organization = require('../../models/Organization');
 
+exports.deleteAllOrders = async (req, res) => {
+  try {
+    await FoodOrder.deleteMany({});
+    await Order.deleteMany({});
+    res.status(200).json({ message: 'All orders deleted' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting orders', error: error.message });
+  }
+};
+
 exports.getAllOrders = async (req, res) => {
   try {
     const orders = await FoodOrder.find()
@@ -58,7 +68,10 @@ exports.getAllOrders = async (req, res) => {
         status: o.status,
         date: o.createdAt,
         totalPrice: price || 0,
-        isDelayed: false
+        isDelayed: false,
+        pickupLocation: o.deliveryAddress || o.restaurantId?.address || 'Not specified',
+        approvalTimeRaw: o.acceptedAt || null,
+        completedTimeRaw: o.completedAt || null
       });
     }
     

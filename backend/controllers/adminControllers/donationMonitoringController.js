@@ -3,6 +3,15 @@ const Organization = require('../../models/Organization');
 const FoodListing = require('../../models/FoodListing');
 const User = require('../../models/User');
 
+exports.deleteAllDonations = async (req, res) => {
+  try {
+    await DonationRequest.deleteMany({});
+    res.status(200).json({ message: 'All donations deleted' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting all donations', error: error.message });
+  }
+};
+
 exports.getAllDonations = async (req, res) => {
   try {
     const donations = await DonationRequest.find()
@@ -28,6 +37,9 @@ exports.getAllDonations = async (req, res) => {
         status: d.status === 'Accepted' ? 'Approved' : d.status,
         time: new Date(d.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         dateRaw: d.createdAt,
+        approvalTimeRaw: d.approvalTime || null,
+        completedTimeRaw: d.completedTime || null,
+        pickupTime: d.preferredPickupTime || 'Not specified',
         isUrgent: false // Mocked since urgency is not in schema directly
       });
     }

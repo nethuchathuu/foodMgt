@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Download, Eye, AlertCircle, Clock, CheckCircle2, XCircle } from 'lucide-react';
+import { Search, Download, Eye, AlertCircle, Clock, CheckCircle2, XCircle, Trash2 } from 'lucide-react';
 
 
 
@@ -84,6 +84,56 @@ const OrderMonitoring = () => {
     return new Date(dateString).toLocaleDateString('en-US', options);
   };
 
+  const handleClearAll = async () => {
+    if (!window.confirm("Are you sure you want to clear all orders? This action cannot be undone.")) return;
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/admin/orders', {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (!response.ok) throw new Error('Failed to delete orders');
+      setOrders([]);
+    } catch(err) {
+      alert("Failed to clear orders: " + err.message);
+    }
+  };
+
+  const exportCSV = () => {
+    const headers = ["ID", "Customer", "Restaurant", "Food Item", "Price", "Status", "Requested Time", "Pickup/Delivery Location", "Approval Time", "Completed Time"];
+    const csvContent = [
+      headers.join(","),
+      ...filteredOrders.map(o => {
+        const requestedTimeObj = new Date(o.date);
+        const approvalTimeObj = o.approvalTimeRaw ? new Date(o.approvalTimeRaw) : null;
+        const completedTimeObj = o.completedTimeRaw ? new Date(o.completedTimeRaw) : null;
+
+        return [
+          o.id,
+          `"${o.customerName || ''}"`,
+          `"${o.restaurantName || ''}"`,
+          `"${o.foodName || ''}"`,
+          o.totalPrice,
+          o.status,
+          `"${requestedTimeObj.toLocaleString()}"`,
+          `"${o.pickupLocation || 'Not specified'}"`,
+          `"${approvalTimeObj ? approvalTimeObj.toLocaleString() : '--:--'}"`,
+          `"${completedTimeObj ? completedTimeObj.toLocaleString() : '--:--'}"`
+        ].join(",");
+      })
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `orders_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="p-6 font-['Poppins'] min-h-screen" style={{ backgroundColor: '#F8FAFC' }}>
       
@@ -93,10 +143,22 @@ const OrderMonitoring = () => {
           <h1 className="text-3xl font-bold mb-2 text-slate-900">Orders Monitoring</h1>
           <p className="text-lg text-slate-500">Track and manage all orders across the system</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl shadow-sm hover:bg-slate-50 transition-colors font-medium">
-          <Download size={18} />
-          Export CSV
-        </button>
+        <div className="flex items-center gap-4">
+          <button 
+            onClick={exportCSV}
+            className="flex items-center gap-2 p-2.5 px-4 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold shadow-sm hover:bg-slate-50 transition-all font-medium"
+            title="Export Data"
+          >
+            <Download size={18} /> Export CSV
+          </button>
+          <button 
+            onClick={handleClearAll}
+            className="flex items-center gap-2 p-2.5 px-4 bg-white border border-red-200 text-red-600 rounded-xl font-bold shadow-sm hover:bg-red-50 transition-all font-medium"
+            title="Clear All"
+          >
+            <Trash2 size={18} /> Clear All
+          </button>
+        </div>
       </div>
 
       {/* Stats Bar */}
