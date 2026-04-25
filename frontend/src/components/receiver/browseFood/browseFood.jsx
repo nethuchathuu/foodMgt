@@ -24,7 +24,7 @@ const foodCategoryMapping = [
   { foodName: "Orange Juice", category: "Drinks" },
   { foodName: "Iced Coffee", category: "Drinks" },
   { foodName: "Milk Tea", category: "Drinks" },
-  { foodName: "Faluda", category: "Drinks" },
+  { foodName: "Faluda Juice", category: "Drinks" },
   { foodName: "Lime Juice", category: "Drinks" },
 
   { foodName: "French Fries", category: "Snacks" },
@@ -105,13 +105,12 @@ export default function BrowseFood() {
   if (searchTerm.trim() !== '' || activeCategory !== 'All') {
     let fuseData = filteredFoods;
     
-    // First filter by Category if provided (Fuzzy search for category)
+    // First filter by Category if provided (Exact match for category)
     if (activeCategory !== 'All') {
-      const fuseCategory = new Fuse(fuseData, {
-        keys: ['inferredCategory', 'category', 'foodName', 'description'],
-        threshold: 0.4,
-      });
-      fuseData = fuseCategory.search(activeCategory).map(result => result.item);
+      fuseData = fuseData.filter(food => 
+        food.inferredCategory === activeCategory || 
+        food.category === activeCategory
+      );
     }
     
     // Then filter by Search Term (Fuzzy search for foodName, category, and restaurant name)

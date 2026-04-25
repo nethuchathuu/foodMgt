@@ -52,35 +52,41 @@ exports.getRestaurantOrders = async (req, res) => {
 			
 			if (receiver.role === 'requester_org' || receiver.role === 'Organization') {
 				const org = await Organization.findOne({ userId: receiver._id });
-				if (org) {
-					customer.name = org.orgName || customer.name;
-					customer.phone = org.contactNumber || customer.phone;
-					customer.address = org.orgAddress || customer.address;
-					let avatarUrl = org.logo || org.representative?.profileImage?.fileUrl || customer.avatar;
-					if (avatarUrl === 'undefined' || avatarUrl === 'null') avatarUrl = '';
-					if (avatarUrl && !avatarUrl.startsWith('http')) {
-						avatarUrl = `http://localhost:5000/${avatarUrl.replace(/^[\\/]+/, '')}`;
-					}
-					customer.avatar = avatarUrl;
-					customer.createdAt = org.createdAt || customer.createdAt;
+			if (org) {
+				customer.name = org.orgName || customer.name;
+				customer.phone = org.contactNumber || customer.phone;
+				customer.address = org.orgAddress || customer.address;
+				let avatarUrl = org.logo || org.representative?.profileImage?.fileUrl || customer.avatar;
+				if (avatarUrl === 'undefined' || avatarUrl === 'null') avatarUrl = '';
+				if (avatarUrl && !avatarUrl.startsWith('http')) {
+					avatarUrl = `http://localhost:5000/${avatarUrl.replace(/^[\\/]+/, '')}`;
 				}
+				customer.avatar = avatarUrl;
+				customer.createdAt = org.createdAt || customer.createdAt;
 			}
-
-			const totalPrice = (o.foodId?.price || 0) * (o.quantity || 0);
-
-			processed.push({
-				id: o._id.toString(),
-				foodName: o.foodName || o.foodId?.foodName || '',
-				quantity: o.quantity,
-				totalPrice,
-				status: o.status,
-				time: new Date(o.createdAt).toLocaleString(),
-				customer
-			});
 		}
 
-		res.status(200).json(processed);
-	} catch (error) {
+		let calculatedTotalPrice = o.totalPrice;
+		if (calculatedTotalPrice === undefined || calculatedTotalPrice === null) {
+			const activePrice = (o.foodId && typeof o.foodId.discountPrice === 'number' && o.foodId.discountPrice > 0)
+				? o.foodId.discountPrice 
+				: (o.foodId?.price || 0);
+			calculatedTotalPrice = activePrice * (o.quantity || 0);
+		}
+
+		processed.push({
+			id: o._id.toString(),
+			foodName: o.foodName || o.foodId?.foodName || '',
+			quantity: o.quantity,
+			totalPrice: calculatedTotalPrice,
+			status: o.status,
+			time: new Date(o.createdAt).toLocaleString(),
+			customer
+		});
+	}
+
+	res.status(200).json(processed);
+} catch (error) {
 		console.error('Error fetching restaurant orders:', error);
 		res.status(500).json({ message: 'Failed to fetch orders', error: error.message });
 	}
